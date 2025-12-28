@@ -1,0 +1,133 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import { Search, Command } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuthStore } from "@/stores/auth-store";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { CommandPalette } from "@/components/layout/command-palette";
+
+function getBreadcrumbs(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const breadcrumbs = [{ name: "Dashboard", href: "/" }];
+
+  if (segments.length > 0) {
+    let currentPath = "";
+    segments.forEach((segment) => {
+      currentPath += `/${segment}`;
+      breadcrumbs.push({
+        name: segment.charAt(0).toUpperCase() + segment.slice(1),
+        href: currentPath,
+      });
+    });
+  }
+
+  return breadcrumbs;
+}
+
+export function TopBar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+  const [commandOpen, setCommandOpen] = useState(false);
+  const breadcrumbs = getBreadcrumbs(pathname);
+
+  // Handle Cmd+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCommandOpen(true);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  return (
+    <>
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-6">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-2 text-sm">
+          {breadcrumbs.map((crumb, index) => (
+            <span key={crumb.href} className="flex items-center gap-2">
+              {index > 0 && <span className="text-muted-foreground">&gt;</span>}
+              <span
+                className={
+                  index === breadcrumbs.length - 1
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground"
+                }
+              >
+                {crumb.name}
+              </span>
+            </span>
+          ))}
+        </nav>
+
+        {/* Right side */}
+        <div className="flex items-center gap-4">
+          {/* Search */}
+          <Button
+            variant="outline"
+            className="hidden h-9 w-64 justify-start gap-2 text-muted-foreground md:flex"
+            onClick={() => setCommandOpen(true)}
+          >
+            <Search className="h-4 w-4" />
+            <span>Search...</span>
+            <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <Command className="h-3 w-3" />K
+            </kbd>
+          </Button>
+
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="flex items-center gap-2 p-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">{user?.name || "Admin"}</span>
+                  <span className="text-xs text-muted-foreground">{user?.login}</span>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+    </>
+  );
+}
