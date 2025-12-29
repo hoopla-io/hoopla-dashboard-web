@@ -3,7 +3,9 @@ import { z } from "zod";
 export const DrinkSchema = z.object({
   id: z.number(),
   name: z.string(),
-  image_url: z.string().optional(),
+  price: z.number().optional(),
+  partner: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 export const CreateDrinkSchema = z.object({
