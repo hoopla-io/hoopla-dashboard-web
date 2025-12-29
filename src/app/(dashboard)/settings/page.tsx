@@ -29,6 +29,7 @@ export default function SettingsPage() {
                   Enable dark theme for the dashboard
                 </p>
               </div>
+              
               <Switch 
                 checked={theme === "dark"}
                 onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
