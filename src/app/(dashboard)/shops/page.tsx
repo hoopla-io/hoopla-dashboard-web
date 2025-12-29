@@ -217,44 +217,56 @@ export default function ShopsPage() {
             <DialogTitle>Create Shop</DialogTitle>
             <DialogDescription>Add a new shop location</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Partner</Label>
-              <Select
-                value={String(formData.partner_id)}
-                onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select partner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {partners.map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Shop name" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }}>
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Latitude</Label>
-                <Input type="number" value={formData.location_lat} onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })} />
+                <Label>Partner</Label>
+                <Select
+                  value={String(formData.partner_id)}
+                  onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select partner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {partners.map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label>Longitude</Label>
-                <Input type="number" value={formData.location_long} onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })} />
+                <Label>Name</Label>
+                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Shop name" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Latitude</Label>
+                  <Input 
+                    type="number" 
+                    value={formData.location_lat === 0 ? "" : formData.location_lat} 
+                    onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })} 
+                    placeholder="Latitude"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Longitude</Label>
+                  <Input 
+                    type="number" 
+                    value={formData.location_long === 0 ? "" : formData.location_long} 
+                    onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })} 
+                    placeholder="Longitude"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-            <Button onClick={() => createMutation.mutate(formData)} disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending ? "Creating..." : "Create"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -265,44 +277,56 @@ export default function ShopsPage() {
             <DialogTitle>Edit Shop</DialogTitle>
             <DialogDescription>Update shop information</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Partner</Label>
-              <Select
-                value={String(formData.partner_id)}
-                onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select partner" />
-                </SelectTrigger>
-                <SelectContent>
-                  {partners.map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Shop name" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={(e) => { e.preventDefault(); editShop && updateMutation.mutate({ id: editShop.id, data: formData }); }}>
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Latitude</Label>
-                <Input type="number" value={formData.location_lat} onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })} />
+                <Label>Partner</Label>
+                <Select
+                  value={String(formData.partner_id)}
+                  onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select partner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {partners.map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label>Longitude</Label>
-                <Input type="number" value={formData.location_long} onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })} />
+                <Label>Name</Label>
+                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Shop name" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Latitude</Label>
+                  <Input 
+                    type="number" 
+                    value={formData.location_lat === 0 ? "" : formData.location_lat} 
+                    onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })} 
+                    placeholder="Latitude"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Longitude</Label>
+                  <Input 
+                    type="number" 
+                    value={formData.location_long === 0 ? "" : formData.location_long} 
+                    onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })} 
+                    placeholder="Longitude"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditShop(null)}>Cancel</Button>
-            <Button onClick={() => editShop && updateMutation.mutate({ id: editShop.id, data: formData })} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditShop(null)}>Cancel</Button>
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
