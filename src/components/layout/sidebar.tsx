@@ -47,7 +47,7 @@ const navigation = [
   },
 ];
 
-export function Sidebar() {
+export function SidebarContent() {
   const pathname = usePathname();
   const [openGroups, setOpenGroups] = useState<string[]>(["Management"]);
 
@@ -58,7 +58,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-sidebar">
+    <div className="flex h-full flex-col bg-sidebar">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-border px-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -129,13 +129,14 @@ export function Sidebar() {
           )
         )}
       </nav>
+    </div>
+  );
+}
 
-      {/* Footer */}
-      <div className="absolute bottom-4 left-4 right-4">
-        <p className="text-center text-xs text-muted-foreground">
-          © 2024 Hoopla
-        </p>
-      </div>
+export function Sidebar() {
+  return (
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-border bg-sidebar md:flex md:flex-col">
+      <SidebarContent />
     </aside>
   );
 }

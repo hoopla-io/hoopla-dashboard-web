@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MoreHorizontal, ChevronLeft, ChevronRight, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,12 +37,15 @@ import type { Partner, CreatePartnerRequest } from "@/lib/api";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+const ITEMS_PER_PAGE = 10;
+
 export default function PartnersPage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Check for action param on mount
   useEffect(() => {
@@ -54,8 +57,10 @@ export default function PartnersPage() {
       router.replace(`/partners?${params.toString()}`);
     }
   }, [searchParams, router]);
+  
   const [editPartner, setEditPartner] = useState<Partner | null>(null);
   const [formData, setFormData] = useState<CreatePartnerRequest>({ name: "", description: "" });
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ["partners"],
@@ -63,12 +68,14 @@ export default function PartnersPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreatePartnerRequest) => partnersApi.create(data),
+    mutationFn: ({ data, file }: { data: CreatePartnerRequest; file?: File }) =>
+      partnersApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
       toast.success("Partner created successfully!");
       setIsCreateOpen(false);
       setFormData({ name: "", description: "" });
+      setSelectedFile(undefined);
     },
     onError: () => {
       toast.error("Failed to create partner");
@@ -76,12 +83,13 @@ export default function PartnersPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<CreatePartnerRequest> }) =>
-      partnersApi.update(id, data),
+    mutationFn: ({ id, data, file }: { id: number; data: Partial<CreatePartnerRequest>; file?: File }) =>
+      partnersApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
       toast.success("Partner updated successfully!");
       setEditPartner(null);
+      setSelectedFile(undefined);
     },
     onError: () => {
       toast.error("Failed to update partner");
@@ -103,13 +111,39 @@ export default function PartnersPage() {
     partner.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPartners.length / ITEMS_PER_PAGE);
+  const paginatedPartners = filteredPartners.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const handleCreate = () => {
-    createMutation.mutate(formData);
+    if (!formData.name) {
+      toast.error("Name is required");
+      return;
+    }
+    createMutation.mutate({ data: formData, file: selectedFile });
   };
 
   const handleUpdate = () => {
     if (editPartner) {
-      updateMutation.mutate({ id: editPartner.id, data: formData });
+      updateMutation.mutate({ id: editPartner.id, data: formData, file: selectedFile });
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!["image/jpeg", "image/png"].includes(file.type)) {
+        toast.error("Only JPG and PNG files are allowed");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error("File size must be less than 5MB");
+        return;
+      }
+      setSelectedFile(file);
     }
   };
 
@@ -121,7 +155,11 @@ export default function PartnersPage() {
           <h1 className="text-3xl font-bold">Partners</h1>
           <p className="text-muted-foreground">Manage your partner organizations</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <Button onClick={() => {
+          setFormData({ name: "", description: "" });
+          setSelectedFile(undefined);
+          setIsCreateOpen(true);
+        }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Partner
         </Button>
@@ -134,7 +172,10 @@ export default function PartnersPage() {
           <Input
             placeholder="Search partners..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1); // Reset to first page on search
+            }}
             className="pl-10"
           />
         </div>
@@ -158,17 +199,17 @@ export default function PartnersPage() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : filteredPartners.length === 0 ? (
+            ) : paginatedPartners.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   No partners found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredPartners.map((partner) => (
+              paginatedPartners.map((partner) => (
                 <TableRow key={partner.id}>
                   <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="max-w-[200px] truncate text-muted-foreground" title={partner.description}>
                     {partner.description || "-"}
                   </TableCell>
                   <TableCell>
@@ -186,6 +227,7 @@ export default function PartnersPage() {
                           onClick={() => {
                             setEditPartner(partner);
                             setFormData({ name: partner.name, description: partner.description });
+                            setSelectedFile(undefined);
                           }}
                         >
                           <Pencil className="mr-2 h-4 w-4" />
@@ -208,6 +250,33 @@ export default function PartnersPage() {
         </Table>
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <div className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
@@ -215,34 +284,48 @@ export default function PartnersPage() {
             <DialogTitle>Create Partner</DialogTitle>
             <DialogDescription>Add a new partner organization</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter partner name"
-              />
+          <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Enter partner name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Input
+                  id="description"
+                  value={formData.description || ""}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter description"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="file">Logo (JPG/PNG)</Label>
+                <div className="flex items-center gap-4">
+                  <Input
+                    id="file"
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    onChange={handleFileChange}
+                    className="cursor-pointer"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                value={formData.description || ""}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter description"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreate} disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending ? "Creating..." : "Create"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
@@ -253,34 +336,46 @@ export default function PartnersPage() {
             <DialogTitle>Edit Partner</DialogTitle>
             <DialogDescription>Update partner information</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter partner name"
-              />
+          <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Name</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Enter partner name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Input
+                  id="edit-description"
+                  value={formData.description || ""}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Enter description"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-file">Logo (JPG/PNG)</Label>
+                <Input
+                  id="edit-file"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={handleFileChange}
+                  className="cursor-pointer"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Input
-                id="edit-description"
-                value={formData.description || ""}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter description"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditPartner(null)}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditPartner(null)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

@@ -3,12 +3,11 @@ import { z } from "zod";
 export const UserSchema = z.object({
   id: z.number(),
   name: z.string().optional(),
-  phone_number: z.string().optional(),
+  balance: z.number().optional(),
   gender: z.string().optional(),
   date_of_birth: z.string().optional(),
+  phone_number: z.string().optional(),
   mobile_provider: z.string().optional(),
-  credit: z.number().optional(),
-  debit: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

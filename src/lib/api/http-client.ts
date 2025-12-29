@@ -3,7 +3,7 @@ import axios from "axios";
 export const API_BASE_URL = "https://dashboard.hoopla.uz";
 
 export const httpClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL:  API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },

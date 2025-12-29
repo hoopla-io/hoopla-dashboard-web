@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,11 +34,13 @@ const statusColors: Record<string, string> = {
 };
 
 const statusOptions = ["pending", "processing", "completed", "cancelled"];
+const ITEMS_PER_PAGE = 10;
 
 export default function OrdersPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["orders"],
@@ -56,14 +58,31 @@ export default function OrdersPage() {
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      order.drink_name?.toLowerCase().includes(search.toLowerCase()) ||
+      order.drink?.toLowerCase().includes(search.toLowerCase()) ||
+      order.user?.includes(search) ||
       String(order.id).includes(search);
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   const handleStatusChange = (orderId: number, newStatus: string) => {
     statusMutation.mutate({ id: orderId, status: newStatus });
+  };
+
+  const formatPrice = (price?: number) => {
+    return price ? new Intl.NumberFormat("uz-UZ").format(price) : "0";
+  };
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleString();
   };
 
   return (
@@ -77,13 +96,19 @@ export default function OrdersPage() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search orders..."
+            placeholder="Search orders (ID, User, Drink)..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="pl-10"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(val) => {
+            setStatusFilter(val);
+            setCurrentPage(1);
+        }}>
           <SelectTrigger className="w-[180px]">
             <Filter className="mr-2 h-4 w-4" />
             <SelectValue placeholder="Filter status" />
@@ -104,42 +129,52 @@ export default function OrdersPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Order ID</TableHead>
+              <TableHead>User</TableHead>
               <TableHead>Drink</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Shop</TableHead>
+              <TableHead>Time</TableHead>
+              <TableHead>Last Update</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={9} className="text-center py-8">Loading...</TableCell>
               </TableRow>
-            ) : filteredOrders.length === 0 ? (
+            ) : paginatedOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No orders found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredOrders.map((order) => (
+              paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">#{order.id}</TableCell>
-                  <TableCell>{order.drink_name || "-"}</TableCell>
+                  <TableCell>{order.user || "-"}</TableCell>
+                  <TableCell>{order.drink || "-"}</TableCell>
+                  <TableCell>{formatPrice(order.price)} UZS</TableCell>
+                  <TableCell>{order.shop || "-"}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    {formatDate(order.time)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    {formatDate(order.last_update)}
+                  </TableCell>
                   <TableCell>
                     <Badge className={statusColors[order.status] || "bg-muted"}>
                       {order.status}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {order.created_at ? new Date(order.created_at).toLocaleDateString() : "-"}
                   </TableCell>
                   <TableCell>
                     <Select
                       value={order.status}
                       onValueChange={(value) => handleStatusChange(order.id, value)}
                     >
-                      <SelectTrigger className="w-[140px]">
+                      <SelectTrigger className="w-[130px] h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -157,6 +192,33 @@ export default function OrdersPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <div className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

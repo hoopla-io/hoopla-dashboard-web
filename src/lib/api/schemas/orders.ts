@@ -2,11 +2,13 @@ import { z } from "zod";
 
 export const OrderSchema = z.object({
   id: z.number(),
-  shop_id: z.number(),
-  drink_name: z.string().optional(),
   status: z.string(),
-  created_at: z.string().optional(),
-  updated_at: z.string().optional(),
+  user: z.string().optional(),
+  drink: z.string().optional(),
+  price: z.number().optional(),
+  shop: z.string().optional(),
+  time: z.string().optional(),
+  last_update: z.string().optional(),
 });
 
 export const OrderFilterSchema = z.object({

@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Search, Command } from "lucide-react";
+import { Search, Command, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { SidebarContent } from "@/components/layout/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,6 +64,19 @@ export function TopBar() {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-6">
+        {/* Mobile Sidebar */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="mr-4 md:hidden">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-sm">
           {breadcrumbs.map((crumb, index) => (
