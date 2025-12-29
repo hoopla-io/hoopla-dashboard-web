@@ -17,7 +17,7 @@ import { LoginRequestSchema, type LoginRequest } from "@/lib/api/schemas/auth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, setAuth } = useAuthStore();
+  const { isAuthenticated, hasHydrated, setAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<LoginRequest>({
@@ -29,10 +29,10 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (hasHydrated && isAuthenticated) {
       router.push("/");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, hasHydrated, router]);
 
   const onSubmit = async (data: LoginRequest) => {
     setIsLoading(true);
