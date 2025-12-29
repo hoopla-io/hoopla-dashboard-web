@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, MoreHorizontal, Coffee } from "lucide-react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,7 +123,9 @@ export default function DrinksPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Drink</TableHead>
+              <TableHead>Price</TableHead>
               <TableHead>ID</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -130,11 +133,11 @@ export default function DrinksPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={5} className="text-center py-8">Loading...</TableCell>
               </TableRow>
             ) : filteredDrinks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   No drinks found
                 </TableCell>
               </TableRow>
@@ -142,12 +145,32 @@ export default function DrinksPage() {
               filteredDrinks.map((drink) => (
                 <TableRow key={drink.id}>
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                        <Coffee className="h-5 w-5 text-muted-foreground" />
+                    {drink.imageUrl ? (
+                      <div className="relative h-12 w-12 overflow-hidden rounded-lg">
+                        <Image
+                          src={drink.imageUrl}
+                          alt={drink.name}
+                          fill
+                          className="object-cover"
+                        />
                       </div>
-                      <span className="font-medium">{drink.name}</span>
-                    </div>
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+                        <Coffee className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium">{drink.name}</span>
+                  </TableCell>
+                  <TableCell>
+                    {drink.price ? (
+                      <span className="font-medium">
+                        {drink.price.toLocaleString()} UZS
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">#{drink.id}</TableCell>
                   <TableCell>
