@@ -2,8 +2,11 @@ import { z } from "zod";
 
 export const ShopSchema = z.object({
   id: z.number(),
-  partner_id: z.number(),
-  partner_name: z.string().optional(),
+  partner_id: z.number().optional(), // API might validly return this or not, but 'partner' object handles the relation
+  partner: z.object({
+    id: z.number(),
+    name: z.string(),
+  }).optional(),
   name: z.string(),
   location_lat: z.number().optional(),
   location_long: z.number().optional(),

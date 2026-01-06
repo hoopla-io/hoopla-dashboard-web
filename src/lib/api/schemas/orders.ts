@@ -3,10 +3,20 @@ import { z } from "zod";
 export const OrderSchema = z.object({
   id: z.number(),
   status: z.string(),
-  user: z.string().optional(),
-  drink: z.string().optional(),
+  user: z.object({
+    id: z.number(),
+    name: z.string(),
+    phone_number: z.string().optional(),
+  }).optional(),
+  drink: z.object({
+    id: z.number(),
+    name: z.string(),
+  }).optional(),
   price: z.number().optional(),
-  shop: z.string().optional(),
+  shop: z.object({
+    id: z.number(),
+    name: z.string(),
+  }).optional(),
   time: z.string().optional(),
   last_update: z.string().optional(),
   fiscal_link: z.string().optional(),
