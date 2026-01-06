@@ -45,7 +45,9 @@ import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 const ITEMS_PER_PAGE = 10;
 
-export default function UsersPage() {
+import { Suspense } from "react";
+
+function UsersContent() {
   const queryClient = useQueryClient();
   
   // URL State Management
@@ -290,5 +292,13 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading users...</div>}>
+      <UsersContent />
+    </Suspense>
   );
 }

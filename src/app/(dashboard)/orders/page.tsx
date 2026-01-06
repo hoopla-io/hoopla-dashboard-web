@@ -38,7 +38,9 @@ import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 const statusOptions = ["pending", "processing", "completed", "cancelled"];
 const ITEMS_PER_PAGE = 10;
 
-export default function OrdersPage() {
+import { Suspense } from "react";
+
+function OrdersContent() {
   const queryClient = useQueryClient();
   
   // URL State Management
@@ -272,5 +274,13 @@ export default function OrdersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading orders...</div>}>
+      <OrdersContent />
+    </Suspense>
   );
 }
