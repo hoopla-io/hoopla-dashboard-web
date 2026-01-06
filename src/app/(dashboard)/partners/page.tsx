@@ -62,7 +62,7 @@ export default function PartnersPage() {
   const [formData, setFormData] = useState<CreatePartnerRequest>({ name: "", description: "" });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
-  const { data: partners = [], isLoading } = useQuery({
+  const { data: partnersData = { data: [] }, isLoading } = useQuery({
     queryKey: ["partners"],
     queryFn: partnersApi.getAll,
   });
@@ -107,7 +107,7 @@ export default function PartnersPage() {
     },
   });
 
-  const filteredPartners = partners.filter((partner) =>
+  const filteredPartners = (partnersData.data || []).filter((partner) =>
     partner.name.toLowerCase().includes(search.toLowerCase())
   );
 

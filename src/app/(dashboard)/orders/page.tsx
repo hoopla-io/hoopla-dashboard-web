@@ -60,9 +60,14 @@ export default function OrdersPage() {
   });
 
   const filteredOrders = (ordersData.data || []).filter((order) => {
-    const matchesPhone = !phoneFilter || (order.user && order.user.toLowerCase().includes(phoneFilter.toLowerCase())); // Assuming user field contains phone or name. Task says "Phone Number". Ideally order.user is name/phone.
-    const matchesDrink = !drinkFilter || (order.drink && order.drink.toLowerCase().includes(drinkFilter.toLowerCase()));
-    const matchesShop = !shopFilter || (order.shop && order.shop.toLowerCase().includes(shopFilter.toLowerCase()));
+    // Check phone/user filter vs user name OR phone
+    const userSearch = phoneFilter.toLowerCase();
+    const matchesPhone = !phoneFilter || 
+      (order.user?.name && order.user.name.toLowerCase().includes(userSearch)) ||
+      (order.user?.phone_number && order.user.phone_number.includes(userSearch));
+      
+    const matchesDrink = !drinkFilter || (order.drink?.name && order.drink.name.toLowerCase().includes(drinkFilter.toLowerCase()));
+    const matchesShop = !shopFilter || (order.shop?.name && order.shop.name.toLowerCase().includes(shopFilter.toLowerCase()));
     const matchesDate = !dateFilter || (order.time && order.time.includes(dateFilter));
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
 
@@ -122,7 +127,7 @@ export default function OrdersPage() {
             setCurrentPage(1);
         }}>
           <SelectTrigger>
-            <SelectValue placeholder="Filter status" />
+          <SelectValue placeholder="Filter status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
@@ -166,10 +171,15 @@ export default function OrdersPage() {
               paginatedOrders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">#{order.id}</TableCell>
-                  <TableCell>{order.user || "-"}</TableCell>
-                  <TableCell>{order.drink || "-"}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{order.user?.name || "-"}</span>
+                      <span className="text-xs text-muted-foreground">{order.user?.phone_number}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{order.drink?.name || "-"}</TableCell>
                   <TableCell>{formatPrice(order.price)} UZS</TableCell>
-                  <TableCell>{order.shop || "-"}</TableCell>
+                  <TableCell>{order.shop?.name || "-"}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">
                     {formatDate(order.time)}
                   </TableCell>

@@ -188,7 +188,7 @@ export default function ShopsPage() {
                     )}
                   </TableCell>
                   <TableCell className="font-medium">{shop.name}</TableCell>
-                  <TableCell>{shop.partner_name || getPartnerName(shop.partner_id)}</TableCell>
+                  <TableCell>{shop.partner?.name || "-"}</TableCell>
                   <TableCell>
                     {shop.location_lat && shop.location_long ? (
                       <a
@@ -220,7 +220,7 @@ export default function ShopsPage() {
                         <DropdownMenuItem onClick={() => {
                           setEditShop(shop);
                           setFormData({
-                            partner_id: shop.partner_id,
+                            partner_id: shop.partner?.id || shop.partner_id || 0,
                             name: shop.name,
                             location_lat: shop.location_lat || 0,
                             location_long: shop.location_long || 0,

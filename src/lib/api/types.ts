@@ -8,12 +8,12 @@ export interface Meta {
 
 export interface ApiResponse<T> {
   data: T;
-  meta: Meta;
+  meta?: Meta | null;
   message?: string;
   code?: number;
 }
 
 export interface PaginatedResponse<T> {
   data: T[];
-  meta: Meta;
+  meta?: Meta | null;
 }
