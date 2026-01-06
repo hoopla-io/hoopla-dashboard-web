@@ -50,6 +50,7 @@ export default function ShopsPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
 
   // Check for action param on mount
   useEffect(() => {
@@ -144,6 +145,7 @@ export default function ShopsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Partner</TableHead>
               <TableHead>Location</TableHead>
@@ -154,27 +156,56 @@ export default function ShopsPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={6} className="text-center py-8">Loading...</TableCell>
               </TableRow>
             ) : filteredShops.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No shops found
                 </TableCell>
               </TableRow>
             ) : (
               filteredShops.map((shop) => (
                 <TableRow key={shop.id}>
-                  <TableCell className="font-medium">{shop.name}</TableCell>
-                  <TableCell>{getPartnerName(shop.partner_id)}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      {shop.location_lat?.toFixed(4)}, {shop.location_long?.toFixed(4)}
-                    </div>
+                    {shop.image_url ? (
+                      <div 
+                        className="cursor-pointer overflow-hidden rounded-md border border-border"
+                        onClick={() => setSelectedImage(shop.image_url)}
+                      >
+                         <img
+                          src={shop.image_url}
+                          alt={shop.name}
+                          className="h-10 w-10 object-cover hover:scale-110 transition-transform"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                        <span className="text-xs font-medium">No Img</span>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{shop.name}</TableCell>
+                  <TableCell>{shop.partner_name || getPartnerName(shop.partner_id)}</TableCell>
+                  <TableCell>
+                    {shop.location_lat && shop.location_long ? (
+                      <a
+                        href={`https://yandex.com/maps/?text=${shop.location_lat},${shop.location_long}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-primary hover:underline"
+                      >
+                        <MapPin className="h-3 w-3" />
+                        {shop.location_lat.toFixed(4)}, {shop.location_long.toFixed(4)}
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">Active</Badge>
+                     <Badge variant={!shop.deleted_at ? "default" : "destructive"}>
+                      {!shop.deleted_at ? "Active" : "Inactive"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -327,6 +358,20 @@ export default function ShopsPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(undefined)}>
+        <DialogContent className="max-w-3xl border-none bg-transparent shadow-none">
+          <DialogTitle className="sr-only">Image Preview</DialogTitle>
+          {selectedImage && (
+            <div className="relative h-[80vh] w-full flex items-center justify-center">
+              <img
+                src={selectedImage}
+                alt="Shop Preview"
+                className="max-h-full max-w-full rounded-lg object-contain"
+              />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -1,54 +1,85 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Store, Coffee, ShoppingCart, Users, TrendingUp } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
-
-const stats = [
-  { name: "Total Partners", value: "12", icon: Building2, change: "+2" },
-  { name: "Total Shops", value: "48", icon: Store, change: "+5" },
-  { name: "Total Drinks", value: "156", icon: Coffee, change: "+12" },
-  { name: "Active Orders", value: "324", icon: ShoppingCart, change: "+18" },
-  { name: "Total Users", value: "2,847", icon: Users, change: "+156" },
-  { name: "Revenue", value: "$45,231", icon: TrendingUp, change: "+8.2%" },
-];
-
-const revenueData = [
-  { name: "Dec 20", value: 6500 },
-  { name: "Dec 21", value: 7200 },
-  { name: "Dec 22", value: 13000 },
-  { name: "Dec 23", value: 19500 },
-  { name: "Dec 24", value: 14000 },
-  { name: "Dec 25", value: 22000 },
-  { name: "Dec 26", value: 26000 },
-];
-
-const platformData = [
-  { name: "Mobile App", value: 45, color: "#8b5cf6" },
-  { name: "Desktop Web", value: 30, color: "#3b82f6" },
-  { name: "Mobile Web", value: 15, color: "#f97316" },
-  { name: "CTV/OTT", value: 10, color: "#22c55e" },
-];
+import { Building2, Store, ShoppingCart, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { partnersApi, shopsApi, ordersApi, usersApi } from "@/lib/api";
 
 export default function DashboardPage() {
+  const { data: partners = [] } = useQuery({
+    queryKey: ["partners"],
+    queryFn: partnersApi.getAll,
+  });
+
+  const { data: shops = [] } = useQuery({
+    queryKey: ["shops"],
+    queryFn: shopsApi.getAll,
+  });
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ["orders"],
+    queryFn: () => ordersApi.getAll(),
+  });
+
+  const { data: users = [] } = useQuery({
+    queryKey: ["users"],
+    queryFn: usersApi.getAll,
+  });
+
+  const stats = [
+    {
+      name: "Total Users",
+      value: users.length.toString(),
+      icon: Users,
+      description: "Registered users",
+    },
+    {
+      name: "Total Partners",
+      value: partners.length.toString(),
+      icon: Building2,
+      description: "Connected partners",
+    },
+    {
+      name: "Total Shops",
+      value: shops.length.toString(),
+      icon: Store,
+      description: "Connected shops",
+    },
+    {
+      name: "Total Orders",
+      value: orders.length.toString(),
+      icon: ShoppingCart,
+      description: "Orders processed",
+    },
+  ];
+
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Welcome to Hoopla Dashboard</h1>
-      <p className="mt-4 text-lg text-muted-foreground">
-        Select a module from the sidebar to get started.
-      </p>
+    <div className="p-8 space-y-8">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Overview of your platform's performance.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.name}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {stat.name}
+              </CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">
+                {stat.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

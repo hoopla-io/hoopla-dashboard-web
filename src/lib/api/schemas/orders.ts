@@ -9,6 +9,7 @@ export const OrderSchema = z.object({
   shop: z.string().optional(),
   time: z.string().optional(),
   last_update: z.string().optional(),
+  fiscal_link: z.string().optional(),
 });
 
 export const OrderFilterSchema = z.object({

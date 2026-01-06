@@ -3,8 +3,13 @@ import { z } from "zod";
 export const PartnerSchema = z.object({
   id: z.number(),
   name: z.string(),
-  description: z.string().optional(),
-  logoUrl: z.string().optional(),
+  description: z.string().optional().nullable(), // Allow nullable if backend sends null
+  logoUrl: z.string().optional().nullable(),
+  vendor: z.string().optional().nullable(),
+  tin_type: z.string().optional().nullable(),
+  tin_num: z.string().optional().nullable(),
+  created_at: z.string().optional().nullable(),
+  deleted_at: z.string().optional().nullable(),
 });
 
 export const CreatePartnerSchema = z.object({
