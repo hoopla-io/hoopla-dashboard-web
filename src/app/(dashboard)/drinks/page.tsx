@@ -46,7 +46,6 @@ export default function DrinksPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Check for action param on mount
   useEffect(() => {
     if (searchParams.get("action") === "create") {
       setIsCreateOpen(true);

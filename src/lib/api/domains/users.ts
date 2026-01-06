@@ -3,11 +3,21 @@ import type { User, EditUserRequest, FilterUserRequest } from "@/lib/api/schemas
 
 
 
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, PaginationParams } from "@/lib/api/types";
+
+export interface UsersGetAllParams extends PaginationParams {
+  id?: number;
+  name?: string;
+  phone_number?: string;
+  mobile_provider?: string;
+  gender?: string;
+}
 
 export const usersApi = {
-  getAll: async (): Promise<PaginatedResponse<User>> => {
-    const response = await httpClient.get<ApiResponse<User[]>>("/api/v1/users/list");
+  getAll: async (params?: UsersGetAllParams): Promise<PaginatedResponse<User>> => {
+    const response = await httpClient.get<ApiResponse<User[]>>("/api/v1/users/list", {
+      params,
+    });
     return response.data;
   },
 

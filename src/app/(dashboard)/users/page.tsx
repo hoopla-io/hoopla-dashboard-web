@@ -48,15 +48,25 @@ export default function UsersPage() {
   const [nameFilter, setNameFilter] = useState("");
   const [phoneFilter, setPhoneFilter] = useState("");
   const [genderFilter, setGenderFilter] = useState<string>("all");
-  const [dobFilter, setDobFilter] = useState("");
   const [editUser, setEditUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<EditUserRequest>({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: usersData = { data: [] }, isLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: usersApi.getAll,
+  const { data: usersData, isLoading } = useQuery({
+    queryKey: ["users", currentPage, nameFilter, phoneFilter, genderFilter],
+    queryFn: () => usersApi.getAll({ 
+      page: currentPage, 
+      limit: ITEMS_PER_PAGE,
+      name: nameFilter || undefined,
+      phone_number: phoneFilter || undefined,
+      gender: genderFilter !== "all" ? genderFilter : undefined,
+    }),
   });
+
+  const users = usersData?.data || [];
+  const meta = usersData?.meta;
+  const totalPages = meta?.totalPages || 1;
+  const totalItems = meta?.totalItems || 0;
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: EditUserRequest }) => 
@@ -78,22 +88,6 @@ export default function UsersPage() {
     onError: () => toast.error("Failed to delete user"),
   });
 
-  const filteredUsers = (usersData.data || []).filter((user) => {
-    const matchesName = !nameFilter || (user.name && user.name.toLowerCase().includes(nameFilter.toLowerCase()));
-    const matchesPhone = !phoneFilter || (user.phone_number && user.phone_number.includes(phoneFilter));
-    const matchesGender = genderFilter === "all" || (user.gender && user.gender.toLowerCase() === genderFilter.toLowerCase());
-    const matchesDob = !dobFilter || (user.date_of_birth && user.date_of_birth === dobFilter);
-
-    return matchesName && matchesPhone && matchesGender && matchesDob;
-  });
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
   const formatCurrency = (value?: number) => {
     return typeof value === "number" ? new Intl.NumberFormat("uz-UZ").format(value) : "0";
   };
@@ -110,7 +104,7 @@ export default function UsersPage() {
         <p className="text-muted-foreground">Manage registered users</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Input
           placeholder="Filter by Name..."
           value={nameFilter}
@@ -131,12 +125,6 @@ export default function UsersPage() {
             <SelectItem value="female">Female</SelectItem>
           </SelectContent>
         </Select>
-        <Input
-          type="date"
-          placeholder="Date of Birth"
-          value={dobFilter}
-          onChange={(e) => { setDobFilter(e.target.value); setCurrentPage(1); }}
-        />
       </div>
 
       <div className="rounded-lg border">
@@ -157,14 +145,14 @@ export default function UsersPage() {
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
               </TableRow>
-            ) : paginatedUsers.length === 0 ? (
+            ) : users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedUsers.map((user) => (
+              users.map((user: User) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.name || "-"}</TableCell>
                   <TableCell>{user.phone_number || "-"}</TableCell>
@@ -219,8 +207,11 @@ export default function UsersPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} users
+        </div>
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -243,7 +234,7 @@ export default function UsersPage() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-      )}
+      </div>
 
       {/* Edit Dialog */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>

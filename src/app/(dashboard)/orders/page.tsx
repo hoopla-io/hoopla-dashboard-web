@@ -45,10 +45,21 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: ordersData = { data: [] }, isLoading } = useQuery({
-    queryKey: ["orders"],
-    queryFn: () => ordersApi.getAll(),
+  const { data: ordersData, isLoading } = useQuery({
+    queryKey: ["orders", currentPage, statusFilter, drinkFilter, dateFilter],
+    queryFn: () => ordersApi.getAll({ 
+      page: currentPage, 
+      limit: ITEMS_PER_PAGE,
+      status: statusFilter !== "all" ? statusFilter : undefined,
+      drink: drinkFilter || undefined,
+      time: dateFilter || undefined,
+    }),
   });
+
+  const orders = ordersData?.data || [];
+  const meta = ordersData?.meta;
+  const totalPages = meta?.totalPages || 1;
+  const totalItems = meta?.totalItems || 0;
 
   const statusMutation = useMutation({
     mutationFn: (data: ChangeOrderStatusRequest) => ordersApi.changeStatus(data),
@@ -59,27 +70,17 @@ export default function OrdersPage() {
     onError: () => toast.error("Failed to update order status"),
   });
 
-  const filteredOrders = (ordersData.data || []).filter((order) => {
-    // Check phone/user filter vs user name OR phone
+  // Client-side filtering for fields not supported by the API
+  const filteredOrders = orders.filter((order: Order) => {
     const userSearch = phoneFilter.toLowerCase();
     const matchesPhone = !phoneFilter || 
       (order.user?.name && order.user.name.toLowerCase().includes(userSearch)) ||
       (order.user?.phone_number && order.user.phone_number.includes(userSearch));
       
-    const matchesDrink = !drinkFilter || (order.drink?.name && order.drink.name.toLowerCase().includes(drinkFilter.toLowerCase()));
     const matchesShop = !shopFilter || (order.shop?.name && order.shop.name.toLowerCase().includes(shopFilter.toLowerCase()));
-    const matchesDate = !dateFilter || (order.time && order.time.includes(dateFilter));
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
 
-    return matchesPhone && matchesDrink && matchesShop && matchesDate && matchesStatus;
+    return matchesPhone && matchesShop;
   });
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   const handleStatusChange = (orderId: number, newStatus: string) => {
     statusMutation.mutate({ id: orderId, status: newStatus });
@@ -159,16 +160,16 @@ export default function OrdersPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={10} className="text-center py-8">Loading...</TableCell>
               </TableRow>
-            ) : paginatedOrders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                   No orders found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedOrders.map((order) => (
+              filteredOrders.map((order: Order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">#{order.id}</TableCell>
                   <TableCell>
@@ -230,8 +231,11 @@ export default function OrdersPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} orders
+        </div>
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -254,7 +258,7 @@ export default function OrdersPage() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
