@@ -240,7 +240,7 @@ export default function PartnersPage() {
                       : "-"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={!partner.deleted_at ? "default" : "destructive"}> // default usually implies available/active
+                    <Badge variant={!partner.deleted_at ? "default" : "destructive"}>
                       {!partner.deleted_at ? "Active" : "Inactive"}
                     </Badge>
                   </TableCell>
