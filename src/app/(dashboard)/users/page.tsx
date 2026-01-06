@@ -41,16 +41,21 @@ import { Label } from "@/components/ui/label";
 import { usersApi } from "@/lib/api";
 import type { User, EditUserRequest } from "@/lib/api";
 
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+
 const ITEMS_PER_PAGE = 10;
 
 export default function UsersPage() {
   const queryClient = useQueryClient();
-  const [nameFilter, setNameFilter] = useState("");
-  const [phoneFilter, setPhoneFilter] = useState("");
-  const [genderFilter, setGenderFilter] = useState<string>("all");
+  
+  // URL State Management
+  const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [nameFilter, setNameFilter] = useQueryState("name", parseAsString.withDefault(""));
+  const [phoneFilter, setPhoneFilter] = useQueryState("phone", parseAsString.withDefault(""));
+  const [genderFilter, setGenderFilter] = useQueryState("gender", parseAsString.withDefault("all"));
+
   const [editUser, setEditUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<EditUserRequest>({});
-  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: usersData, isLoading } = useQuery({
     queryKey: ["users", currentPage, nameFilter, phoneFilter, genderFilter],
@@ -104,27 +109,40 @@ export default function UsersPage() {
         <p className="text-muted-foreground">Manage registered users</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Input
-          placeholder="Filter by Name..."
-          value={nameFilter}
-          onChange={(e) => { setNameFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <Input
-          placeholder="Filter by Phone..."
-          value={phoneFilter}
-          onChange={(e) => { setPhoneFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <Select value={genderFilter} onValueChange={(v) => { setGenderFilter(v); setCurrentPage(1); }}>
-          <SelectTrigger>
-            <SelectValue placeholder="Gender" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Genders</SelectItem>
-            <SelectItem value="male">Male</SelectItem>
-            <SelectItem value="female">Female</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Input
+            placeholder="Filter by Name..."
+            value={nameFilter}
+            onChange={(e) => { setNameFilter(e.target.value || null); setCurrentPage(1); }}
+          />
+          <Input
+            placeholder="Filter by Phone..."
+            value={phoneFilter}
+            onChange={(e) => { setPhoneFilter(e.target.value || null); setCurrentPage(1); }}
+          />
+          <Select value={genderFilter} onValueChange={(v) => { setGenderFilter(v); setCurrentPage(1); }}>
+            <SelectTrigger>
+              <SelectValue placeholder="Gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Genders</SelectItem>
+              <SelectItem value="male">Male</SelectItem>
+              <SelectItem value="female">Female</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setNameFilter(null);
+              setPhoneFilter(null);
+              setGenderFilter(null);
+              setCurrentPage(1);
+            }}
+          >
+            Clear Filters
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-lg border">

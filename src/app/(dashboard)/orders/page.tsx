@@ -33,26 +33,32 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-red-500/20 text-red-500",
 };
 
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+
 const statusOptions = ["pending", "processing", "completed", "cancelled"];
 const ITEMS_PER_PAGE = 10;
 
 export default function OrdersPage() {
   const queryClient = useQueryClient();
-  const [phoneFilter, setPhoneFilter] = useState("");
-  const [drinkFilter, setDrinkFilter] = useState("");
-  const [shopFilter, setShopFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // URL State Management
+  const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [phoneFilter, setPhoneFilter] = useQueryState("search", parseAsString.withDefault(""));
+  const [drinkFilter, setDrinkFilter] = useQueryState("drink", parseAsString.withDefault(""));
+  const [shopFilter, setShopFilter] = useQueryState("shop", parseAsString.withDefault(""));
+  const [dateFilter, setDateFilter] = useQueryState("date", parseAsString.withDefault(""));
+  const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
 
   const { data: ordersData, isLoading } = useQuery({
-    queryKey: ["orders", currentPage, statusFilter, drinkFilter, dateFilter],
+    queryKey: ["orders", currentPage, statusFilter, drinkFilter, dateFilter, phoneFilter, shopFilter],
     queryFn: () => ordersApi.getAll({ 
       page: currentPage, 
       limit: ITEMS_PER_PAGE,
       status: statusFilter !== "all" ? statusFilter : undefined,
       drink: drinkFilter || undefined,
       time: dateFilter || undefined,
+      shop: shopFilter || undefined,
+      search: phoneFilter || undefined
     }),
   });
 
@@ -70,17 +76,8 @@ export default function OrdersPage() {
     onError: () => toast.error("Failed to update order status"),
   });
 
-  // Client-side filtering for fields not supported by the API
-  const filteredOrders = orders.filter((order: Order) => {
-    const userSearch = phoneFilter.toLowerCase();
-    const matchesPhone = !phoneFilter || 
-      (order.user?.name && order.user.name.toLowerCase().includes(userSearch)) ||
-      (order.user?.phone_number && order.user.phone_number.includes(userSearch));
-      
-    const matchesShop = !shopFilter || (order.shop?.name && order.shop.name.toLowerCase().includes(shopFilter.toLowerCase()));
-
-    return matchesPhone && matchesShop;
-  });
+  // Client-side filtering removed as we are now sending all filters to API
+  const filteredOrders = orders;
 
   const handleStatusChange = (orderId: number, newStatus: string) => {
     statusMutation.mutate({ id: orderId, status: newStatus });
@@ -102,43 +99,58 @@ export default function OrdersPage() {
         <p className="text-muted-foreground">Manage and track all orders</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Input
-          placeholder="Filter by Phone/User..."
-          value={phoneFilter}
-          onChange={(e) => { setPhoneFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <Input
-          placeholder="Filter by Drink..."
-          value={drinkFilter}
-          onChange={(e) => { setDrinkFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <Input
-          placeholder="Filter by Shop..."
-          value={shopFilter}
-          onChange={(e) => { setShopFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <Input
-          type="date"
-          value={dateFilter}
-          onChange={(e) => { setDateFilter(e.target.value); setCurrentPage(1); }}
-        />
-        <Select value={statusFilter} onValueChange={(val) => {
-            setStatusFilter(val);
-            setCurrentPage(1);
-        }}>
-          <SelectTrigger>
-          <SelectValue placeholder="Filter status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            {statusOptions.map((status) => (
-              <SelectItem key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <Input
+            placeholder="Filter by Phone/User..."
+            value={phoneFilter}
+            onChange={(e) => { setPhoneFilter(e.target.value || null); setCurrentPage(1); }}
+          />
+          <Input
+            placeholder="Filter by Drink..."
+            value={drinkFilter}
+            onChange={(e) => { setDrinkFilter(e.target.value || null); setCurrentPage(1); }}
+          />
+          <Input
+            placeholder="Filter by Shop..."
+            value={shopFilter}
+            onChange={(e) => { setShopFilter(e.target.value || null); setCurrentPage(1); }}
+          />
+          <Input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => { setDateFilter(e.target.value || null); setCurrentPage(1); }}
+          />
+          <Select value={statusFilter} onValueChange={(val) => {
+              setStatusFilter(val === "all" ? null : val); // Use null for default checks if needed or just handle string
+              setCurrentPage(1);
+          }}>
+            <SelectTrigger>
+            <SelectValue placeholder="Filter status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              {statusOptions.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setPhoneFilter(null);
+              setDrinkFilter(null);
+              setShopFilter(null);
+              setDateFilter(null);
+              setStatusFilter(null);
+              setCurrentPage(1);
+            }}
+          >
+            Clear Filters
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-lg border">
