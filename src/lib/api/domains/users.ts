@@ -1,16 +1,14 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { User, EditUserRequest, FilterUserRequest } from "@/lib/api/schemas/users";
 
-type ApiResponse<T> = {
-  data: T;
-  message?: string;
-  code?: number;
-};
+
+
+import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const usersApi = {
-  getAll: async (): Promise<User[]> => {
+  getAll: async (): Promise<PaginatedResponse<User>> => {
     const response = await httpClient.get<ApiResponse<User[]>>("/api/v1/users/list");
-    return response.data.data ?? response.data;
+    return response.data;
   },
 
   getById: async (id: number): Promise<User> => {

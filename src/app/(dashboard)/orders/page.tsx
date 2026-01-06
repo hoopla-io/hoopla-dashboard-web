@@ -45,7 +45,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: ordersData = { data: [] }, isLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: () => ordersApi.getAll(),
   });
@@ -59,7 +59,7 @@ export default function OrdersPage() {
     onError: () => toast.error("Failed to update order status"),
   });
 
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = (ordersData.data || []).filter((order) => {
     const matchesPhone = !phoneFilter || (order.user && order.user.toLowerCase().includes(phoneFilter.toLowerCase())); // Assuming user field contains phone or name. Task says "Phone Number". Ideally order.user is name/phone.
     const matchesDrink = !drinkFilter || (order.drink && order.drink.toLowerCase().includes(drinkFilter.toLowerCase()));
     const matchesShop = !shopFilter || (order.shop && order.shop.toLowerCase().includes(shopFilter.toLowerCase()));

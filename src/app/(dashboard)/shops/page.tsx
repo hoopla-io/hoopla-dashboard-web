@@ -69,15 +69,17 @@ export default function ShopsPage() {
     location_long: 0,
   });
 
-  const { data: shops = [], isLoading } = useQuery({
+  const { data: shopsData = { data: [] }, isLoading } = useQuery({
     queryKey: ["shops"],
     queryFn: shopsApi.getAll,
   });
 
-  const { data: partners = [] } = useQuery({
+  const { data: partnersData = { data: [] } } = useQuery({
     queryKey: ["partners"],
     queryFn: partnersApi.getAll,
   });
+  
+  const partners = partnersData.data || [];
 
   const createMutation = useMutation({
     mutationFn: (data: CreateShopRequest) => shopsApi.create(data),
@@ -110,7 +112,7 @@ export default function ShopsPage() {
     onError: () => toast.error("Failed to delete shop"),
   });
 
-  const filteredShops = shops.filter((shop) =>
+  const filteredShops = (shopsData.data || []).filter((shop) =>
     shop.name.toLowerCase().includes(search.toLowerCase())
   );
 

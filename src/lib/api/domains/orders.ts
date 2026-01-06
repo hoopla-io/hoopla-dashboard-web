@@ -1,25 +1,23 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { Order, OrderFilter, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
-type ApiResponse<T> = {
-  data: T;
-  message?: string;
-  code?: number;
-};
+
+
+import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const ordersApi = {
-  getAll: async (filter?: OrderFilter): Promise<Order[]> => {
+  getAll: async (filter?: OrderFilter): Promise<PaginatedResponse<Order>> => {
     const response = await httpClient.get<ApiResponse<Order[]>>("/api/v1/shop/all_orders", {
       params: filter,
     });
-    return response.data.data ?? response.data;
+    return response.data;
   },
 
-  getByShop: async (shopId: number, filter?: OrderFilter): Promise<Order[]> => {
+  getByShop: async (shopId: number, filter?: OrderFilter): Promise<PaginatedResponse<Order>> => {
     const response = await httpClient.get<ApiResponse<Order[]>>(`/api/v1/shop/orders/${shopId}`, {
       params: filter,
     });
-    return response.data.data ?? response.data;
+    return response.data;
   },
 
   changeStatus: async (data: ChangeOrderStatusRequest): Promise<void> => {

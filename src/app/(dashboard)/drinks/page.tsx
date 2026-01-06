@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MoreHorizontal, Coffee } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MoreHorizontal, Coffee, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,8 @@ export default function DrinksPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Check for action param on mount
   useEffect(() => {
@@ -56,7 +58,7 @@ export default function DrinksPage() {
   const [editDrink, setEditDrink] = useState<Drink | null>(null);
   const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "" });
 
-  const { data: drinks = [], isLoading } = useQuery({
+  const { data: drinksData = { data: [] }, isLoading } = useQuery({
     queryKey: ["drinks"],
     queryFn: drinksApi.getAll,
   });
@@ -92,8 +94,14 @@ export default function DrinksPage() {
     onError: () => toast.error("Failed to delete drink"),
   });
 
-  const filteredDrinks = drinks.filter((drink) =>
+  const filteredDrinks = (drinksData.data || []).filter((drink) =>
     drink.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredDrinks.length / ITEMS_PER_PAGE);
+  const paginatedDrinks = filteredDrinks.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   return (
@@ -114,7 +122,10 @@ export default function DrinksPage() {
         <Input
           placeholder="Search drinks..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
           className="pl-10"
         />
       </div>
@@ -141,7 +152,7 @@ export default function DrinksPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredDrinks.map((drink) => (
+              paginatedDrinks.map((drink) => (
                 <TableRow key={drink.id}>
                   <TableCell>
                     {drink.imageUrl ? (
@@ -239,6 +250,33 @@ export default function DrinksPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
+          <div className="text-sm font-medium">
+            Page {currentPage} of {totalPages}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
