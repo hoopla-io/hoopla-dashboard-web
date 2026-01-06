@@ -6,22 +6,22 @@ import { useQuery } from "@tanstack/react-query";
 import { partnersApi, shopsApi, ordersApi, usersApi } from "@/lib/api";
 
 export default function DashboardPage() {
-  const { data: partners = [] } = useQuery({
+  const { data: partners = { data: [], meta: { totalItems: 0 } } } = useQuery({
     queryKey: ["partners"],
     queryFn: partnersApi.getAll,
   });
 
-  const { data: shops = [] } = useQuery({
+  const { data: shops = { data: [], meta: { totalItems: 0 } } } = useQuery({
     queryKey: ["shops"],
     queryFn: shopsApi.getAll,
   });
 
-  const { data: orders = [] } = useQuery({
+  const { data: orders = { data: [], meta: { totalItems: 0 } } } = useQuery({
     queryKey: ["orders"],
     queryFn: () => ordersApi.getAll(),
   });
 
-  const { data: users = [] } = useQuery({
+  const { data: users = { data: [], meta: { totalItems: 0 } } } = useQuery({
     queryKey: ["users"],
     queryFn: usersApi.getAll,
   });
@@ -29,25 +29,25 @@ export default function DashboardPage() {
   const stats = [
     {
       name: "Total Users",
-      value: users.length.toString(),
+      value: (users.meta?.totalItems || 0).toString(),
       icon: Users,
       description: "Registered users",
     },
     {
       name: "Total Partners",
-      value: partners.length.toString(),
+      value: (partners.meta?.totalItems || 0).toString(),
       icon: Building2,
       description: "Connected partners",
     },
     {
       name: "Total Shops",
-      value: shops.length.toString(),
+      value: (shops.meta?.totalItems || 0).toString(),
       icon: Store,
       description: "Connected shops",
     },
     {
       name: "Total Orders",
-      value: orders.length.toString(),
+      value: (orders.meta?.totalItems || 0).toString(),
       icon: ShoppingCart,
       description: "Orders processed",
     },

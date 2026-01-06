@@ -1,17 +1,18 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest } from "@/lib/api/schemas/partners";
 
-type ApiResponse<T> = {
-  data: T;
-  message?: string;
-  code?: number;
-};
+
+
+import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const partnersApi = {
   // Partners
-  getAll: async (): Promise<Partner[]> => {
+  getAll: async (): Promise<PaginatedResponse<Partner>> => {
     const response = await httpClient.get<ApiResponse<Partner[]>>("/api/v1/partner/list");
-    return response.data.data ?? response.data;
+    // The backend seems to return { data: [...], meta: ... } inside the response.data
+    // If response.data itself matches the shape, we return it.
+    // Based on user snippet, response.data IS the object with data and meta.
+    return response.data;
   },
 
   getById: async (id: number): Promise<Partner> => {

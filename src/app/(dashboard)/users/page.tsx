@@ -53,7 +53,7 @@ export default function UsersPage() {
   const [formData, setFormData] = useState<EditUserRequest>({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: usersData = { data: [] }, isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: usersApi.getAll,
   });
@@ -78,7 +78,7 @@ export default function UsersPage() {
     onError: () => toast.error("Failed to delete user"),
   });
 
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = (usersData.data || []).filter((user) => {
     const matchesName = !nameFilter || (user.name && user.name.toLowerCase().includes(nameFilter.toLowerCase()));
     const matchesPhone = !phoneFilter || (user.phone_number && user.phone_number.includes(phoneFilter));
     const matchesGender = genderFilter === "all" || (user.gender && user.gender.toLowerCase() === genderFilter.toLowerCase());
