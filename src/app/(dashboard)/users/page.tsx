@@ -30,6 +30,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { usersApi } from "@/lib/api";
 import type { User, EditUserRequest } from "@/lib/api";
@@ -38,7 +45,10 @@ const ITEMS_PER_PAGE = 10;
 
 export default function UsersPage() {
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
+  const [nameFilter, setNameFilter] = useState("");
+  const [phoneFilter, setPhoneFilter] = useState("");
+  const [genderFilter, setGenderFilter] = useState<string>("all");
+  const [dobFilter, setDobFilter] = useState("");
   const [editUser, setEditUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<EditUserRequest>({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,7 +59,7 @@ export default function UsersPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: EditUserRequest }) =>
+    mutationFn: ({ id, data }: { id: number; data: EditUserRequest }) => 
       usersApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -68,11 +78,14 @@ export default function UsersPage() {
     onError: () => toast.error("Failed to delete user"),
   });
 
-  const filteredUsers = users.filter((user) =>
-    user.name?.toLowerCase().includes(search.toLowerCase()) ||
-    user.phone_number?.includes(search) ||
-    String(user.id).includes(search)
-  );
+  const filteredUsers = users.filter((user) => {
+    const matchesName = !nameFilter || (user.name && user.name.toLowerCase().includes(nameFilter.toLowerCase()));
+    const matchesPhone = !phoneFilter || (user.phone_number && user.phone_number.includes(phoneFilter));
+    const matchesGender = genderFilter === "all" || (user.gender && user.gender.toLowerCase() === genderFilter.toLowerCase());
+    const matchesDob = !dobFilter || (user.date_of_birth && user.date_of_birth === dobFilter);
+
+    return matchesName && matchesPhone && matchesGender && matchesDob;
+  });
 
   // Pagination logic
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
@@ -97,16 +110,32 @@ export default function UsersPage() {
         <p className="text-muted-foreground">Manage registered users</p>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Input
-          placeholder="Search users..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="pl-10"
+          placeholder="Filter by Name..."
+          value={nameFilter}
+          onChange={(e) => { setNameFilter(e.target.value); setCurrentPage(1); }}
+        />
+        <Input
+          placeholder="Filter by Phone..."
+          value={phoneFilter}
+          onChange={(e) => { setPhoneFilter(e.target.value); setCurrentPage(1); }}
+        />
+        <Select value={genderFilter} onValueChange={(v) => { setGenderFilter(v); setCurrentPage(1); }}>
+          <SelectTrigger>
+            <SelectValue placeholder="Gender" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Genders</SelectItem>
+            <SelectItem value="male">Male</SelectItem>
+            <SelectItem value="female">Female</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          type="date"
+          placeholder="Date of Birth"
+          value={dobFilter}
+          onChange={(e) => { setDobFilter(e.target.value); setCurrentPage(1); }}
         />
       </div>
 
@@ -118,20 +147,19 @@ export default function UsersPage() {
               <TableHead>Phone</TableHead>
               <TableHead>Mobile Provider</TableHead>
               <TableHead>Gender</TableHead>
-              <TableHead>Balance</TableHead>
+              <TableHead>Date of Birth</TableHead>
               <TableHead>Created At</TableHead>
-              <TableHead>Updated At</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
               </TableRow>
             ) : paginatedUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>
@@ -151,15 +179,10 @@ export default function UsersPage() {
                     ) : "-"}
                   </TableCell>
                   <TableCell>
-                    <span className={user.balance && user.balance < 0 ? "text-red-500" : "text-emerald-500"}>
-                      {formatCurrency(user.balance)} UZS
-                    </span>
+                    {formatDate(user.date_of_birth)}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">
                     {formatDate(user.created_at)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
-                    {formatDate(user.updated_at)}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

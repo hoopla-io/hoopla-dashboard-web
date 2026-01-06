@@ -186,8 +186,12 @@ export default function PartnersPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[80px]">ID</TableHead>
+              <TableHead className="w-[80px]">Logo</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead>Vendor</TableHead>
+              <TableHead>TIN Info</TableHead>
+              <TableHead>Created At</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -195,25 +199,50 @@ export default function PartnersPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : paginatedPartners.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   No partners found
                 </TableCell>
               </TableRow>
             ) : (
               paginatedPartners.map((partner) => (
                 <TableRow key={partner.id}>
+                  <TableCell className="font-medium">#{partner.id}</TableCell>
+                  <TableCell>
+                    {partner.logoUrl ? (
+                      <img
+                        src={partner.logoUrl}
+                        alt={partner.name}
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                        <span className="text-xs font-medium">No Logo</span>
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell className="max-w-[200px] truncate text-muted-foreground" title={partner.description}>
-                    {partner.description || "-"}
+                  <TableCell>{partner.vendor || "-"}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col text-sm">
+                      <span className="text-muted-foreground">{partner.tin_type || "-"}</span>
+                      <span>{partner.tin_num || "-"}</span>
+                    </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">Active</Badge>
+                    {partner.created_at
+                      ? new Date(partner.created_at).toLocaleDateString()
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={!partner.deleted_at ? "default" : "destructive"}> // default usually implies available/active
+                      {!partner.deleted_at ? "Active" : "Inactive"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -226,7 +255,7 @@ export default function PartnersPage() {
                         <DropdownMenuItem
                           onClick={() => {
                             setEditPartner(partner);
-                            setFormData({ name: partner.name, description: partner.description });
+                            setFormData({ name: partner.name, description: partner.description || "" });
                             setSelectedFile(undefined);
                           }}
                         >

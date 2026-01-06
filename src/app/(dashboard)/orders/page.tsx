@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,10 @@ const ITEMS_PER_PAGE = 10;
 
 export default function OrdersPage() {
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState("");
+  const [phoneFilter, setPhoneFilter] = useState("");
+  const [drinkFilter, setDrinkFilter] = useState("");
+  const [shopFilter, setShopFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -57,12 +60,13 @@ export default function OrdersPage() {
   });
 
   const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.drink?.toLowerCase().includes(search.toLowerCase()) ||
-      order.user?.includes(search) ||
-      String(order.id).includes(search);
+    const matchesPhone = !phoneFilter || (order.user && order.user.toLowerCase().includes(phoneFilter.toLowerCase())); // Assuming user field contains phone or name. Task says "Phone Number". Ideally order.user is name/phone.
+    const matchesDrink = !drinkFilter || (order.drink && order.drink.toLowerCase().includes(drinkFilter.toLowerCase()));
+    const matchesShop = !shopFilter || (order.shop && order.shop.toLowerCase().includes(shopFilter.toLowerCase()));
+    const matchesDate = !dateFilter || (order.time && order.time.includes(dateFilter));
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+
+    return matchesPhone && matchesDrink && matchesShop && matchesDate && matchesStatus;
   });
 
   // Pagination logic
@@ -92,25 +96,32 @@ export default function OrdersPage() {
         <p className="text-muted-foreground">Manage and track all orders</p>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search orders (ID, User, Drink)..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="pl-10"
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Input
+          placeholder="Filter by Phone/User..."
+          value={phoneFilter}
+          onChange={(e) => { setPhoneFilter(e.target.value); setCurrentPage(1); }}
+        />
+        <Input
+          placeholder="Filter by Drink..."
+          value={drinkFilter}
+          onChange={(e) => { setDrinkFilter(e.target.value); setCurrentPage(1); }}
+        />
+        <Input
+          placeholder="Filter by Shop..."
+          value={shopFilter}
+          onChange={(e) => { setShopFilter(e.target.value); setCurrentPage(1); }}
+        />
+        <Input
+          type="date"
+          value={dateFilter}
+          onChange={(e) => { setDateFilter(e.target.value); setCurrentPage(1); }}
+        />
         <Select value={statusFilter} onValueChange={(val) => {
             setStatusFilter(val);
             setCurrentPage(1);
         }}>
-          <SelectTrigger className="w-[180px]">
-            <Filter className="mr-2 h-4 w-4" />
+          <SelectTrigger>
             <SelectValue placeholder="Filter status" />
           </SelectTrigger>
           <SelectContent>
@@ -135,6 +146,7 @@ export default function OrdersPage() {
               <TableHead>Shop</TableHead>
               <TableHead>Time</TableHead>
               <TableHead>Last Update</TableHead>
+              <TableHead>Fiscal Check</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -163,6 +175,20 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">
                     {formatDate(order.last_update)}
+                  </TableCell>
+                  <TableCell>
+                    {order.fiscal_link ? (
+                      <a
+                        href={order.fiscal_link}
+                        target="_blank" // Open in new tab
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                      >
+                         <QrCode className="h-4 w-4" />
+                      </a>
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge className={statusColors[order.status] || "bg-muted"}>

@@ -125,7 +125,6 @@ export default function DrinksPage() {
             <TableRow>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Drink</TableHead>
-              <TableHead>Price</TableHead>
               <TableHead>ID</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
@@ -133,11 +132,11 @@ export default function DrinksPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={4} className="text-center py-8">Loading...</TableCell>
               </TableRow>
             ) : filteredDrinks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   No drinks found
                 </TableCell>
               </TableRow>
@@ -162,15 +161,6 @@ export default function DrinksPage() {
                   </TableCell>
                   <TableCell>
                     <span className="font-medium">{drink.name}</span>
-                  </TableCell>
-                  <TableCell>
-                    {drink.price ? (
-                      <span className="font-medium">
-                        {drink.price.toLocaleString()} UZS
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">#{drink.id}</TableCell>
                   <TableCell>
