@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
   const { data: users = { data: [], meta: { totalItems: 0 } } } = useQuery({
     queryKey: ["users"],
-    queryFn: usersApi.getAll,
+    queryFn: () => usersApi.getAll(),
   });
 
   const stats = [

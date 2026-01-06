@@ -3,19 +3,25 @@ import type { Order, OrderFilter, ChangeOrderStatusRequest } from "@/lib/api/sch
 
 
 
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, PaginationParams } from "@/lib/api/types";
+
+export interface OrdersGetAllParams extends PaginationParams {
+  status?: string;
+  drink?: string;
+  time?: string;
+}
 
 export const ordersApi = {
-  getAll: async (filter?: OrderFilter): Promise<PaginatedResponse<Order>> => {
+  getAll: async (params?: OrdersGetAllParams): Promise<PaginatedResponse<Order>> => {
     const response = await httpClient.get<ApiResponse<Order[]>>("/api/v1/shop/all_orders", {
-      params: filter,
+      params,
     });
     return response.data;
   },
 
-  getByShop: async (shopId: number, filter?: OrderFilter): Promise<PaginatedResponse<Order>> => {
+  getByShop: async (shopId: number, params?: OrdersGetAllParams): Promise<PaginatedResponse<Order>> => {
     const response = await httpClient.get<ApiResponse<Order[]>>(`/api/v1/shop/orders/${shopId}`, {
-      params: filter,
+      params,
     });
     return response.data;
   },
