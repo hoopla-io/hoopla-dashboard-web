@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search, MoreHorizontal, ChevronLeft, ChevronRight, Upload } from "lucide-react";
 
@@ -35,18 +35,34 @@ import { partnersApi } from "@/lib/api";
 import type { Partner, CreatePartnerRequest } from "@/lib/api";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const ITEMS_PER_PAGE = 10;
 
-export default function PartnersPage() {
+function PartnersContent() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
 
+  const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchTerm, setSearchTerm] = useState(search);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchTerm || null);
+      if (searchTerm !== search) {
+         setCurrentPage(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, setSearch, setCurrentPage, search]);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  
   // Check for action param on mount
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -62,10 +78,19 @@ export default function PartnersPage() {
   const [formData, setFormData] = useState<CreatePartnerRequest>({ name: "", description: "" });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
-  const { data: partnersData = { data: [] }, isLoading } = useQuery({
-    queryKey: ["partners"],
-    queryFn: partnersApi.getAll,
+  const { data: partnersData, isLoading } = useQuery({
+    queryKey: ["partners", currentPage, search],
+    queryFn: () => partnersApi.getAll({
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+        search: search || undefined
+    }),
   });
+
+  const partners = partnersData?.data || [];
+  const meta = partnersData?.meta;
+  const totalPages = meta?.totalPages || 1;
+  const totalItems = meta?.totalItems || 0;
 
   const createMutation = useMutation({
     mutationFn: ({ data, file }: { data: CreatePartnerRequest; file?: File }) =>
@@ -107,16 +132,6 @@ export default function PartnersPage() {
     },
   });
 
-  const filteredPartners = (partnersData.data || []).filter((partner) =>
-    partner.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredPartners.length / ITEMS_PER_PAGE);
-  const paginatedPartners = filteredPartners.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   const handleCreate = () => {
     if (!formData.name) {
@@ -171,10 +186,9 @@ export default function PartnersPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search partners..."
-            value={search}
+            value={searchTerm}
             onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1); // Reset to first page on search
+              setSearchTerm(e.target.value);
             }}
             className="pl-10"
           />
@@ -203,14 +217,14 @@ export default function PartnersPage() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : paginatedPartners.length === 0 ? (
+            ) : partners.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   No partners found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedPartners.map((partner) => (
+              partners.map((partner) => (
                 <TableRow key={partner.id}>
                   <TableCell className="font-medium">#{partner.id}</TableCell>
                   <TableCell>
@@ -280,31 +294,34 @@ export default function PartnersPage() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <div className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+           Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} partners
         </div>
-      )}
+        <div className="flex items-center gap-2">
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, (p || 1) - 1))}
+                disabled={currentPage === 1}
+            >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+            </Button>
+            <div className="text-sm font-medium">
+                Page {currentPage} of {totalPages}
+            </div>
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, (p || 1) + 1))}
+                disabled={currentPage === totalPages}
+            >
+                Next
+                <ChevronRight className="h-4 w-4" />
+            </Button>
+        </div>
+      </div>
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -408,5 +425,15 @@ export default function PartnersPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function PartnersPage() {
+  return (
+    <ErrorBoundary pageName="Partners">
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading partners...</div>}>
+         <PartnersContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

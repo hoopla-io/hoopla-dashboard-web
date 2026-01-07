@@ -1,17 +1,17 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest } from "@/lib/api/schemas/partners";
 
+import type { Shop } from "@/lib/api/schemas/shops";
 
 
 import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const partnersApi = {
   // Partners
-  getAll: async (): Promise<PaginatedResponse<Partner>> => {
-    const response = await httpClient.get<ApiResponse<Partner[]>>("/api/v1/partner/list");
-    // The backend seems to return { data: [...], meta: ... } inside the response.data
-    // If response.data itself matches the shape, we return it.
-    // Based on user snippet, response.data IS the object with data and meta.
+  getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Partner>> => {
+    const response = await httpClient.get<ApiResponse<Partner[]>>("/api/v1/partner/list", {
+      params,
+    });
     return response.data;
   },
 
@@ -48,7 +48,6 @@ export const partnersApi = {
     await httpClient.delete(`/api/v1/partner/delete/${id}`);
   },
 
-  // Partner Attributes
   getAttributes: async (partnerId: number): Promise<PartnerAttribute[]> => {
     const response = await httpClient.get<ApiResponse<PartnerAttribute[]>>("/api/v1/partner/attributes/list", {
       params: { partner_id: partnerId },

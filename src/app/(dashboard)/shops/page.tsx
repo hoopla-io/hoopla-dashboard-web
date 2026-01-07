@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MoreHorizontal, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MoreHorizontal, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,13 +42,32 @@ import { shopsApi, partnersApi } from "@/lib/api";
 import type { Shop, CreateShopRequest } from "@/lib/api";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import { ErrorBoundary } from "@/components/error-boundary";
 
-export default function ShopsPage() {
+const ITEMS_PER_PAGE = 10;
+
+function ShopsContent() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [search, setSearch] = useState("");
+
+  const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchTerm, setSearchTerm] = useState(search);
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchTerm || null);
+      if (searchTerm !== search) {
+         setCurrentPage(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, setSearch, setCurrentPage, search]);
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
 
@@ -69,17 +88,29 @@ export default function ShopsPage() {
     location_long: 0,
   });
 
-  const { data: shopsData = { data: [] }, isLoading } = useQuery({
-    queryKey: ["shops"],
-    queryFn: shopsApi.getAll,
+  const { data: shopsData, isLoading } = useQuery({
+    queryKey: ["shops", currentPage, search],
+    queryFn: () => shopsApi.getAll({
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+        search: search || undefined
+    }),
   });
 
-  const { data: partnersData = { data: [] } } = useQuery({
-    queryKey: ["partners"],
-    queryFn: partnersApi.getAll,
+  const shops = shopsData?.data || [];
+  const meta = shopsData?.meta;
+  const totalPages = meta?.totalPages || 1;
+  const totalItems = meta?.totalItems || 0;
+
+  const { data: partnersData } = useQuery({
+    queryKey: ["partners-list"],
+    queryFn: () => partnersApi.getAll({
+        page: 1,
+        limit: 100
+    }),
   });
   
-  const partners = partnersData.data || [];
+  const partners = partnersData?.data || [];
 
   const createMutation = useMutation({
     mutationFn: (data: CreateShopRequest) => shopsApi.create(data),
@@ -112,13 +143,6 @@ export default function ShopsPage() {
     onError: () => toast.error("Failed to delete shop"),
   });
 
-  const filteredShops = (shopsData.data || []).filter((shop) =>
-    shop.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const getPartnerName = (partnerId: number) => {
-    return partners.find((p) => p.id === partnerId)?.name || "-";
-  };
 
   return (
     <div className="space-y-6">
@@ -137,8 +161,8 @@ export default function ShopsPage() {
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search shops..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
         />
       </div>
@@ -160,14 +184,14 @@ export default function ShopsPage() {
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">Loading...</TableCell>
               </TableRow>
-            ) : filteredShops.length === 0 ? (
+            ) : shops.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No shops found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredShops.map((shop) => (
+              shops.map((shop) => (
                 <TableRow key={shop.id}>
                   <TableCell>
                     {shop.image_url ? (
@@ -241,6 +265,36 @@ export default function ShopsPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+       {/* Pagination */}
+       <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+           Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} shops
+        </div>
+        <div className="flex items-center gap-2">
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, (p || 1) - 1))}
+                disabled={currentPage === 1}
+            >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+            </Button>
+            <div className="text-sm font-medium">
+                Page {currentPage} of {totalPages}
+            </div>
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, (p || 1) + 1))}
+                disabled={currentPage === totalPages}
+            >
+                Next
+                <ChevronRight className="h-4 w-4" />
+            </Button>
+        </div>
       </div>
 
       {/* Create Dialog */}
@@ -377,5 +431,15 @@ export default function ShopsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function ShopsPage() {
+  return (
+    <ErrorBoundary pageName="Shops">
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading shops...</div>}>
+         <ShopsContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
