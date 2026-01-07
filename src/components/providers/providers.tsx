@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -24,10 +25,12 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-        {children}
-        <Toaster richColors position="top-right" />
-      </ThemeProvider>
+      <NuqsAdapter>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
+      </NuqsAdapter>
     </QueryClientProvider>
   );
 }
