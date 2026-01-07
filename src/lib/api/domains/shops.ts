@@ -6,9 +6,10 @@ import type { Shop, CreateShopRequest, ShopAttribute, ShopHours, CreateShopHours
 import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const shopsApi = {
-  // Shops
-  getAll: async (): Promise<PaginatedResponse<Shop>> => {
-    const response = await httpClient.get<ApiResponse<Shop[]>>("/api/v1/shop/list");
+  getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Shop>> => {
+    const response = await httpClient.get<ApiResponse<Shop[]>>("/api/v1/shop/list", {
+      params,
+    });
     return response.data;
   },
 
@@ -49,7 +50,6 @@ export const shopsApi = {
     await httpClient.delete(`/api/v1/shop/delete/${id}`);
   },
 
-  // Shop Attributes
   getAttributes: async (shopId: number): Promise<ShopAttribute[]> => {
     const response = await httpClient.get<ApiResponse<ShopAttribute[]>>(`/api/v1/shop/attribute/list/${shopId}`);
     return response.data.data ?? response.data;
@@ -78,7 +78,6 @@ export const shopsApi = {
     await httpClient.delete(`/api/v1/shop/hours/delete/${id}`);
   },
 
-  // Shop Pictures
   getPictures: async (shopId: number): Promise<ShopPicture[]> => {
     const response = await httpClient.get<ApiResponse<ShopPicture[]>>(`/api/v1/shop/picture/list/${shopId}`);
     return response.data.data ?? response.data;

@@ -8,12 +8,12 @@ import { partnersApi, shopsApi, ordersApi, usersApi } from "@/lib/api";
 export default function DashboardPage() {
   const { data: partners = { data: [], meta: { totalItems: 0 } } } = useQuery({
     queryKey: ["partners"],
-    queryFn: partnersApi.getAll,
+    queryFn: () => partnersApi.getAll(),
   });
 
   const { data: shops = { data: [], meta: { totalItems: 0 } } } = useQuery({
     queryKey: ["shops"],
-    queryFn: shopsApi.getAll,
+    queryFn: () => shopsApi.getAll(),
   });
 
   const { data: orders = { data: [], meta: { totalItems: 0 } } } = useQuery({
