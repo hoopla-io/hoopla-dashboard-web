@@ -53,8 +53,8 @@ function UsersContent() {
   
   // URL State Management
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [nameFilter, setNameFilter] = useQueryState("name", parseAsString.withDefault(""));
-  const [phoneFilter, setPhoneFilter] = useQueryState("phone", parseAsString.withDefault(""));
+  const [nameFilter, setNameFilter] = useQueryState("name", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
+  const [phoneFilter, setPhoneFilter] = useQueryState("phone", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
   const [genderFilter, setGenderFilter] = useQueryState("gender", parseAsString.withDefault("all"));
 
   const [editUser, setEditUser] = useState<User | null>(null);

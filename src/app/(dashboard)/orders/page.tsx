@@ -46,9 +46,9 @@ function OrdersContent() {
   
   // URL State Management
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [phoneFilter, setPhoneFilter] = useQueryState("search", parseAsString.withDefault(""));
-  const [drinkFilter, setDrinkFilter] = useQueryState("drink", parseAsString.withDefault(""));
-  const [shopFilter, setShopFilter] = useQueryState("shop", parseAsString.withDefault(""));
+  const [phoneFilter, setPhoneFilter] = useQueryState("search", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
+  const [drinkFilter, setDrinkFilter] = useQueryState("drink", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
+  const [shopFilter, setShopFilter] = useQueryState("shop", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
   const [dateFilter, setDateFilter] = useQueryState("date", parseAsString.withDefault(""));
   const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
 
