@@ -6,7 +6,7 @@ import type { Shop, CreateShopRequest, ShopAttribute, ShopHours, CreateShopHours
 import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const shopsApi = {
-  getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Shop>> => {
+  getAll: async (params?: { page?: number; limit?: number; search?: string; partner_id?: number }): Promise<PaginatedResponse<Shop>> => {
     const response = await httpClient.get<ApiResponse<Shop[]>>("/api/v1/shop/list", {
       params,
     });
@@ -24,6 +24,7 @@ export const shopsApi = {
     formData.append("name", data.name);
     formData.append("location_lat", String(data.location_lat));
     formData.append("location_long", String(data.location_long));
+    if (data.vendor_terminal_id) formData.append("vendor_terminal_id", data.vendor_terminal_id);
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<Shop>>("/api/v1/shop/store", formData, {
@@ -38,6 +39,7 @@ export const shopsApi = {
     if (data.name) formData.append("name", data.name);
     if (data.location_lat) formData.append("location_lat", String(data.location_lat));
     if (data.location_long) formData.append("location_long", String(data.location_long));
+    if (data.vendor_terminal_id) formData.append("vendor_terminal_id", data.vendor_terminal_id);
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Shop>>(`/api/v1/shop/edit/${id}`, formData, {

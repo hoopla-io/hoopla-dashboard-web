@@ -7,7 +7,6 @@ import type { Shop } from "@/lib/api/schemas/shops";
 import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const partnersApi = {
-  // Partners
   getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Partner>> => {
     const response = await httpClient.get<ApiResponse<Partner[]>>("/api/v1/partner/list", {
       params,
@@ -24,6 +23,12 @@ export const partnersApi = {
     const formData = new FormData();
     formData.append("name", data.name);
     if (data.description) formData.append("description", data.description);
+    if (data.vendor) formData.append("vendor", data.vendor);
+    if (data.vendor_id) formData.append("vendor_id", data.vendor_id);
+    if (data.vendor_key) formData.append("vendor_key", data.vendor_key);
+    if (data.tin_type) formData.append("tin_type", data.tin_type);
+    if (data.tin_num) formData.append("tin_num", data.tin_num);
+    if (data.tin_percent) formData.append("tin_percent", String(data.tin_percent));
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<Partner>>("/api/v1/partner/store", formData, {
@@ -36,6 +41,12 @@ export const partnersApi = {
     const formData = new FormData();
     if (data.name) formData.append("name", data.name);
     if (data.description) formData.append("description", data.description);
+    if (data.vendor) formData.append("vendor", data.vendor);
+    if (data.vendor_id) formData.append("vendor_id", data.vendor_id);
+    if (data.vendor_key) formData.append("vendor_key", data.vendor_key);
+    if (data.tin_type) formData.append("tin_type", data.tin_type);
+    if (data.tin_num) formData.append("tin_num", data.tin_num);
+    if (data.tin_percent) formData.append("tin_percent", String(data.tin_percent));
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Partner>>(`/api/v1/partner/edit/${id}`, formData, {

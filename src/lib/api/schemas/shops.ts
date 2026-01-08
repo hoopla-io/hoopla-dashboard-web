@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const ShopSchema = z.object({
   id: z.number(),
-  partner_id: z.number().optional(), // API might validly return this or not, but 'partner' object handles the relation
+  partner_id: z.number().optional(), 
   partner: z.object({
     id: z.number(),
     name: z.string(),
@@ -11,7 +11,9 @@ export const ShopSchema = z.object({
   location_lat: z.number().optional(),
   location_long: z.number().optional(),
   image_url: z.string().optional(),
+  vendor_terminal_id: z.string().optional(),
   deleted_at: z.string().optional().nullable(),
+  status: z.string().optional(),
 });
 
 export const CreateShopSchema = z.object({
@@ -19,6 +21,7 @@ export const CreateShopSchema = z.object({
   name: z.string().min(1, "Name is required"),
   location_lat: z.number(),
   location_long: z.number(),
+  vendor_terminal_id: z.string().optional(),
 });
 
 export const UpdateShopSchema = CreateShopSchema.partial();

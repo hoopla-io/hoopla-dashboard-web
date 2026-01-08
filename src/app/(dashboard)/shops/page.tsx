@@ -229,8 +229,8 @@ function ShopsContent() {
                     )}
                   </TableCell>
                   <TableCell>
-                     <Badge variant={!shop.deleted_at ? "default" : "destructive"}>
-                      {!shop.deleted_at ? "Active" : "Inactive"}
+                     <Badge variant={shop.status === "Inactive" ? "destructive" : "default"}>
+                      {shop.status || "Active"}
                     </Badge>
                   </TableCell>
                   <TableCell>

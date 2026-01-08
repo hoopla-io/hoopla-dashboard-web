@@ -225,7 +225,11 @@ function PartnersContent() {
               </TableRow>
             ) : (
               partners.map((partner) => (
-                <TableRow key={partner.id}>
+                <TableRow 
+                  key={partner.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => router.push(`/partners/${partner.id}`)}
+                >
                   <TableCell className="font-medium">#{partner.id}</TableCell>
                   <TableCell>
                     {partner.logoUrl ? (
@@ -254,11 +258,11 @@ function PartnersContent() {
                       : "-"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={!partner.deleted_at ? "default" : "destructive"}>
-                      {!partner.deleted_at ? "Active" : "Inactive"}
+                    <Badge variant={partner.status === "Inactive" ? "destructive" : "default"}>
+                      {partner.status || "Active"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
