@@ -45,9 +45,7 @@ export const drinksApi = {
   // Partner Drinks
   getByPartner: async (partnerId: number): Promise<PartnerDrink[]> => {
     // Assuming endpoint based on patterns, user should verify
-    const response = await httpClient.get<ApiResponse<PartnerDrink[]>>(`/api/v1/partner/drink/list`, {
-        params: { partner_id: partnerId }
-    });
+    const response = await httpClient.get<ApiResponse<PartnerDrink[]>>(`/api/v1/partner/drink/list/${partnerId}`);
     return response.data.data || [];
   },
 
@@ -79,6 +77,11 @@ export const drinksApi = {
         headers: { "Content-Type": "multipart/form-data" },
       });
       return response.data.data ?? response.data;
+  },
+
+  getPartnerDrinkById: async (id: number): Promise<PartnerDrink> => {
+    const response = await httpClient.get<ApiResponse<PartnerDrink>>(`/api/v1/partner/drink/show/${id}`);
+    return response.data.data ?? response.data;
   },
 
   deletePartnerDrink: async (id: number): Promise<void> => {
