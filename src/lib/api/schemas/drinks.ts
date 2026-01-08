@@ -24,6 +24,24 @@ export const PartnerDrinkSchema = z.object({
   partner_id: z.number(),
   drink_id: z.number(),
   drink: DrinkSchema.optional(),
+  vendor_product_id: z.string().optional(),
+  product_price: z.number().optional(),
+  vendor_product_price: z.number().optional(),
+  vendor_product_name: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
+export const CreatePartnerDrinkSchema = z.object({
+  partner_id: z.number(),
+  drink_id: z.number(),
+  vendor_product_id: z.string().optional(),
+  product_price: z.number().optional(),
+  vendor_product_price: z.number().optional(),
+  vendor_product_name: z.string().optional(),
+});
+
+export const UpdatePartnerDrinkSchema = CreatePartnerDrinkSchema.partial().omit({ partner_id: true, drink_id: true });
+
 export type PartnerDrink = z.infer<typeof PartnerDrinkSchema>;
+export type CreatePartnerDrinkRequest = z.infer<typeof CreatePartnerDrinkSchema>;
+export type UpdatePartnerDrinkRequest = z.infer<typeof UpdatePartnerDrinkSchema>;

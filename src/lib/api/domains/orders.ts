@@ -11,6 +11,7 @@ export interface OrdersGetAllParams extends PaginationParams {
   time?: string;
   shop?: string;
   search?: string; // For phone/user search
+  partner_id?: number;
 }
 
 export const ordersApi = {

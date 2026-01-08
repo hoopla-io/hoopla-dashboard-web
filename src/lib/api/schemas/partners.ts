@@ -3,18 +3,28 @@ import { z } from "zod";
 export const PartnerSchema = z.object({
   id: z.number(),
   name: z.string(),
-  description: z.string().optional().nullable(), // Allow nullable if backend sends null
+  description: z.string().optional().nullable(),
   logoUrl: z.string().optional().nullable(),
   vendor: z.string().optional().nullable(),
+  vendor_id: z.string().optional().nullable(),
+  vendor_key: z.string().optional().nullable(),
   tin_type: z.string().optional().nullable(),
   tin_num: z.string().optional().nullable(),
+  tin_percent: z.number().optional().nullable(),
   created_at: z.string().optional().nullable(),
   deleted_at: z.string().optional().nullable(),
+  status: z.string().optional(),
 });
 
 export const CreatePartnerSchema = z.object({
   name: z.string().min(1, "Name is required").max(255),
   description: z.string().max(1000).optional(),
+  vendor: z.enum(["iiko", "poster", "deliveryhub"]).optional(),
+  vendor_id: z.string().optional(),
+  vendor_key: z.string().optional(),
+  tin_type: z.enum(["tin", "pinfl"]).optional(),
+  tin_num: z.string().optional(),
+  tin_percent: z.number().optional(),
 });
 
 export const UpdatePartnerSchema = CreatePartnerSchema.partial();

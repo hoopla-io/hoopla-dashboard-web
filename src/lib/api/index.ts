@@ -15,7 +15,7 @@ export type { Shop, CreateShopRequest, UpdateShopRequest, ShopAttribute, ShopHou
 
 // Drinks
 export { drinksApi } from "@/lib/api/domains/drinks";
-export type { Drink, CreateDrinkRequest, UpdateDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
+export type { Drink, CreateDrinkRequest, UpdateDrinkRequest, PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest } from "@/lib/api/schemas/drinks";
 
 // Orders
 export { ordersApi } from "@/lib/api/domains/orders";

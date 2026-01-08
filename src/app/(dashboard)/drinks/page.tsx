@@ -57,18 +57,21 @@ export default function DrinksPage() {
   const [editDrink, setEditDrink] = useState<Drink | null>(null);
   const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "" });
 
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const { data: drinksData = { data: [] }, isLoading } = useQuery({
     queryKey: ["drinks"],
     queryFn: drinksApi.getAll,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateDrinkRequest) => drinksApi.create(data),
+    mutationFn: ({ data, file }: { data: CreateDrinkRequest; file: File }) => drinksApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
       toast.success("Drink created successfully!");
       setIsCreateOpen(false);
       setFormData({ name: "" });
+      setSelectedFile(null);
     },
     onError: () => toast.error("Failed to create drink"),
   });
@@ -209,11 +212,31 @@ export default function DrinksPage() {
             <DialogTitle>Create Drink</DialogTitle>
             <DialogDescription>Add a new beverage</DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (!selectedFile) {
+              toast.error("Image is required");
+              return;
+            }
+            createMutation.mutate({ data: formData, file: selectedFile });
+          }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Name</Label>
-                <Input value={formData.name} onChange={(e) => setFormData({ name: e.target.value })} placeholder="Drink name" />
+                <Input value={formData.name} onChange={(e) => setFormData({ name: e.target.value })} placeholder="Drink name" required />
+              </div>
+              <div className="space-y-2">
+                <Label>Image (Required)</Label>
+                <Input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      setSelectedFile(e.target.files[0]);
+                    }
+                  }} 
+                  required
+                />
               </div>
             </div>
             <DialogFooter>
