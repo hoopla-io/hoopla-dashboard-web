@@ -48,7 +48,7 @@ export const drinksApi = {
     const response = await httpClient.get<ApiResponse<PartnerDrink[]>>(`/api/v1/partner/drink/list`, {
         params: { partner_id: partnerId }
     });
-    return response.data.data ?? response.data;
+    return response.data.data || [];
   },
 
   assignToPartner: async (data: CreatePartnerDrinkRequest, file?: File): Promise<PartnerDrink> => {

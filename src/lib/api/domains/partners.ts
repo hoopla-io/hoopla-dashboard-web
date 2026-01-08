@@ -63,7 +63,7 @@ export const partnersApi = {
     const response = await httpClient.get<ApiResponse<PartnerAttribute[]>>("/api/v1/partner/attributes/list", {
       params: { partner_id: partnerId },
     });
-    return response.data.data ?? response.data;
+    return response.data.data || [];
   },
 
   createAttribute: async (data: CreatePartnerAttributeRequest): Promise<PartnerAttribute> => {
