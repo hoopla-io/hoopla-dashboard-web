@@ -54,13 +54,13 @@ export const shopsApi = {
 
   getAttributes: async (shopId: number): Promise<ShopAttribute[]> => {
     const response = await httpClient.get<ApiResponse<ShopAttribute[]>>(`/api/v1/shop/attribute/list/${shopId}`);
-    return response.data.data ?? response.data;
+    return response.data.data || [];
   },
 
   // Shop Hours
   getHours: async (shopId: number): Promise<ShopHours[]> => {
     const response = await httpClient.get<ApiResponse<ShopHours[]>>(`/api/v1/shop/hours/list/${shopId}`);
-    return response.data.data ?? response.data;
+    return response.data.data || [];
   },
 
   createHours: async (data: CreateShopHoursRequest): Promise<ShopHours> => {
@@ -82,7 +82,7 @@ export const shopsApi = {
 
   getPictures: async (shopId: number): Promise<ShopPicture[]> => {
     const response = await httpClient.get<ApiResponse<ShopPicture[]>>(`/api/v1/shop/picture/list/${shopId}`);
-    return response.data.data ?? response.data;
+    return response.data.data || [];
   },
 
   uploadPicture: async (shopId: number, file: File): Promise<ShopPicture> => {
