@@ -59,14 +59,12 @@ function PartnerDetailContent() {
 
   const [activeTab, setActiveTab] = useState("general");
 
-  // Fetch Partner Details
   const { data: partner, isLoading: isLoadingPartner } = useQuery({
     queryKey: ["partner", partnerId],
     queryFn: () => partnersApi.getById(partnerId),
     enabled: !!partnerId,
   });
 
-  // --- General Tab State ---
   const [formData, setFormData] = useState<CreatePartnerRequest>({ 
     name: "", 
     description: "",
@@ -79,7 +77,6 @@ function PartnerDetailContent() {
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
-  // Initialize form data when partner loads
   useEffect(() => {
     if (partner) {
       setFormData({
@@ -127,7 +124,6 @@ function PartnerDetailContent() {
     }
   };
 
-  // --- Shops Tab State & Logic ---
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
   const [shopFormData, setShopFormData] = useState<CreateShopRequest>({
     partner_id: partnerId,
@@ -140,10 +136,10 @@ function PartnerDetailContent() {
 
   const { data: shopsData, isLoading: isLoadingShops } = useQuery({
     queryKey: ["shops", partnerId],
-    queryFn: () => shopsApi.getAll({ partner_id: partnerId }),
+    queryFn: () => shopsApi.getByPartner(partnerId),
     enabled: !!partnerId,
   });
-  const shops = shopsData?.data || [];
+  const shops = shopsData || [];
 
   const createShopMutation = useMutation({
     mutationFn: ({ data, file }: { data: CreateShopRequest; file?: File }) =>
@@ -185,7 +181,6 @@ function PartnerDetailContent() {
     });
   };
 
-  // --- Drinks Tab State & Logic ---
   const [isDrinkDialogOpen, setIsDrinkDialogOpen] = useState(false);
   const [drinkEditId, setDrinkEditId] = useState<number | null>(null);
   const [drinksFilter, setDrinksFilter] = useState("");
@@ -199,14 +194,12 @@ function PartnerDetailContent() {
   });
   const [drinkFile, setDrinkFile] = useState<File | undefined>(undefined);
 
-  // Fetch Partner Drinks
   const { data: partnerDrinks, isLoading: isLoadingPartnerDrinks } = useQuery({
     queryKey: ["partner_drinks", partnerId],
     queryFn: () => drinksApi.getByPartner(partnerId),
     enabled: !!partnerId,
   });
 
-  // Fetch All Drinks (for selection)
   const { data: allDrinksData } = useQuery({
     queryKey: ["drinks"],
     queryFn: () => drinksApi.getAll(),
@@ -261,22 +254,15 @@ function PartnerDetailContent() {
       }
   };
 
-  // --- Orders Tab State & Logic ---
   const [ordersFilter, setOrdersFilter] = useState("");
   
   const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
-    queryKey: ["partner_orders", partnerId, ordersFilter], // Simple refetch on filter change for now if backend supported it, but API doesn't support generic string search well on all fields, so we might need client side filtering or generic search param.
-    // The API has 'search' param, let's use it.
-    queryFn: () => ordersApi.getAll({ partner_id: partnerId, search: ordersFilter || undefined }),
+    queryKey: ["partner_orders", partnerId], 
+    queryFn: () => ordersApi.getByPartner(partnerId),
     enabled: !!partnerId,
   });
-  const orders = ordersData?.data || [];
+  const orders = ordersData || [];
   
-  // Note: ordersApi.getAll usually returns paginated response. Logic above assumes standard response.
-  // Also 'search' param in ordersApi usually searches user phone/name.
-
-
-  // --- Attributes Tab State & Logic ---
   const [isCreateAttributeOpen, setIsCreateAttributeOpen] = useState(false);
   const [attributeFormData, setAttributeFormData] = useState<CreatePartnerAttributeRequest>({
     partner_id: partnerId,

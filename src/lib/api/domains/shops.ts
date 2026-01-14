@@ -13,6 +13,11 @@ export const shopsApi = {
     return response.data;
   },
 
+  getByPartner: async (partnerId: number): Promise<Shop[]> => {
+    const response = await httpClient.get<ApiResponse<Shop[]>>(`/api/v1/partner/shop/list/${partnerId}`);
+    return response.data.data || [];
+  },
+
   getById: async (id: number): Promise<Shop> => {
     const response = await httpClient.get<ApiResponse<Shop>>(`/api/v1/shop/show/${id}`);
     return response.data.data ?? response.data;
@@ -57,7 +62,6 @@ export const shopsApi = {
     return response.data.data || [];
   },
 
-  // Shop Hours
   getHours: async (shopId: number): Promise<ShopHours[]> => {
     const response = await httpClient.get<ApiResponse<ShopHours[]>>(`/api/v1/shop/hours/list/${shopId}`);
     return response.data.data || [];
