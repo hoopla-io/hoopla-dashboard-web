@@ -2,7 +2,8 @@ import { z } from "zod";
 
 export const ShopSchema = z.object({
   id: z.number(),
-  partner_id: z.number().optional(), 
+  partnerId: z.number().optional(), // New casing
+  partner_id: z.number().optional(), // Old casing
   partner: z.object({
     id: z.number(),
     name: z.string(),
@@ -10,8 +11,22 @@ export const ShopSchema = z.object({
   name: z.string(),
   location_lat: z.number().optional(),
   location_long: z.number().optional(),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
   image_url: z.string().optional(),
+  pictures: z.array(z.object({
+    pictureUrl: z.string(),
+  })).optional(),
   vendor_terminal_id: z.string().optional(),
+  canAcceptOrders: z.boolean().optional(),
+  workingHours: z.array(z.object({
+      weekDay: z.string(),
+      openAt: z.string(),
+      closeAt: z.string(),
+  })).optional(),
+  urls: z.any().optional().nullable(),
   deleted_at: z.string().optional().nullable(),
   status: z.string().optional(),
 });

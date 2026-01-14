@@ -499,8 +499,12 @@ function PartnerDetailContent() {
                             shops.map(shop => (
                                 <TableRow key={shop.id}>
                                     <TableCell>
-                                        {shop.image_url ? (
-                                            <img src={shop.image_url} alt={shop.name} className="h-10 w-10 rounded-md object-cover" />
+                                        {shop.pictures?.[0]?.pictureUrl || shop.image_url ? (
+                                            <img 
+                                                src={shop.pictures?.[0]?.pictureUrl || shop.image_url} 
+                                                alt={shop.name} 
+                                                className="h-10 w-10 rounded-md object-cover" 
+                                            />
                                         ) : (
                                             <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">No Img</div>
                                         )}
@@ -508,7 +512,7 @@ function PartnerDetailContent() {
                                     <TableCell className="font-medium">{shop.name}</TableCell>
                                     <TableCell>{shop.vendor_terminal_id || "-"}</TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
-                                        {shop.location_lat?.toFixed(4)}, {shop.location_long?.toFixed(4)}
+                                        {(shop.location?.lat ?? shop.location_lat)?.toFixed(4)}, {(shop.location?.lng ?? shop.location_long)?.toFixed(4)}
                                     </TableCell>
                                     <TableCell>
                                         <Button 
