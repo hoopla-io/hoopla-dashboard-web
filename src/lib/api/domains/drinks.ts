@@ -42,9 +42,7 @@ export const drinksApi = {
     await httpClient.delete(`/api/v1/drink/delete/${id}`);
   },
 
-  // Partner Drinks
   getByPartner: async (partnerId: number): Promise<PartnerDrink[]> => {
-    // Assuming endpoint based on patterns, user should verify
     const response = await httpClient.get<ApiResponse<PartnerDrink[]>>(`/api/v1/partner/drink/list/${partnerId}`);
     return response.data.data || [];
   },

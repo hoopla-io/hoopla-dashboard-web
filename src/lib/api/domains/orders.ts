@@ -10,7 +10,7 @@ export interface OrdersGetAllParams extends PaginationParams {
   drink?: string;
   time?: string;
   shop?: string;
-  search?: string; // For phone/user search
+  search?: string;
   partner_id?: number;
 }
 
@@ -20,6 +20,11 @@ export const ordersApi = {
       params,
     });
     return response.data;
+  },
+
+  getByPartner: async (partnerId: number): Promise<Order[]> => {
+    const response = await httpClient.get<ApiResponse<Order[]>>(`/api/v1/partner/orders/${partnerId}`);
+    return response.data.data || [];
   },
 
   getByShop: async (shopId: number, params?: OrdersGetAllParams): Promise<PaginatedResponse<Order>> => {
