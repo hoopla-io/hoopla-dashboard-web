@@ -16,7 +16,7 @@ export const EditUserSchema = z.object({
   name: z.string().optional(),
   phone_number: z.string().optional(),
   gender: z.string().optional(),
-  birthday: z.string().optional(), // YYYY-MM-DD
+  birthday: z.string().optional(),
   mobile_provider: z.string().optional(),
 });
 

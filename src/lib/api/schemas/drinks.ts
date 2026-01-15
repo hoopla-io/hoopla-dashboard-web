@@ -18,17 +18,18 @@ export type Drink = z.infer<typeof DrinkSchema>;
 export type CreateDrinkRequest = z.infer<typeof CreateDrinkSchema>;
 export type UpdateDrinkRequest = z.infer<typeof UpdateDrinkSchema>;
 
-// Partner Drinks
 export const PartnerDrinkSchema = z.object({
   id: z.number(),
   partner_id: z.number(),
-  drink_id: z.number(),
+  name: z.string().optional(),
+  drink_id: z.number().optional(),
   drink: DrinkSchema.optional(),
   vendor_product_id: z.string().optional(),
   product_price: z.number().optional(),
   vendor_product_price: z.number().optional(),
   vendor_product_name: z.string().optional(),
   imageUrl: z.string().optional(),
+  image_url: z.string().nullable().optional(),
 });
 
 export const CreatePartnerDrinkSchema = z.object({

@@ -49,7 +49,6 @@ function PartnersContent() {
   const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
   const [searchTerm, setSearchTerm] = useState(search);
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(searchTerm || null);
@@ -63,11 +62,9 @@ function PartnersContent() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   
-  // Check for action param on mount
   useEffect(() => {
     if (searchParams.get("action") === "create") {
       setIsCreateOpen(true);
-      // Clean up URL
       const params = new URLSearchParams(searchParams.toString());
       params.delete("action");
       router.replace(`/partners?${params.toString()}`);
@@ -154,7 +151,7 @@ function PartnersContent() {
         toast.error("Only JPG and PNG files are allowed");
         return;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         toast.error("File size must be less than 5MB");
         return;
       }
@@ -164,7 +161,6 @@ function PartnersContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Partners</h1>
@@ -180,7 +176,6 @@ function PartnersContent() {
         </Button>
       </div>
 
-      {/* Search */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -195,7 +190,6 @@ function PartnersContent() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
@@ -297,8 +291,7 @@ function PartnersContent() {
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
+       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} partners
         </div>
@@ -327,7 +320,6 @@ function PartnersContent() {
         </div>
       </div>
 
-      {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
@@ -379,7 +371,6 @@ function PartnersContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editPartner} onOpenChange={() => setEditPartner(null)}>
         <DialogContent>
           <DialogHeader>

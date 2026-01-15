@@ -51,7 +51,6 @@ import { ErrorBoundary } from "@/components/error-boundary";
 function UsersContent() {
   const queryClient = useQueryClient();
   
-  // URL State Management
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [nameFilter, setNameFilter] = useQueryState("name", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
   const [phoneFilter, setPhoneFilter] = useQueryState("phone", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
@@ -227,8 +226,7 @@ function UsersContent() {
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
+       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} users
         </div>
@@ -257,7 +255,6 @@ function UsersContent() {
         </div>
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
         <DialogContent>
           <DialogHeader>

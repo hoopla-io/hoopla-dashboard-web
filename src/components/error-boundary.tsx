@@ -29,7 +29,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
-    // Log to console for debugging
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
@@ -81,7 +80,6 @@ User Agent: ${typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
             </div>
           </div>
 
-          {/* Error Details Card */}
           <div className="w-full max-w-2xl rounded-lg border bg-card p-4 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-sm text-foreground">Error Details</h3>

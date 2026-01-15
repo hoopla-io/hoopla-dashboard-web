@@ -26,7 +26,7 @@ export const OrderFilterSchema = z.object({
   id: z.number().optional(),
   status: z.string().optional(),
   drink: z.string().optional(),
-  time: z.string().optional(), // YYYY-MM-DD
+  time: z.string().optional(),
 });
 
 export const ChangeOrderStatusSchema = z.object({

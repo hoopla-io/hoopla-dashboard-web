@@ -33,7 +33,6 @@ export type Partner = z.infer<typeof PartnerSchema>;
 export type CreatePartnerRequest = z.infer<typeof CreatePartnerSchema>;
 export type UpdatePartnerRequest = z.infer<typeof UpdatePartnerSchema>;
 
-// Partner Attributes
 export const PartnerAttributeSchema = z.object({
   id: z.number(),
   partner_id: z.number(),

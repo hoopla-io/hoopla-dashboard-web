@@ -38,9 +38,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { shopsApi, partnersApi } from "@/lib/api";
-import type { Shop, CreateShopRequest } from "@/lib/api";
-
+import { shopsApi } from "@/lib/api/domains/shops";
+import { partnersApi } from "@/lib/api/domains/partners";
+import type { Shop, CreateShopRequest } from "@/lib/api/schemas/shops";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -56,7 +56,6 @@ function ShopsContent() {
   const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
   const [searchTerm, setSearchTerm] = useState(search);
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(searchTerm || null);
@@ -71,7 +70,6 @@ function ShopsContent() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
 
-  // Check for action param on mount
   useEffect(() => {
     if (searchParams.get("action") === "create") {
       setIsCreateOpen(true);
@@ -195,16 +193,19 @@ function ShopsContent() {
                 <TableRow key={shop.id}>
                   <TableCell>
                     {shop.image_url ? (
-                      <div 
-                        className="cursor-pointer overflow-hidden rounded-md border border-border"
+                      <button
+                        type="button"
+                        className="cursor-pointer overflow-hidden rounded-md border border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         onClick={() => setSelectedImage(shop.image_url)}
                       >
                          <img
                           src={shop.image_url}
                           alt={shop.name}
+                          width={40}
+                          height={40}
                           className="h-10 w-10 object-cover hover:scale-110 transition-transform"
                         />
-                      </div>
+                      </button>
                     ) : (
                       <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
                         <span className="text-xs font-medium">No Img</span>
@@ -236,7 +237,7 @@ function ShopsContent() {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="Open shop actions">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -267,7 +268,6 @@ function ShopsContent() {
         </Table>
       </div>
 
-       {/* Pagination */}
        <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} shops
@@ -297,7 +297,6 @@ function ShopsContent() {
         </div>
       </div>
 
-      {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
@@ -357,7 +356,6 @@ function ShopsContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editShop} onOpenChange={() => setEditShop(null)}>
         <DialogContent>
           <DialogHeader>

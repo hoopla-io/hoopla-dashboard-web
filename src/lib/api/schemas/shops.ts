@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const ShopSchema = z.object({
   id: z.number(),
-  partnerId: z.number().optional(), // New casing
-  partner_id: z.number().optional(), // Old casing
+  partnerId: z.number().optional(),
+  partner_id: z.number().optional(),
   partner: z.object({
     id: z.number(),
     name: z.string(),
@@ -45,7 +45,6 @@ export type Shop = z.infer<typeof ShopSchema>;
 export type CreateShopRequest = z.infer<typeof CreateShopSchema>;
 export type UpdateShopRequest = z.infer<typeof UpdateShopSchema>;
 
-// Shop Attributes
 export const ShopAttributeSchema = z.object({
   id: z.number(),
   shop_id: z.number(),
@@ -55,7 +54,6 @@ export const ShopAttributeSchema = z.object({
 
 export type ShopAttribute = z.infer<typeof ShopAttributeSchema>;
 
-// Shop Hours
 export const ShopHoursSchema = z.object({
   id: z.number(),
   shop_id: z.number(),
@@ -74,7 +72,6 @@ export const CreateShopHoursSchema = z.object({
 export type ShopHours = z.infer<typeof ShopHoursSchema>;
 export type CreateShopHoursRequest = z.infer<typeof CreateShopHoursSchema>;
 
-// Shop Pictures
 export const ShopPictureSchema = z.object({
   id: z.number(),
   shop_id: z.number(),

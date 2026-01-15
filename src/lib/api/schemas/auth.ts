@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Login
 export const LoginRequestSchema = z.object({
   login: z.string().min(1, "Login is required"),
   password: z.string().min(1, "Password is required"),
@@ -18,7 +17,6 @@ export const LoginResponseSchema = z.object({
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 
-// User
 export const UserSchema = z.object({
   id: z.number(),
   name: z.string().optional(),
