@@ -21,7 +21,7 @@ export default function DashboardLayout({
   }, [isAuthenticated, hasHydrated, router]);
 
   if (!hasHydrated) {
-    return null; // Show nothing while hydrating
+    return null;
   }
 
   if (!isAuthenticated) {

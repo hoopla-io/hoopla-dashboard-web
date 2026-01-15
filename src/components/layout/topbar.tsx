@@ -43,7 +43,6 @@ export function TopBar() {
   const [commandOpen, setCommandOpen] = useState(false);
   const breadcrumbs = getBreadcrumbs(pathname);
 
-  // Handle Cmd+K keyboard shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -64,7 +63,6 @@ export function TopBar() {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-6">
-        {/* Mobile Sidebar */}
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="mr-4 md:hidden">
@@ -77,7 +75,6 @@ export function TopBar() {
           </SheetContent>
         </Sheet>
 
-        {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-sm">
           {breadcrumbs.map((crumb, index) => (
             <span key={crumb.href} className="flex items-center gap-2">
@@ -95,9 +92,7 @@ export function TopBar() {
           ))}
         </nav>
 
-        {/* Right side */}
         <div className="flex items-center gap-4">
-          {/* Search */}
           <Button
             variant="outline"
             className="hidden h-9 w-64 justify-start gap-2 text-muted-foreground md:flex"
@@ -110,7 +105,6 @@ export function TopBar() {
             </kbd>
           </Button>
 
-          {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">

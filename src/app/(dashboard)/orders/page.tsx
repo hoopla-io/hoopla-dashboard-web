@@ -44,7 +44,6 @@ import { ErrorBoundary } from "@/components/error-boundary";
 function OrdersContent() {
   const queryClient = useQueryClient();
   
-  // URL State Management
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [phoneFilter, setPhoneFilter] = useQueryState("search", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
   const [drinkFilter, setDrinkFilter] = useQueryState("drink", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
@@ -124,7 +123,7 @@ function OrdersContent() {
             onChange={(e) => { setDateFilter(e.target.value || null); setCurrentPage(1); }}
           />
           <Select value={statusFilter} onValueChange={(val) => {
-              setStatusFilter(val === "all" ? null : val); // Use null for default checks if needed or just handle string
+              setStatusFilter(val === "all" ? null : val);
               setCurrentPage(1);
           }}>
             <SelectTrigger>
@@ -244,7 +243,6 @@ function OrdersContent() {
         </Table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} orders
