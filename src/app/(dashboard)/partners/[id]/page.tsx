@@ -7,11 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { partnersApi } from "@/lib/api/domains/partners";
-import { GeneralTab } from "./components/GeneralTab";
-import { ShopsTab } from "./components/ShopsTab";
-import { DrinksTab } from "./components/DrinksTab";
-import { OrdersTab } from "./components/OrdersTab";
-import { AttributesTab } from "./components/AttributesTab";
+import { GeneralTab } from "@/app/(dashboard)/partners/[id]/components/GeneralTab";
+import { ShopsTab } from "@/app/(dashboard)/partners/[id]/components/ShopsTab";
+import { DrinksTab } from "@/app/(dashboard)/partners/[id]/components/DrinksTab";
+import { OrdersTab } from "@/app/(dashboard)/partners/[id]/components/OrdersTab";
+import { AttributesTab } from "@/app/(dashboard)/partners/[id]/components/AttributesTab";
 
 function PartnerDetailContent() {
   const params = useParams();
