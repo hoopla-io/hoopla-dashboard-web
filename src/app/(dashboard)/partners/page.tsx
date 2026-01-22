@@ -71,7 +71,6 @@ function PartnersContent() {
     }
   }, [searchParams, router]);
   
-  const [editPartner, setEditPartner] = useState<Partner | null>(null);
   const [formData, setFormData] = useState<CreatePartnerRequest>({ name: "", description: "" });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
@@ -110,7 +109,6 @@ function PartnersContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
       toast.success("Partner updated successfully!");
-      setEditPartner(null);
       setSelectedFile(undefined);
     },
     onError: () => {
@@ -136,12 +134,6 @@ function PartnersContent() {
       return;
     }
     createMutation.mutate({ data: formData, file: selectedFile });
-  };
-
-  const handleUpdate = () => {
-    if (editPartner) {
-      updateMutation.mutate({ id: editPartner.id, data: formData, file: selectedFile });
-    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -265,16 +257,6 @@ function PartnersContent() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => {
-                            setEditPartner(partner);
-                            setFormData({ name: partner.name, description: partner.description || "" });
-                            setSelectedFile(undefined);
-                          }}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => deleteMutation.mutate(partner.id)}
                         >
@@ -365,55 +347,6 @@ function PartnersContent() {
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>
                 {createMutation.isPending ? "Creating..." : "Create"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!editPartner} onOpenChange={() => setEditPartner(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Partner</DialogTitle>
-            <DialogDescription>Update partner information</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Name</Label>
-                <Input
-                  id="edit-name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter partner name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
-                <Input
-                  id="edit-description"
-                  value={formData.description || ""}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Enter description"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-file">Logo (JPG/PNG)</Label>
-                <Input
-                  id="edit-file"
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  onChange={handleFileChange}
-                  className="cursor-pointer"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditPartner(null)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>
