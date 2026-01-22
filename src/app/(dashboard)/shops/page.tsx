@@ -78,7 +78,6 @@ function ShopsContent() {
       router.replace(`/shops?${params.toString()}`);
     }
   }, [searchParams, router]);
-  const [editShop, setEditShop] = useState<Shop | null>(null);
   const [formData, setFormData] = useState<CreateShopRequest>({
     partner_id: 0,
     name: "",
@@ -127,7 +126,6 @@ function ShopsContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       toast.success("Shop updated successfully!");
-      setEditShop(null);
     },
     onError: () => toast.error("Failed to update shop"),
   });
@@ -190,8 +188,12 @@ function ShopsContent() {
               </TableRow>
             ) : (
               shops.map((shop) => (
-                <TableRow key={shop.id}>
-                  <TableCell>
+                <TableRow 
+                  key={shop.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => router.push(`/shops/${shop.id}`)}
+                >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     {shop.image_url ? (
                       <button
                         type="button"
@@ -221,6 +223,7 @@ function ShopsContent() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1 text-primary hover:underline"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <MapPin className="h-3 w-3" />
                         {shop.location_lat.toFixed(4)}, {shop.location_long.toFixed(4)}
@@ -234,7 +237,7 @@ function ShopsContent() {
                       {shop.status || "Active"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" aria-label="Open shop actions">
@@ -242,18 +245,6 @@ function ShopsContent() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          setEditShop(shop);
-                          setFormData({
-                            partner_id: shop.partner?.id || shop.partner_id || 0,
-                            name: shop.name,
-                            location_lat: shop.location_lat || 0,
-                            location_long: shop.location_long || 0,
-                          });
-                        }}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate(shop.id)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
@@ -350,65 +341,6 @@ function ShopsContent() {
               <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={createMutation.isPending}>
                 {createMutation.isPending ? "Creating..." : "Create"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!editShop} onOpenChange={() => setEditShop(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Shop</DialogTitle>
-            <DialogDescription>Update shop information</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); editShop && updateMutation.mutate({ id: editShop.id, data: formData }); }}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Partner</Label>
-                <Select
-                  value={String(formData.partner_id)}
-                  onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select partner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {partners.map((p) => (
-                      <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Name</Label>
-                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Shop name" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Latitude</Label>
-                  <Input 
-                    type="number" 
-                    value={formData.location_lat === 0 ? "" : formData.location_lat} 
-                    onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })} 
-                    placeholder="Latitude"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Longitude</Label>
-                  <Input 
-                    type="number" 
-                    value={formData.location_long === 0 ? "" : formData.location_long} 
-                    onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })} 
-                    placeholder="Longitude"
-                  />
-                </div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditShop(null)}>Cancel</Button>
-              <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>
