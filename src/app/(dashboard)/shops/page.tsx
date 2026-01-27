@@ -70,19 +70,23 @@ function ShopsContent() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
 
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+
   useEffect(() => {
     if (searchParams.get("action") === "create") {
-      setIsCreateOpen(true);
+      // Defer state update to avoid "setState during render" or effect warning
+      setTimeout(() => setIsCreateOpen(true), 0);
       const params = new URLSearchParams(searchParams.toString());
       params.delete("action");
       router.replace(`/shops?${params.toString()}`);
     }
   }, [searchParams, router]);
-  const [formData, setFormData] = useState<CreateShopRequest>({
+  const [formData, setFormData] = useState<Partial<CreateShopRequest> & { id?: number }>({
     partner_id: 0,
     name: "",
     location_lat: 0,
     location_long: 0,
+    vendor_terminal_id: "",
   });
 
   const { data: shopsData, isLoading } = useQuery({
@@ -110,22 +114,26 @@ function ShopsContent() {
   const partners = partnersData?.data || [];
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateShopRequest) => shopsApi.create(data),
+    mutationFn: ({ data, file }: { data: CreateShopRequest; file?: File }) => shopsApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       toast.success("Shop created successfully!");
       setIsCreateOpen(false);
-      setFormData({ partner_id: 0, name: "", location_lat: 0, location_long: 0 });
+      setFormData({ partner_id: 0, name: "", location_lat: 0, location_long: 0, vendor_terminal_id: "" });
+      setSelectedFile(undefined);
     },
     onError: () => toast.error("Failed to create shop"),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<CreateShopRequest> }) =>
-      shopsApi.update(id, data),
+    mutationFn: ({ id, data, file }: { id: number; data: Partial<CreateShopRequest>; file?: File }) =>
+      shopsApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       toast.success("Shop updated successfully!");
+      setIsCreateOpen(false);
+      setFormData({ partner_id: 0, name: "", location_lat: 0, location_long: 0, vendor_terminal_id: "" });
+      setSelectedFile(undefined);
     },
     onError: () => toast.error("Failed to update shop"),
   });
@@ -139,6 +147,30 @@ function ShopsContent() {
     onError: () => toast.error("Failed to delete shop"),
   });
 
+  const handleEdit = (shop: Shop) => {
+    setFormData({
+      id: shop.id,
+      partner_id: shop.partner?.id || shop.partnerId || 0,
+      name: shop.name,
+      location_lat: shop.location?.lat ?? shop.location_lat ?? 0,
+      location_long: shop.location?.lng ?? shop.location_long ?? 0,
+      vendor_terminal_id: shop.vendor_terminal_id || "", 
+    });
+    setIsCreateOpen(true);
+  };
+
+  const handleCreateOpen = () => {
+     setFormData({
+        partner_id: 0,
+        name: "",
+        location_lat: 0,
+        location_long: 0,
+        vendor_terminal_id: "",
+     });
+     setSelectedFile(undefined);
+     setIsCreateOpen(true);
+  };
+
 
   return (
     <div className="space-y-6">
@@ -147,7 +179,7 @@ function ShopsContent() {
           <h1 className="text-3xl font-bold">Shops</h1>
           <p className="text-muted-foreground">Manage shop locations</p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <Button onClick={handleCreateOpen}>
           <Plus className="mr-2 h-4 w-4" />
           Add Shop
         </Button>
@@ -245,6 +277,10 @@ function ShopsContent() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEdit(shop)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate(shop.id)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
@@ -291,10 +327,17 @@ function ShopsContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Shop</DialogTitle>
-            <DialogDescription>Add a new shop location</DialogDescription>
+            <DialogTitle>{formData.id ? "Edit Shop" : "Create Shop"}</DialogTitle>
+            <DialogDescription>{formData.id ? "Edit shop details" : "Add a new shop location"}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(formData); }}>
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            if (formData.id) {
+               updateMutation.mutate({ id: formData.id, data: formData, file: selectedFile });
+            } else {
+               createMutation.mutate({ data: formData as CreateShopRequest, file: selectedFile });
+            }
+          }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Partner</Label>
@@ -316,11 +359,16 @@ function ShopsContent() {
                 <Label>Name</Label>
                 <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Shop name" />
               </div>
+              <div className="space-y-2">
+                <Label>Vendor Terminal ID</Label>
+                <Input value={formData.vendor_terminal_id || ""} onChange={(e) => setFormData({ ...formData, vendor_terminal_id: e.target.value })} placeholder="Terminal ID" />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Latitude</Label>
                   <Input 
                     type="number" 
+                    step="any"
                     value={formData.location_lat === 0 ? "" : formData.location_lat} 
                     onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })} 
                     placeholder="Latitude"
@@ -330,17 +378,33 @@ function ShopsContent() {
                   <Label>Longitude</Label>
                   <Input 
                     type="number" 
+                    step="any"
                     value={formData.location_long === 0 ? "" : formData.location_long} 
                     onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })} 
                     placeholder="Longitude"
                   />
                 </div>
               </div>
+               <div className="space-y-2">
+                <Label htmlFor="shop-file">Image</Label>
+                <Input
+                  id="shop-file"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
+                  }}
+                />
+              </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+              <Button type="button" variant="outline" onClick={() => {
+                setIsCreateOpen(false);
+                setFormData({ partner_id: 0, name: "", location_lat: 0, location_long: 0 });
+                setSelectedFile(undefined);
+              }}>Cancel</Button>
+              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                {createMutation.isPending || updateMutation.isPending ? "Saving..." : (formData.id ? "Update" : "Create")}
               </Button>
             </DialogFooter>
           </form>
