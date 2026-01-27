@@ -26,6 +26,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     vendor_terminal_id: "",
   });
   const [shopFile, setShopFile] = useState<File | undefined>(undefined);
+  const [editingShop, setEditingShop] = useState<any | null>(null);
 
   const { data: shopsData, isLoading: isLoadingShops } = useQuery({
     queryKey: ["shops", partnerId],
@@ -53,6 +54,26 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     onError: () => toast.error("Failed to create shop"),
   });
 
+  const updateShopMutation = useMutation({
+    mutationFn: ({ id, data, file }: { id: number; data: Partial<CreateShopRequest>; file?: File }) =>
+      shopsApi.update(id, data, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shops", partnerId] });
+      toast.success("Shop updated successfully");
+      setIsCreateShopOpen(false);
+      setShopFormData({
+        partner_id: partnerId,
+        name: "",
+        location_lat: 0,
+        location_long: 0,
+        vendor_terminal_id: "",
+      });
+      setShopFile(undefined);
+      setEditingShop(null);
+    },
+    onError: () => toast.error("Failed to update shop"),
+  });
+
   const deleteShopMutation = useMutation({
     mutationFn: shopsApi.delete,
     onSuccess: () => {
@@ -67,16 +88,50 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       toast.error("Shop name is required");
       return;
     }
-    createShopMutation.mutate({
-      data: { ...shopFormData, partner_id: partnerId },
-      file: shopFile
+    if (editingShop) {
+      updateShopMutation.mutate({
+        id: editingShop.id,
+        data: { ...shopFormData, partner_id: partnerId },
+        file: shopFile
+      });
+    } else {
+      createShopMutation.mutate({
+        data: { ...shopFormData, partner_id: partnerId },
+        file: shopFile
+      });
+    }
+  };
+
+  const handleEditClick = (shop: any) => {
+    setEditingShop(shop);
+    setShopFormData({
+      partner_id: partnerId,
+      name: shop.name,
+      location_lat: shop.location?.lat ?? shop.location_lat ?? 0,
+      location_long: shop.location?.lng ?? shop.location_long ?? 0,
+      vendor_terminal_id: shop.vendor_terminal_id || "",
     });
+    setShopFile(undefined);
+    setIsCreateShopOpen(true);
+  };
+
+  const handleAddClick = () => {
+    setEditingShop(null);
+    setShopFormData({
+      partner_id: partnerId,
+      name: "",
+      location_lat: 0,
+      location_long: 0,
+      vendor_terminal_id: "",
+    });
+    setShopFile(undefined);
+    setIsCreateShopOpen(true);
   };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => setIsCreateShopOpen(true)}>
+        <Button onClick={handleAddClick}>
           <Plus className="mr-2 h-4 w-4" />
           Add Shop
         </Button>
@@ -125,6 +180,27 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handleEditClick(shop)}
+                      >
+                         <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                        >
+                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          <path d="m15 5 4 4" />
+                        </svg>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => deleteShopMutation.mutate(shop.id)}
                       >
@@ -142,8 +218,8 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       <Dialog open={isCreateShopOpen} onOpenChange={setIsCreateShopOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Shop</DialogTitle>
-            <DialogDescription>Create a new shop for this partner</DialogDescription>
+            <DialogTitle>{editingShop ? "Edit Shop" : "Add New Shop"}</DialogTitle>
+            <DialogDescription>{editingShop ? "Update shop details" : "Create a new shop for this partner"}</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleCreateShop(); }}>
             <div className="space-y-4 py-4">
@@ -201,8 +277,8 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateShopOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createShopMutation.isPending}>
-                {createShopMutation.isPending ? "Creating..." : "Create Shop"}
+              <Button type="submit" disabled={createShopMutation.isPending || updateShopMutation.isPending}>
+                {createShopMutation.isPending || updateShopMutation.isPending ? "Saving..." : (editingShop ? "Update Shop" : "Create Shop")}
               </Button>
             </DialogFooter>
           </form>
