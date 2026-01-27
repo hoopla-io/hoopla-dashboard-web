@@ -31,8 +31,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { drinksApi } from "@/lib/api";
-import type { Drink, CreateDrinkRequest } from "@/lib/api";
+import { drinksApi } from "@/lib/api/domains/drinks";
+import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";

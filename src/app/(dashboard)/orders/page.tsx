@@ -23,8 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ordersApi } from "@/lib/api";
-import type { Order, ChangeOrderStatusRequest } from "@/lib/api";
+import { ordersApi } from "@/lib/api/domains/orders";
+import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-500/20 text-yellow-500",

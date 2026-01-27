@@ -92,7 +92,7 @@ export function SidebarContent() {
                   )}
                 />
               </button>
-              {openGroups.includes(item.name) && (
+              {openGroups.includes(item.name) ? (
                 <div className="ml-4 mt-1 flex flex-col gap-1 border-l border-border pl-4">
                   {item.children.map((child) => (
                     <Link
@@ -110,7 +110,7 @@ export function SidebarContent() {
                     </Link>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
           ) : (
             <Link
