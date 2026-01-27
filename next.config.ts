@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "api.hoopla.uz",
         pathname: "/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "files.hoopla.uz",
+        pathname: "/images/**",
+      }
     ],
   },
 };
