@@ -38,8 +38,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { usersApi } from "@/lib/api";
-import type { User, EditUserRequest } from "@/lib/api";
+import { usersApi } from "@/lib/api/domains/users";
+import type { User, EditUserRequest } from "@/lib/api/schemas/users";
 
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 

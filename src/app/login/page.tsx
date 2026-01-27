@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { authApi } from "@/lib/api";
+import { authApi } from "@/lib/api/domains/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import { LoginRequestSchema, type LoginRequest } from "@/lib/api/schemas/auth";
 

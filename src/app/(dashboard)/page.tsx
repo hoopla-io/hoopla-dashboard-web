@@ -3,7 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Store, ShoppingCart, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { partnersApi, shopsApi, ordersApi, usersApi } from "@/lib/api";
+import { partnersApi } from "@/lib/api/domains/partners";
+import { shopsApi } from "@/lib/api/domains/shops";
+import { ordersApi } from "@/lib/api/domains/orders";
+import { usersApi } from "@/lib/api/domains/users";
 
 export default function DashboardPage() {
   const { data: partners = { data: [], meta: { totalItems: 0 } } } = useQuery({

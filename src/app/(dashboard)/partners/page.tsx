@@ -31,8 +31,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { partnersApi } from "@/lib/api";
-import type { Partner, CreatePartnerRequest } from "@/lib/api";
+import { partnersApi } from "@/lib/api/domains/partners";
+import type { Partner, CreatePartnerRequest } from "@/lib/api/schemas/partners";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
@@ -46,19 +46,7 @@ function PartnersContent() {
   const router = useRouter();
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
-  const [searchTerm, setSearchTerm] = useState(search);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSearch(searchTerm || null);
-      if (searchTerm !== search) {
-         setCurrentPage(1);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, setSearch, setCurrentPage, search]);
+  const [search, setSearch] = useQueryState("search", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   
@@ -173,9 +161,10 @@ function PartnersContent() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search partners..."
-            value={searchTerm}
+            value={search}
             onChange={(e) => {
-              setSearchTerm(e.target.value);
+              setSearch(e.target.value || null);
+              setCurrentPage(1);
             }}
             className="pl-10"
           />
