@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Search, Trash2, MoreHorizontal, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, MoreHorizontal, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,9 +95,7 @@ function UsersContent() {
     onError: () => toast.error("Failed to delete user"),
   });
 
-  const formatCurrency = (value?: number) => {
-    return typeof value === "number" ? new Intl.NumberFormat("uz-UZ").format(value) : "0";
-  };
+
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "-";
@@ -261,7 +259,7 @@ function UsersContent() {
             <DialogTitle>Edit User</DialogTitle>
             <DialogDescription>Update user information</DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); editUser && updateMutation.mutate({ id: editUser.id, data: formData }); }}>
+          <form onSubmit={(e) => { e.preventDefault(); if (editUser) updateMutation.mutate({ id: editUser.id, data: formData }); }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Name</Label>

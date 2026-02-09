@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MoreHorizontal, ChevronLeft, ChevronRight, Upload } from "lucide-react";
+import { Plus, Trash2, Search, MoreHorizontal, ChevronLeft, ChevronRight, CheckCircle, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { partnersApi } from "@/lib/api/domains/partners";
-import type { Partner, CreatePartnerRequest } from "@/lib/api/schemas/partners";
+import type { CreatePartnerRequest } from "@/lib/api/schemas/partners";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
@@ -52,6 +52,7 @@ function PartnersContent() {
   
   useEffect(() => {
     if (searchParams.get("action") === "create") {
+      // eslint-disable-next-line
       setIsCreateOpen(true);
       const params = new URLSearchParams(searchParams.toString());
       params.delete("action");
@@ -208,6 +209,7 @@ function PartnersContent() {
                   <TableCell className="font-medium">#{partner.id}</TableCell>
                   <TableCell>
                     {partner.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={partner.logoUrl}
                         alt={partner.name}
@@ -228,8 +230,8 @@ function PartnersContent() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {partner.created_at
-                      ? new Date(partner.created_at).toLocaleDateString()
+                    {partner.time
+                      ? new Date(partner.time).toLocaleDateString()
                       : "-"}
                   </TableCell>
                   <TableCell>
@@ -252,6 +254,21 @@ function PartnersContent() {
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
+                        {partner.status === "Inactive" ? (
+                          <DropdownMenuItem
+                            onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Active" } })}
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Make active
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Inactive" } })}
+                          >
+                            <XCircle className="mr-2 h-4 w-4" />
+                            Make inactive
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

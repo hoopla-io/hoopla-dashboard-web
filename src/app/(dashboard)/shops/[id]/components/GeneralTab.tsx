@@ -29,6 +29,13 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
   });
   
   const partners = partnersData?.data || [];
+  
+  // Ensure selected partner is in the list
+  const allPartners = [...partners];
+  if (shop?.partner && !allPartners.find(p => p.id === shop.partner?.id)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    allPartners.push(shop.partner as any);
+  }
 
   const [formData, setFormData] = useState<CreateShopRequest>({
     partner_id: 0,
@@ -41,15 +48,18 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
 
   useEffect(() => {
     if (shop) {
-      setFormData({
-        partner_id: shop.partner_id || shop.partner?.id || 0,
+      // eslint-disable-next-line
+      setFormData(prev => ({
+        ...prev,
+        partner_id: shop.partner?.id || 0,
         name: shop.name,
-        location_lat: shop.location_lat || 0,
-        location_long: shop.location_long || 0,
+        location_lat: shop.location_lat || shop.location?.lat || 0,
+        location_long: shop.location_long || shop.location?.lng || 0,
         vendor_terminal_id: shop.vendor_terminal_id || "",
-      });
+      }));
     }
   }, [shop]);
+
 
   const updateMutation = useMutation({
     mutationFn: ({ data, file }: { data: Partial<CreateShopRequest>; file?: File }) =>
@@ -112,14 +122,15 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
               <div className="space-y-2">
                 <Label htmlFor="partner">Partner</Label>
                 <Select
-                  value={String(formData.partner_id)}
+                  key={`partner-select-${formData.partner_id}`}
+                  value={formData.partner_id > 0 ? String(formData.partner_id) : ""}
                   onValueChange={(val) => setFormData({ ...formData, partner_id: Number(val) })}
                 >
                   <SelectTrigger id="partner">
                     <SelectValue placeholder="Select Partner" />
                   </SelectTrigger>
                   <SelectContent>
-                    {partners.map((p) => (
+                    {allPartners.map((p) => (
                       <SelectItem key={p.id} value={String(p.id)}>
                         {p.name}
                       </SelectItem>
@@ -163,20 +174,28 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="file">Shop Image</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  onChange={handleFileChange}
-                />
-                {selectedFile && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Selected: {selectedFile.name}
-                  </p>
-                )}
-              </div>
+              {(shop?.image_url || selectedFile) && (
+                <div className="mb-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={selectedFile ? URL.createObjectURL(selectedFile) : (shop?.image_url || "")}
+                    alt="Shop Preview"
+                    className="h-32 w-32 object-cover rounded-md border"
+                  />
+                </div>
+              )}
+              <Label htmlFor="file">{shop?.image_url ? "Change Image" : "Upload Image"}</Label>
+              <Input
+                id="file"
+                type="file"
+                accept="image/jpeg,image/png"
+                onChange={handleFileChange}
+              />
+              {selectedFile && !shop?.image_url && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Selected: {selectedFile.name}
+                </p>
+              )}
             </div>
           </div>
 

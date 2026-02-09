@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2, ImageIcon, Upload } from "lucide-react";
+import { Plus, Trash2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -77,7 +77,7 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Shop Pictures</CardTitle>
-            <CardDescription>Manage your shop's gallery</CardDescription>
+            <CardDescription>Manage your shop&apos;s gallery</CardDescription>
           </div>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
@@ -127,6 +127,7 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {pictures.map((pic) => (
                 <div key={pic.id} className="group relative aspect-square rounded-lg border overflow-hidden bg-muted">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={pic.url}
                     alt="Shop"

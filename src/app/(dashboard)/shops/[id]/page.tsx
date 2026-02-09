@@ -42,6 +42,7 @@ function ShopDetailContent() {
         </Button>
         <div className="flex items-center gap-4">
           {shop.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={shop.image_url} alt={shop.name} className="h-12 w-12 rounded-lg object-cover border" />
           ) : (
             <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center border">

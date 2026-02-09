@@ -1,7 +1,7 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest } from "@/lib/api/schemas/partners";
 
-import type { Shop } from "@/lib/api/schemas/shops";
+
 
 
 import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";

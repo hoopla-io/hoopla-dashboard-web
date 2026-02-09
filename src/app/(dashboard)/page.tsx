@@ -60,9 +60,7 @@ export default function DashboardPage() {
     <div className="p-8 space-y-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Overview of your platform's performance.
-        </p>
+          Overview of your platform&apos;s performance.
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

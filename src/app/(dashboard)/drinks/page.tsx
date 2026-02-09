@@ -48,6 +48,7 @@ export default function DrinksPage() {
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
+      // eslint-disable-next-line
       setIsCreateOpen(true);
       const params = new URLSearchParams(searchParams.toString());
       params.delete("action");
@@ -256,7 +257,7 @@ export default function DrinksPage() {
             <DialogTitle>Edit Drink</DialogTitle>
             <DialogDescription>Update drink information</DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); editDrink && updateMutation.mutate({ id: editDrink.id, data: formData }); }}>
+          <form onSubmit={(e) => { e.preventDefault(); if (editDrink) updateMutation.mutate({ id: editDrink.id, data: formData }); }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Name</Label>
