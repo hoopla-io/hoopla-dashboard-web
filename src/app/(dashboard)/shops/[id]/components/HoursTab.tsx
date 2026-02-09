@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2, Clock } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -97,7 +97,7 @@ export function HoursTab({ shopId }: HoursTabProps) {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Working Hours</CardTitle>
-            <CardDescription>Manage your shop's weekly schedule</CardDescription>
+            <CardDescription>Manage your shop&apos;s weekly schedule</CardDescription>
           </div>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>

@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Order, OrderFilter, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
 
 

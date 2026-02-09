@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Trash2, MapPin } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     vendor_terminal_id: "",
   });
   const [shopFile, setShopFile] = useState<File | undefined>(undefined);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editingShop, setEditingShop] = useState<any | null>(null);
 
   const { data: shopsData, isLoading: isLoadingShops } = useQuery({
@@ -102,6 +103,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEditClick = (shop: any) => {
     setEditingShop(shop);
     setShopFormData({
@@ -161,11 +163,12 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                 shops.map(shop => (
                   <TableRow key={shop.id}>
                     <TableCell>
-                      {shop.pictures?.[0]?.pictureUrl || shop.image_url ? (
+                      {(shop.pictures?.[0]?.image_url || shop.image_url) ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                          src={shop.pictures?.[0]?.pictureUrl || shop.image_url}
+                          src={shop.pictures?.[0]?.image_url || shop.image_url || ""}
                           alt={shop.name}
-                          className="h-10 w-10 rounded-md object-cover"
+                          className="h-10 w-10 rounded-lg object-cover"
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">No Img</div>

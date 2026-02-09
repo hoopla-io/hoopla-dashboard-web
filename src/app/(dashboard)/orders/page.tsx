@@ -1,9 +1,8 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "sonner";
-import { Search, Filter, ChevronLeft, ChevronRight, QrCode } from "lucide-react";
+import { ChevronLeft, ChevronRight, QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

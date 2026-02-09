@@ -42,6 +42,7 @@ function PartnerDetailContent() {
         </Button>
         <div className="flex items-center gap-4">
           {partner.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={partner.logoUrl} alt={partner.name} className="h-12 w-12 rounded-full object-cover border" />
           )}
           <div>

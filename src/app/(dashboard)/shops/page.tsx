@@ -221,15 +221,16 @@ function ShopsContent() {
                       <button
                         type="button"
                         className="cursor-pointer overflow-hidden rounded-md border border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        onClick={() => setSelectedImage(shop.image_url)}
+                        onClick={() => setSelectedImage(shop.image_url || undefined)}
                       >
-                         <img
-                          src={shop.image_url}
-                          alt={shop.name}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 object-cover hover:scale-110 transition-transform"
-                        />
+                         {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                           src={shop.image_url}
+                           alt={shop.name}
+                           width={40}
+                           height={40}
+                           className="h-10 w-10 object-cover hover:scale-110 transition-transform"
+                         />
                       </button>
                     ) : (
                       <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
@@ -406,6 +407,7 @@ function ShopsContent() {
           <DialogTitle className="sr-only">Image Preview</DialogTitle>
           {selectedImage && (
             <div className="relative h-[80vh] w-full flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={selectedImage}
                 alt="Shop Preview"

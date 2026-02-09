@@ -35,14 +35,15 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
 
   useEffect(() => {
     if (partner) {
+      // eslint-disable-next-line
       setFormData({
         name: partner.name,
         description: partner.description || "",
-        // @ts-ignore
+        // @ts-expect-error: vendor property may be null or undefined
         vendor: partner.vendor || undefined,
         vendor_id: partner.vendor_id || "",
         vendor_key: partner.vendor_key || "",
-        // @ts-ignore
+        // @ts-expect-error: tin_type property may be null or undefined
         tin_type: partner.tin_type || undefined,
         tin_num: partner.tin_num || "",
         tin_percent: partner.tin_percent || 0,
@@ -126,7 +127,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               <Label htmlFor="vendor">Vendor</Label>
               <Select
                 value={formData.vendor}
-                // @ts-ignore
+                // @ts-expect-error: Select onValueChange expects strict string type
                 onValueChange={(val) => setFormData({ ...formData, vendor: val })}
               >
                 <SelectTrigger>
@@ -163,7 +164,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               <Label htmlFor="tin_type">TIN Type</Label>
               <Select
                 value={formData.tin_type}
-                // @ts-ignore
+                // @ts-expect-error: Select onValueChange expects strict string type
                 onValueChange={(val) => setFormData({ ...formData, tin_type: val })}
               >
                 <SelectTrigger>
