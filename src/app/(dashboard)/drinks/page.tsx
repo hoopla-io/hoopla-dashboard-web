@@ -136,9 +136,9 @@ function DrinksContent() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>ID</TableHead>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Drink</TableHead>
-              <TableHead>ID</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -156,6 +156,7 @@ function DrinksContent() {
             ) : (
               drinks.map((drink) => (
                 <TableRow key={drink.id}>
+                  <TableCell className="text-muted-foreground">#{drink.id}</TableCell>
                   <TableCell>
                     {drink.image_url ? (
                       <div className="relative h-12 w-12 overflow-hidden rounded-lg">
@@ -175,7 +176,6 @@ function DrinksContent() {
                   <TableCell>
                     <span className="font-medium">{drink.name}</span>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">#{drink.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                        <Button 
