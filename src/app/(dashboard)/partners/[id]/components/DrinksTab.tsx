@@ -143,9 +143,9 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                       {pd.image_url || pd.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Drink"} className="h-10 w-10 rounded-md object-cover" />
-                      ) : pd.drink?.imageUrl ? (
+                      ) : pd.drink?.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={pd.drink.imageUrl} alt={pd.drink.name} className="h-10 w-10 rounded-md object-cover opacity-50" />
+                        <img src={pd.drink.image_url} alt={pd.drink.name} className="h-10 w-10 rounded-md object-cover opacity-50" />
                       ) : (
                         <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">No Img</div>
                       )}
