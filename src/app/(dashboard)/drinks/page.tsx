@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MoreHorizontal, Coffee, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Coffee } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Dialog,
   DialogContent,
@@ -36,15 +31,19 @@ import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
-export default function DrinksPage() {
+function DrinksContent() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [search, setSearch] = useState("");
+  
+  const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState("search", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
+  const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
+  
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -60,10 +59,18 @@ export default function DrinksPage() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const { data: drinksData = { data: [] }, isLoading } = useQuery({
-    queryKey: ["drinks"],
-    queryFn: drinksApi.getAll,
+  const { data: drinksData, isLoading } = useQuery({
+    queryKey: ["drinks", currentPage, search, perPage],
+    queryFn: () => drinksApi.getAll({ 
+        page: currentPage, 
+        limit: perPage,
+        search: search || undefined 
+    }),
   });
+
+  const drinks = drinksData?.data || [];
+  const meta = drinksData?.meta;
+  const totalPages = meta?.totalPages || 1;
 
   const createMutation = useMutation({
     mutationFn: ({ data, file }: { data: CreateDrinkRequest; file: File }) => drinksApi.create(data, file),
@@ -78,8 +85,8 @@ export default function DrinksPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<CreateDrinkRequest> }) =>
-      drinksApi.update(id, data),
+    mutationFn: ({ id, data, file }: { id: number; data: Partial<CreateDrinkRequest>; file?: File }) =>
+      drinksApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
       toast.success("Drink updated successfully!");
@@ -97,15 +104,7 @@ export default function DrinksPage() {
     onError: () => toast.error("Failed to delete drink"),
   });
 
-  const filteredDrinks = (drinksData.data || []).filter((drink) =>
-    drink.name.toLowerCase().includes(search.toLowerCase())
-  );
 
-  const totalPages = Math.ceil(filteredDrinks.length / ITEMS_PER_PAGE);
-  const paginatedDrinks = filteredDrinks.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="space-y-6">
@@ -126,7 +125,7 @@ export default function DrinksPage() {
           placeholder="Search drinks..."
           value={search}
           onChange={(e) => {
-            setSearch(e.target.value);
+            setSearch(e.target.value || null);
             setCurrentPage(1);
           }}
           className="pl-10"
@@ -148,20 +147,20 @@ export default function DrinksPage() {
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8">Loading...</TableCell>
               </TableRow>
-            ) : filteredDrinks.length === 0 ? (
+            ) : drinks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   No drinks found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedDrinks.map((drink) => (
+              drinks.map((drink) => (
                 <TableRow key={drink.id}>
                   <TableCell>
-                    {drink.imageUrl ? (
+                    {drink.image_url ? (
                       <div className="relative h-12 w-12 overflow-hidden rounded-lg">
                         <Image
-                          src={drink.imageUrl}
+                          src={drink.image_url}
                           alt={drink.name}
                           fill
                           className="object-cover"
@@ -178,26 +177,28 @@ export default function DrinksPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">#{drink.id}</TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
+                    <div className="flex items-center gap-2">
+                       <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="cursor-pointer"
+                        onClick={() => {
                           setEditDrink(drink);
                           setFormData({ name: drink.name });
-                        }}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate(drink.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          setSelectedFile(null); // Clear any previous file selection
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-destructive hover:text-destructive cursor-pointer"
+                        onClick={() => deleteMutation.mutate(drink.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -205,6 +206,18 @@ export default function DrinksPage() {
           </TableBody>
         </Table>
       </div>
+      
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        perPage={perPage}
+        onPerPageChange={(v) => {
+            setPerPage(v);
+            setCurrentPage(1);
+        }}
+        isLoading={isLoading}
+      />
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -251,21 +264,80 @@ export default function DrinksPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editDrink} onOpenChange={() => setEditDrink(null)}>
+      <Dialog open={!!editDrink} onOpenChange={(open) => {
+        if (!open) {
+          setEditDrink(null);
+          setSelectedFile(null);
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Drink</DialogTitle>
             <DialogDescription>Update drink information</DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); if (editDrink) updateMutation.mutate({ id: editDrink.id, data: formData }); }}>
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            if (editDrink) {
+              updateMutation.mutate({ 
+                id: editDrink.id, 
+                data: formData,
+                file: selectedFile || undefined
+              });
+            } 
+          }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Name</Label>
                 <Input value={formData.name} onChange={(e) => setFormData({ name: e.target.value })} placeholder="Drink name" />
               </div>
+              
+              <div className="space-y-2">
+                <Label>Image</Label>
+                <div className="flex items-center gap-4">
+                  {editDrink && (
+                    <div className="relative h-16 w-16 overflow-hidden rounded-lg border">
+                      {selectedFile ? (
+                        <Image
+                          src={URL.createObjectURL(selectedFile)}
+                          alt="New preview"
+                          fill
+                          className="object-cover"
+                        />
+                      ) : editDrink.image_url ? (
+                         <Image
+                          src={editDrink.image_url}
+                          alt={editDrink.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-muted">
+                          <Coffee className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                     <Input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          setSelectedFile(e.target.files[0]);
+                        }
+                      }} 
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditDrink(null)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => {
+                setEditDrink(null);
+                setSelectedFile(null);
+              }}>Cancel</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
                 {updateMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
@@ -273,33 +345,14 @@ export default function DrinksPage() {
           </form>
         </DialogContent>
       </Dialog>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <div className="text-sm font-medium">
-            Page {currentPage} of {totalPages}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
     </div>
+  );
+}
+
+export default function DrinksPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading drinks...</div>}>
+      <DrinksContent />
+    </Suspense>
   );
 }

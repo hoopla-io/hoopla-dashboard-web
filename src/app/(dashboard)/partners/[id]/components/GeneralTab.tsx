@@ -117,6 +117,13 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                 accept="image/jpeg,image/png"
                 onChange={handleFileChange}
               />
+              {partner?.image_url && !selectedFile && (
+                <div className="mt-2">
+                  <p className="text-xs text-muted-foreground mb-1">Current Logo:</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={partner.image_url} alt="Current Logo" className="h-16 w-16 object-cover rounded-md border" />
+                </div>
+              )}
               {selectedFile && <p className="text-xs text-muted-foreground">Selected: {selectedFile.name}</p>}
             </div>
           </div>

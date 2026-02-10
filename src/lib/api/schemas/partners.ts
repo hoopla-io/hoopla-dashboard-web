@@ -4,7 +4,7 @@ export const PartnerSchema = z.object({
   id: z.number(),
   name: z.string(),
   description: z.string().optional().nullable(),
-  logoUrl: z.string().optional().nullable(),
+  image_url: z.string().optional().nullable(),
   vendor: z.string().optional().nullable(),
   vendor_id: z.string().optional().nullable(),
   vendor_key: z.string().optional().nullable(),

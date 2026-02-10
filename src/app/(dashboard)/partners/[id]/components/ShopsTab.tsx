@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ interface ShopsTabProps {
 }
 
 export function ShopsTab({ partnerId }: ShopsTabProps) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
   const [shopFormData, setShopFormData] = useState<CreateShopRequest>({
@@ -147,6 +149,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Terminal ID</TableHead>
@@ -161,7 +164,12 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                 <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No shops found</TableCell></TableRow>
               ) : (
                 shops.map(shop => (
-                  <TableRow key={shop.id}>
+                  <TableRow 
+                    key={shop.id} 
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/shops/${shop.id}`)}
+                  >
+                    <TableCell>#{shop.id}</TableCell>
                     <TableCell>
                       {(shop.pictures?.[0]?.image_url || shop.image_url) ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
@@ -183,7 +191,10 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleEditClick(shop)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(shop);
+                        }}
                       >
                          <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +216,10 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => deleteShopMutation.mutate(shop.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteShopMutation.mutate(shop.id);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -32,6 +32,8 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
     enabled: !!shopId,
   });
 
+  console.log({pictures})
+
   const uploadMutation = useMutation({
     mutationFn: (file: File) => shopsApi.uploadPicture(shopId, file),
     onSuccess: () => {
@@ -129,7 +131,7 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
                 <div key={pic.id} className="group relative aspect-square rounded-lg border overflow-hidden bg-muted">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={pic.url}
+                    src={pic.image_url}
                     alt="Shop"
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />

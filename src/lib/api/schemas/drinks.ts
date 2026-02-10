@@ -5,7 +5,7 @@ export const DrinkSchema = z.object({
   name: z.string(),
   price: z.number().optional(),
   partner: z.string().optional(),
-  imageUrl: z.string().optional(),
+  image_url: z.string().optional(),
 });
 
 export const CreateDrinkSchema = z.object({

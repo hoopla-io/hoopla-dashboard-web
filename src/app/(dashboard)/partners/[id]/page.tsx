@@ -41,9 +41,9 @@ function PartnerDetailContent() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-4">
-          {partner.logoUrl && (
+          {partner.image_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={partner.logoUrl} alt={partner.name} className="h-12 w-12 rounded-full object-cover border" />
+            <img src={partner.image_url} alt={partner.name} className="h-12 w-12 rounded-full object-cover border" />
           )}
           <div>
             <h1 className="text-2xl font-bold">{partner.name}</h1>
