@@ -76,7 +76,8 @@ export type CreateShopHoursRequest = z.infer<typeof CreateShopHoursSchema>;
 export const ShopPictureSchema = z.object({
   id: z.number(),
   shop_id: z.number(),
-  url: z.string().optional(),
+  image_id: z.number(),
+  image_url: z.string().optional(),
 });
 
 export type ShopPicture = z.infer<typeof ShopPictureSchema>;

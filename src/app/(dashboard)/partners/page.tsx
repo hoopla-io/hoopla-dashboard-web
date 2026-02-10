@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, MoreHorizontal, ChevronLeft, ChevronRight, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Trash2, Search, MoreHorizontal, ChevronLeft, ChevronRight, CheckCircle, XCircle, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,7 @@ function PartnersContent() {
   }, [searchParams, router]);
   
   const [formData, setFormData] = useState<CreatePartnerRequest>({ name: "", description: "" });
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
   const { data: partnersData, isLoading } = useQuery({
@@ -99,6 +100,9 @@ function PartnersContent() {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
       toast.success("Partner updated successfully!");
       setSelectedFile(undefined);
+      setIsCreateOpen(false);
+      setEditingId(null);
+      setFormData({ name: "", description: "" });
     },
     onError: () => {
       toast.error("Failed to update partner");
@@ -122,7 +126,11 @@ function PartnersContent() {
       toast.error("Name is required");
       return;
     }
-    createMutation.mutate({ data: formData, file: selectedFile });
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, data: formData, file: selectedFile });
+    } else {
+      createMutation.mutate({ data: formData, file: selectedFile });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +156,7 @@ function PartnersContent() {
           <p className="text-muted-foreground">Manage your partner organizations</p>
         </div>
         <Button onClick={() => {
+          setEditingId(null);
           setFormData({ name: "", description: "" });
           setSelectedFile(undefined);
           setIsCreateOpen(true);
@@ -208,10 +217,10 @@ function PartnersContent() {
                 >
                   <TableCell className="font-medium">#{partner.id}</TableCell>
                   <TableCell>
-                    {partner.logoUrl ? (
+                    {partner.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={partner.logoUrl}
+                        src={partner.image_url}
                         alt={partner.name}
                         className="h-10 w-10 rounded-full object-cover"
                       />
@@ -230,8 +239,8 @@ function PartnersContent() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {partner.time
-                      ? new Date(partner.time).toLocaleDateString()
+                    {partner.created_at
+                      ? new Date(partner.created_at).toLocaleDateString()
                       : "-"}
                   </TableCell>
                   <TableCell>
@@ -240,37 +249,54 @@ function PartnersContent() {
                     </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => deleteMutation.mutate(partner.id)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                        {partner.status === "Inactive" ? (
-                          <DropdownMenuItem
-                            onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Active" } })}
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Make active
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem
-                            onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Inactive" } })}
-                          >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Make inactive
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-2">
+                       <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setEditingId(partner.id);
+                          setFormData({ name: partner.name, description: partner.description || "" });
+                          setIsCreateOpen(true);
+                        }}
+                      >
+                         <Pencil className="h-4 w-4" />
+                      </Button>
+                      
+                       <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-destructive hover:text-destructive cursor-pointer"
+                        onClick={() => deleteMutation.mutate(partner.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                           {partner.status === "Inactive" ? (
+                            <DropdownMenuItem
+                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Active" } })}
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Make active
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Inactive" } })}
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Make inactive
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -311,8 +337,8 @@ function PartnersContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Partner</DialogTitle>
-            <DialogDescription>Add a new partner organization</DialogDescription>
+            <DialogTitle>{editingId ? "Edit Partner" : "Create Partner"}</DialogTitle>
+            <DialogDescription>{editingId ? "Update partner details" : "Add a new partner organization"}</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleCreate(); }}>
             <div className="space-y-4 py-4">

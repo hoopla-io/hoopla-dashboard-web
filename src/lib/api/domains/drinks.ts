@@ -6,8 +6,8 @@ import type { Drink, CreateDrinkRequest, PartnerDrink, CreatePartnerDrinkRequest
 import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
 export const drinksApi = {
-  getAll: async (): Promise<PaginatedResponse<Drink>> => {
-    const response = await httpClient.get<ApiResponse<Drink[]>>("/api/v1/drink/list");
+  getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Drink>> => {
+    const response = await httpClient.get<ApiResponse<Drink[]>>("/api/v1/drink/list", { params });
     return response.data;
   },
 

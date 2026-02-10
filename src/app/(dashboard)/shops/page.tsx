@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MoreHorizontal, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -190,6 +184,7 @@ function ShopsContent() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[80px]">ID</TableHead>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Partner</TableHead>
@@ -216,6 +211,7 @@ function ShopsContent() {
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => router.push(`/shops/${shop.id}`)}
                 >
+                  <TableCell className="font-medium">#{shop.id}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     {shop.image_url ? (
                       <button
@@ -262,23 +258,24 @@ function ShopsContent() {
                     </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label="Open shop actions">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(shop)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate(shop.id)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-2">
+                       <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="cursor-pointer"
+                        onClick={() => handleEdit(shop)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="text-destructive hover:text-destructive cursor-pointer"
+                        onClick={() => deleteMutation.mutate(shop.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

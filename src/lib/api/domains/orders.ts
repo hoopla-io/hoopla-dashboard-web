@@ -16,7 +16,7 @@ export interface OrdersGetAllParams extends PaginationParams {
 
 export const ordersApi = {
   getAll: async (params?: OrdersGetAllParams): Promise<PaginatedResponse<Order>> => {
-    const response = await httpClient.get<ApiResponse<Order[]>>("/api/v1/shop/all_orders", {
+    const response = await httpClient.get<ApiResponse<Order[]>>("/api/v1/orders/list", {
       params,
     });
     return response.data;
