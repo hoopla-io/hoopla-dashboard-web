@@ -144,6 +144,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                   <SelectItem value="iiko">Iiko</SelectItem>
                   <SelectItem value="poster">Poster</SelectItem>
                   <SelectItem value="deliveryhub">DeliveryHub</SelectItem>
+                  <SelectItem value="loyverse">Loyverse</SelectItem>
                 </SelectContent>
               </Select>
             </div>
