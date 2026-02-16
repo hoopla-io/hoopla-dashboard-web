@@ -3,11 +3,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, MoreHorizontal, ChevronLeft, ChevronRight, CheckCircle, XCircle, Pencil } from "lucide-react";
+import { Plus, Trash2, Search, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -16,12 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Dialog,
   DialogContent,
@@ -243,10 +238,11 @@ function PartnersContent() {
                       ? new Date(partner.created_at).toLocaleDateString()
                       : "-"}
                   </TableCell>
-                  <TableCell>
-                    <Badge variant={partner.status === false ? "destructive" : "default"}>
-                      {partner.status === false ? "Inactive" : "Active"}
-                    </Badge>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Switch 
+                      checked={partner.status !== false}
+                      onCheckedChange={(checked) => updateMutation.mutate({ id: partner.id, data: { status: checked } })}
+                    />
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
@@ -271,31 +267,6 @@ function PartnersContent() {
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {partner.status === false ? (
-                            <DropdownMenuItem
-                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: true } })}
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Make active
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: false } })}
-                            >
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Make inactive
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>
