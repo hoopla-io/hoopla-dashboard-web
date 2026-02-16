@@ -3,11 +3,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MapPin, ChevronLeft, ChevronRight, CheckCircle, XCircle, MoreVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MapPin, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -258,10 +258,11 @@ function ShopsContent() {
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
-                  <TableCell>
-                     <Badge variant={shop.status === false ? "destructive" : "default"}>
-                      {shop.status === false ? "Inactive" : "Active"}
-                    </Badge>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                     <Switch 
+                        checked={shop.status !== false}
+                        onCheckedChange={(checked) => updateMutation.mutate({ id: shop.id, data: { status: checked } })}
+                      />
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
@@ -288,21 +289,6 @@ function ShopsContent() {
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
-                          {shop.status === false ? (
-                            <DropdownMenuItem
-                              onClick={() => updateMutation.mutate({ id: shop.id, data: { status: true } })}
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Make active
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={() => updateMutation.mutate({ id: shop.id, data: { status: false } })}
-                            >
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Make inactive
-                            </DropdownMenuItem>
-                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
