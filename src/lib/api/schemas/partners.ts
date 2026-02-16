@@ -13,8 +13,7 @@ export const PartnerSchema = z.object({
   tin_percent: z.number().optional().nullable(),
   created_at: z.string().optional().nullable(),
   deleted_at: z.string().optional().nullable(),
-  status: z.string().optional(),
-  time: z.string().optional().nullable(),
+  status: z.boolean().optional(),
 });
 
 export const CreatePartnerSchema = z.object({
@@ -26,7 +25,7 @@ export const CreatePartnerSchema = z.object({
   tin_type: z.enum(["tin", "pinfl"]).optional(),
   tin_num: z.string().optional(),
   tin_percent: z.number().optional(),
-  status: z.string().optional(),
+  status: z.boolean().optional(),
 });
 
 export const UpdatePartnerSchema = CreatePartnerSchema.partial();

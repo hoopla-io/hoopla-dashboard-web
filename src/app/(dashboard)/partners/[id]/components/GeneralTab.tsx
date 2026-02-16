@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { partnersApi } from "@/lib/api/domains/partners";
@@ -30,6 +31,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
     tin_type: undefined,
     tin_num: "",
     tin_percent: 0,
+    status: true,
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
@@ -47,6 +49,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
         tin_type: partner.tin_type || undefined,
         tin_num: partner.tin_num || "",
         tin_percent: partner.tin_percent || 0,
+        status: partner.status ?? true,
       });
     }
   }, [partner]);
@@ -125,6 +128,19 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                 </div>
               )}
               {selectedFile && <p className="text-xs text-muted-foreground">Selected: {selectedFile.name}</p>}
+              <div className="flex items-center justify-between space-x-2 pt-4 border-t">
+                <div className="space-y-0.5">
+                  <Label htmlFor="status">Status</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.status ? "Active - Partner is active" : "Inactive - Partner is inactive"}
+                  </p>
+                </div>
+                <Switch
+                  id="status"
+                  checked={formData.status}
+                  onCheckedChange={(checked) => setFormData({ ...formData, status: checked })}
+                />
+              </div>
             </div>
           </div>
 

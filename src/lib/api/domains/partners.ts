@@ -47,6 +47,7 @@ export const partnersApi = {
     if (data.tin_type) formData.append("tin_type", data.tin_type);
     if (data.tin_num) formData.append("tin_num", data.tin_num);
     if (data.tin_percent) formData.append("tin_percent", String(data.tin_percent));
+    if (data.status !== undefined) formData.append("status", String(data.status));
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Partner>>(`/api/v1/partner/edit/${id}`, formData, {

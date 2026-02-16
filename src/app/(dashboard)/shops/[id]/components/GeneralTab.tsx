@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { shopsApi } from "@/lib/api/domains/shops";
@@ -43,6 +44,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
     location_lat: 0,
     location_long: 0,
     vendor_terminal_id: "",
+    status: true,
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
@@ -56,6 +58,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
         location_lat: shop.location_lat || shop.location?.lat || 0,
         location_long: shop.location_long || shop.location?.lng || 0,
         vendor_terminal_id: shop.vendor_terminal_id || "",
+        status: shop.status ?? true,
       }));
     }
   }, [shop]);
@@ -146,6 +149,20 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                   value={formData.vendor_terminal_id}
                   onChange={(e) => setFormData({ ...formData, vendor_terminal_id: e.target.value })}
                   placeholder="Terminal ID"
+                />
+              </div>
+
+               <div className="flex items-center justify-between space-x-2 py-4 border-t">
+                <div className="space-y-0.5">
+                  <Label htmlFor="status">Status</Label>
+                  <p className="text-xs text-muted-foreground">
+                     {formData.status ? "Active - Shop is visible to users" : "Inactive - Shop is hidden from users"}
+                  </p>
+                </div>
+                <Switch
+                  id="status"
+                  checked={formData.status}
+                  onCheckedChange={(checked) => setFormData({ ...formData, status: checked })}
                 />
               </div>
             </div>
