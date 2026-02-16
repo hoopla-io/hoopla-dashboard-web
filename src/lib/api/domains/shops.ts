@@ -45,6 +45,7 @@ export const shopsApi = {
     if (data.location_lat) formData.append("location_lat", String(data.location_lat));
     if (data.location_long) formData.append("location_long", String(data.location_long));
     if (data.vendor_terminal_id) formData.append("vendor_terminal_id", data.vendor_terminal_id);
+    if (data.status !== undefined) formData.append("status", String(data.status));
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Shop>>(`/api/v1/shop/edit/${id}`, formData, {

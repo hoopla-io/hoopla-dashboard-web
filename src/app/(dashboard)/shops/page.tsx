@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MapPin, ChevronLeft, ChevronRight, CheckCircle, XCircle, MoreVertical } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { Shop, CreateShopRequest } from "@/lib/api/schemas/shops";
@@ -253,28 +259,52 @@ function ShopsContent() {
                     )}
                   </TableCell>
                   <TableCell>
-                     <Badge variant={shop.status === "Inactive" ? "destructive" : "default"}>
-                      {shop.status || "Active"}
+                     <Badge variant={shop.status === false ? "destructive" : "default"}>
+                      {shop.status === false ? "Inactive" : "Active"}
                     </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                        <Button 
                         variant="ghost" 
                         size="icon"
-                        className="cursor-pointer"
+                        className="cursor-pointer h-8 w-8"
                         onClick={() => handleEdit(shop)}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="text-destructive hover:text-destructive cursor-pointer"
-                        onClick={() => deleteMutation.mutate(shop.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                           <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => deleteMutation.mutate(shop.id)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                          {shop.status === false ? (
+                            <DropdownMenuItem
+                              onClick={() => updateMutation.mutate({ id: shop.id, data: { status: true } })}
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Make active
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => updateMutation.mutate({ id: shop.id, data: { status: false } })}
+                            >
+                              <XCircle className="mr-2 h-4 w-4" />
+                              Make inactive
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>

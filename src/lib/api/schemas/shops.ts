@@ -29,7 +29,7 @@ export const ShopSchema = z.object({
   })).optional().nullable(),
   urls: z.any().optional().nullable(),
   deleted_at: z.string().optional().nullable(),
-  status: z.string().optional(),
+  status: z.boolean().optional(),
 });
 
 export const CreateShopSchema = z.object({
@@ -38,6 +38,7 @@ export const CreateShopSchema = z.object({
   location_lat: z.number(),
   location_long: z.number(),
   vendor_terminal_id: z.string().optional(),
+  status: z.boolean().optional(),
 });
 
 export const UpdateShopSchema = CreateShopSchema.partial();

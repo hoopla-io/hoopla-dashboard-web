@@ -244,8 +244,8 @@ function PartnersContent() {
                       : "-"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={partner.status === "Inactive" ? "destructive" : "default"}>
-                      {partner.status || "Active"}
+                    <Badge variant={partner.status === false ? "destructive" : "default"}>
+                      {partner.status === false ? "Inactive" : "Active"}
                     </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
@@ -279,16 +279,16 @@ function PartnersContent() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                           {partner.status === "Inactive" ? (
+                          {partner.status === false ? (
                             <DropdownMenuItem
-                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Active" } })}
+                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: true } })}
                             >
                               <CheckCircle className="mr-2 h-4 w-4" />
                               Make active
                             </DropdownMenuItem>
                           ) : (
                             <DropdownMenuItem
-                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: "Inactive" } })}
+                              onClick={() => updateMutation.mutate({ id: partner.id, data: { status: false } })}
                             >
                               <XCircle className="mr-2 h-4 w-4" />
                               Make inactive
