@@ -1,5 +1,9 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Drink, CreateDrinkRequest, PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest } from "@/lib/api/schemas/drinks";
+import type { 
+  Drink, CreateDrinkRequest,
+  PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
+  PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest
+} from "@/lib/api/schemas/drinks";
 
 
 
@@ -84,5 +88,30 @@ export const drinksApi = {
 
   deletePartnerDrink: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/partner/drink/delete/${id}`);
+  },
+
+  // --- Drink Modifiers ---
+  listModifiersByPartner: async (partnerId: number): Promise<PartnerDrinkModifier[]> => {
+    const response = await httpClient.get<ApiResponse<PartnerDrinkModifier[]>>(`/api/v1/partner/drink/modifier/list/${partnerId}`);
+    return response.data.data || [];
+  },
+
+  getModifierById: async (id: number): Promise<PartnerDrinkModifier> => {
+    const response = await httpClient.get<ApiResponse<PartnerDrinkModifier>>(`/api/v1/partner/drink/modifier/show/${id}`);
+    return response.data.data ?? response.data;
+  },
+
+  createModifier: async (data: CreatePartnerDrinkModifierRequest): Promise<PartnerDrinkModifier> => {
+    const response = await httpClient.post<ApiResponse<PartnerDrinkModifier>>("/api/v1/partner/drink/modifier/store", data);
+    return response.data.data ?? response.data;
+  },
+
+  updateModifier: async (id: number, data: UpdatePartnerDrinkModifierRequest): Promise<PartnerDrinkModifier> => {
+    const response = await httpClient.put<ApiResponse<PartnerDrinkModifier>>(`/api/v1/partner/drink/modifier/edit/${id}`, data);
+    return response.data.data ?? response.data;
+  },
+
+  deleteModifier: async (id: number): Promise<void> => {
+    await httpClient.delete(`/api/v1/partner/drink/modifier/delete/${id}`);
   },
 };
