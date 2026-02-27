@@ -29,13 +29,14 @@ interface OrdersTabProps {
 }
 
 const statusColors: Record<string, string> = {
+  pending_payment: "bg-orange-500/20 text-orange-500",
   pending: "bg-yellow-500/20 text-yellow-500",
   processing: "bg-blue-500/20 text-blue-500",
   completed: "bg-green-500/20 text-green-500",
   cancelled: "bg-red-500/20 text-red-500",
 };
 
-const statusOptions = ["pending", "processing", "completed", "cancelled"];
+const statusOptions = ["pending_payment", "pending", "processing", "completed", "cancelled"];
 const ITEMS_PER_PAGE = 10;
 
 export function OrdersTab({ shopId }: OrdersTabProps) {
@@ -104,7 +105,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
               <SelectItem value="all">All Statuses</SelectItem>
               {statusOptions.map((status) => (
                 <SelectItem key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -152,7 +153,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                     </TableCell>
                     <TableCell>
                       <Badge className={statusColors[order.status] || "bg-muted"}>
-                        {order.status}
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -166,7 +167,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         <SelectContent>
                           {statusOptions.map((status) => (
                             <SelectItem key={status} value={status}>
-                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                              {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
                             </SelectItem>
                           ))}
                         </SelectContent>

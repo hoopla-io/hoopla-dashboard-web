@@ -26,6 +26,7 @@ import { ordersApi } from "@/lib/api/domains/orders";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
 const statusColors: Record<string, string> = {
+  pending_payment: "bg-orange-500/20 text-orange-500",
   pending: "bg-yellow-500/20 text-yellow-500",
   processing: "bg-blue-500/20 text-blue-500",
   completed: "bg-green-500/20 text-green-500",
@@ -34,7 +35,7 @@ const statusColors: Record<string, string> = {
 
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
-const statusOptions = ["pending", "processing", "completed", "cancelled"];
+const statusOptions = ["pending_payment", "pending", "processing", "completed", "cancelled"];
 const ITEMS_PER_PAGE = 10;
 
 import { Suspense } from "react";
@@ -132,7 +133,7 @@ function OrdersContent() {
               <SelectItem value="all">All Statuses</SelectItem>
               {statusOptions.map((status) => (
                 <SelectItem key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -215,7 +216,7 @@ function OrdersContent() {
                   </TableCell>
                   <TableCell>
                     <Badge className={statusColors[order.status] || "bg-muted"}>
-                      {order.status}
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -229,7 +230,7 @@ function OrdersContent() {
                       <SelectContent>
                         {statusOptions.map((status) => (
                           <SelectItem key={status} value={status}>
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                            {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
                           </SelectItem>
                         ))}
                       </SelectContent>
