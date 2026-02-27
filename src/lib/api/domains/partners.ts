@@ -28,7 +28,9 @@ export const partnersApi = {
     if (data.vendor_key) formData.append("vendor_key", data.vendor_key);
     if (data.tin_type) formData.append("tin_type", data.tin_type);
     if (data.tin_num) formData.append("tin_num", data.tin_num);
-    if (data.tin_percent) formData.append("tin_percent", String(data.tin_percent));
+    if (data.tin_percent !== undefined) formData.append("tin_percent", String(data.tin_percent));
+    if (data.cashback_percent !== undefined) formData.append("cashback_percent", String(data.cashback_percent));
+    if (data.status !== undefined) formData.append("status", data.status ? "1" : "0");
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<Partner>>("/api/v1/partner/store", formData, {
@@ -46,8 +48,9 @@ export const partnersApi = {
     if (data.vendor_key) formData.append("vendor_key", data.vendor_key);
     if (data.tin_type) formData.append("tin_type", data.tin_type);
     if (data.tin_num) formData.append("tin_num", data.tin_num);
-    if (data.tin_percent) formData.append("tin_percent", String(data.tin_percent));
-    if (data.status !== undefined) formData.append("status", String(data.status));
+    if (data.tin_percent !== undefined) formData.append("tin_percent", String(data.tin_percent));
+    if (data.cashback_percent !== undefined) formData.append("cashback_percent", String(data.cashback_percent));
+    if (data.status !== undefined) formData.append("status", data.status ? "1" : "0");
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Partner>>(`/api/v1/partner/edit/${id}`, formData, {
