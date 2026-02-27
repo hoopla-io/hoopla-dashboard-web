@@ -69,7 +69,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                           order.status === "cancelled" ? "destructive" :
                             "secondary"
                       }>
-                        {order.status}
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
                     <TableCell>{order.time ? new Date(order.time).toLocaleDateString() : "-"}</TableCell>
