@@ -171,10 +171,10 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                   >
                     <TableCell>#{shop.id}</TableCell>
                     <TableCell>
-                      {(shop.pictures?.[0]?.image_url || shop.image_url) ? (
+                      {shop.image_url ? (
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
-                          src={shop.pictures?.[0]?.image_url || shop.image_url || ""}
+                          src={shop.image_url}
                           alt={shop.name}
                           className="h-10 w-10 rounded-lg object-cover"
                         />
