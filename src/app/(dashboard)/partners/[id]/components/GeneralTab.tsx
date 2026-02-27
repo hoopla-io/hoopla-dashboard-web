@@ -31,6 +31,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
     tin_type: undefined,
     tin_num: "",
     tin_percent: 0,
+    cashback_percent: 0,
     status: true,
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
@@ -49,6 +50,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
         tin_type: partner.tin_type || undefined,
         tin_num: partner.tin_num || "",
         tin_percent: partner.tin_percent || 0,
+        cashback_percent: partner.cashback_percent || 0,
         status: partner.status ?? true,
       });
     }
@@ -216,6 +218,16 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                 step="0.01"
                 value={formData.tin_percent || 0}
                 onChange={(e) => setFormData({ ...formData, tin_percent: parseFloat(e.target.value) })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cashback_percent">Cashback Percent</Label>
+              <Input
+                id="cashback_percent"
+                type="number"
+                step="0.01"
+                value={formData.cashback_percent || 0}
+                onChange={(e) => setFormData({ ...formData, cashback_percent: parseFloat(e.target.value) })}
               />
             </div>
           </div>

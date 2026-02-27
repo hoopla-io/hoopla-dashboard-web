@@ -185,6 +185,7 @@ function PartnersContent() {
               <TableHead>Name</TableHead>
               <TableHead>Vendor</TableHead>
               <TableHead>TIN Info</TableHead>
+              <TableHead>Cashback</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -193,13 +194,13 @@ function PartnersContent() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
+                <TableCell colSpan={9} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : partners.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   No partners found
                 </TableCell>
               </TableRow>
@@ -233,6 +234,7 @@ function PartnersContent() {
                       <span>{partner.tin_num || "-"}</span>
                     </div>
                   </TableCell>
+                  <TableCell>{partner.cashback_percent ? `${partner.cashback_percent}%` : "-"}</TableCell>
                   <TableCell>
                     {partner.created_at
                       ? new Date(partner.created_at).toLocaleDateString()
