@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { drinksApi } from "@/lib/api/domains/drinks";
-import type { CreatePartnerDrinkRequest } from "@/lib/api/schemas/drinks";
+import type { CreatePartnerDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
+import { DrinkModifiersModal } from "./DrinkModifiersModal";
 
 interface DrinksTabProps {
   partnerId: number;
@@ -21,6 +22,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
   const [isDrinkDialogOpen, setIsDrinkDialogOpen] = useState(false);
   const [drinkEditId, setDrinkEditId] = useState<number | null>(null);
   const [drinksFilter, setDrinksFilter] = useState("");
+  const [activeModifiersDrink, setActiveModifiersDrink] = useState<PartnerDrink | null>(null);
   const [drinkFormData, setDrinkFormData] = useState<CreatePartnerDrinkRequest>({
     partner_id: partnerId,
     drink_id: 0,
@@ -158,6 +160,13 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setActiveModifiersDrink(pd)}
+                        >
+                          Add addons
+                        </Button>
+                        <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => {
@@ -278,6 +287,16 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
           </form>
         </DialogContent>
       </Dialog>
+
+      {activeModifiersDrink && (
+        <DrinkModifiersModal
+          isOpen={!!activeModifiersDrink}
+          onClose={() => setActiveModifiersDrink(null)}
+          partnerId={partnerId}
+          drinkId={activeModifiersDrink.drink_id || 0}
+          drinkName={activeModifiersDrink.vendor_product_name || activeModifiersDrink.name || activeModifiersDrink.drink?.name || "Drink"}
+        />
+      )}
     </div>
   );
 }
