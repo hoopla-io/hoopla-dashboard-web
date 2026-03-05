@@ -34,17 +34,17 @@ export function DrinkModifiersModal({ isOpen, onClose, partnerId, drinkId, drink
   });
 
   const { data: allModifiers, isLoading } = useQuery({
-    queryKey: ["partner_drink_modifiers", partnerId],
-    queryFn: () => drinksApi.listModifiersByPartner(partnerId),
-    enabled: isOpen && !!partnerId,
+    queryKey: ["partner_drink_modifiers", partnerId, drinkId],
+    queryFn: () => drinksApi.listModifiersByPartnerAndDrink(partnerId, drinkId),
+    enabled: isOpen && !!partnerId && !!drinkId,
   });
 
-  const modifiers = allModifiers?.filter((m) => m.drink_id === drinkId) || [];
+  const modifiers = allModifiers || [];
 
   const createMutation = useMutation({
     mutationFn: (data: CreatePartnerDrinkModifierRequest) => drinksApi.createModifier(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId, drinkId] });
       toast.success("Addon created successfully");
       setIsFormOpen(false);
     },
@@ -55,7 +55,7 @@ export function DrinkModifiersModal({ isOpen, onClose, partnerId, drinkId, drink
     mutationFn: ({ id, data }: { id: number; data: UpdatePartnerDrinkModifierRequest }) =>
       drinksApi.updateModifier(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId, drinkId] });
       toast.success("Addon updated successfully");
       setIsFormOpen(false);
     },
@@ -65,7 +65,7 @@ export function DrinkModifiersModal({ isOpen, onClose, partnerId, drinkId, drink
   const deleteMutation = useMutation({
     mutationFn: drinksApi.deleteModifier,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId, drinkId] });
       toast.success("Addon deleted successfully");
     },
     onError: () => toast.error("Failed to delete addon"),
