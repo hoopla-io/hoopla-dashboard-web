@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { CreatePartnerDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
-import { DrinkModifiersModal } from "./DrinkModifiersModal";
 
 interface DrinksTabProps {
   partnerId: number;
@@ -19,10 +19,10 @@ interface DrinksTabProps {
 
 export function DrinksTab({ partnerId }: DrinksTabProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [isDrinkDialogOpen, setIsDrinkDialogOpen] = useState(false);
   const [drinkEditId, setDrinkEditId] = useState<number | null>(null);
   const [drinksFilter, setDrinksFilter] = useState("");
-  const [activeModifiersDrink, setActiveModifiersDrink] = useState<PartnerDrink | null>(null);
   const [drinkFormData, setDrinkFormData] = useState<CreatePartnerDrinkRequest>({
     partner_id: partnerId,
     drink_id: 0,
@@ -91,6 +91,12 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
       }
       createDrinkMutation.mutate({ data: { ...drinkFormData, partner_id: partnerId }, file: drinkFile });
     }
+  };
+
+  const handleNavigateToModifiers = (pd: PartnerDrink) => {
+    const drinkIdParam = pd.drink_id || 0;
+    const drinkName = encodeURIComponent(pd.vendor_product_name || pd.name || pd.drink?.name || "Drink");
+    router.push(`/partners/${partnerId}/drinks/${drinkIdParam}/modifiers?drinkName=${drinkName}`);
   };
 
   return (
@@ -162,7 +168,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setActiveModifiersDrink(pd)}
+                          onClick={() => handleNavigateToModifiers(pd)}
                         >
                           Add addons
                         </Button>
@@ -287,16 +293,6 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
           </form>
         </DialogContent>
       </Dialog>
-
-      {activeModifiersDrink && (
-        <DrinkModifiersModal
-          isOpen={!!activeModifiersDrink}
-          onClose={() => setActiveModifiersDrink(null)}
-          partnerId={partnerId}
-          drinkId={activeModifiersDrink.drink_id || 0}
-          drinkName={activeModifiersDrink.vendor_product_name || activeModifiersDrink.name || activeModifiersDrink.drink?.name || "Drink"}
-        />
-      )}
     </div>
   );
 }
