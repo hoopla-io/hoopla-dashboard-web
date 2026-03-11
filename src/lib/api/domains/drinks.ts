@@ -91,9 +91,9 @@ export const drinksApi = {
   },
 
   // --- Drink Modifiers ---
-  listModifiersByPartnerAndDrink: async (partnerId: number, drinkId: number): Promise<PartnerDrinkModifier[]> => {
-    const response = await httpClient.get<ApiResponse<PartnerDrinkModifier[]>>(`/api/v1/partner/drink/modifier/list/${partnerId}/${drinkId}`);
-    return response.data.data || [];
+  listModifiersByPartnerAndDrink: async (partnerId: number, drinkId: number, params?: { page?: number; limit?: number }): Promise<PaginatedResponse<PartnerDrinkModifier>> => {
+    const response = await httpClient.get<ApiResponse<PartnerDrinkModifier[]>>(`/api/v1/partner/drink/modifier/list/${partnerId}/${drinkId}`, { params });
+    return response.data;
   },
 
   getModifierById: async (id: number): Promise<PartnerDrinkModifier> => {
