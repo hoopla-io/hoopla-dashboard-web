@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const OrderFeedbackSchema = z.object({
+  id: z.number(),
+  rating: z.number(),
+  comment: z.string().optional().nullable(),
+});
+
 export const OrderSchema = z.object({
   id: z.number(),
   status: z.string(),
@@ -20,7 +26,10 @@ export const OrderSchema = z.object({
   time: z.string().optional(),
   last_update: z.string().optional(),
   fiscal_link: z.string().optional(),
+  feedback: OrderFeedbackSchema.optional().nullable(),
 });
+
+export type OrderFeedback = z.infer<typeof OrderFeedbackSchema>;
 
 export const OrderFilterSchema = z.object({
   id: z.number().optional(),

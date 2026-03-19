@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest } from "@/lib/api/schemas/partners";
+import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest, PartnerFeedback } from "@/lib/api/schemas/partners";
 
 
 
@@ -84,5 +84,10 @@ export const partnersApi = {
 
   deleteAttribute: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/partner/attributes/delete/${id}`);
+  },
+
+  getFeedbacks: async (partnerId: number): Promise<PartnerFeedback[]> => {
+    const response = await httpClient.get<PartnerFeedback[]>(`/api/v1/partner/feedbacks/${partnerId}`);
+    return response.data;
   },
 };

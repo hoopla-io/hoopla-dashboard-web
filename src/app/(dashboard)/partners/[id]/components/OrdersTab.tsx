@@ -49,13 +49,14 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                 <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead>Feedback</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingOrders ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-4">Loading orders...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-4">Loading orders...</TableCell></TableRow>
               ) : orders.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-4 text-muted-foreground">No orders found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-4 text-muted-foreground">No orders found</TableCell></TableRow>
               ) : (
                 orders.map(order => (
                   <TableRow key={order.id}>
@@ -73,6 +74,18 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                       </Badge>
                     </TableCell>
                     <TableCell>{order.time ? new Date(order.time).toLocaleDateString() : "-"}</TableCell>
+                    <TableCell>
+                      {order.feedback ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm">{"★".repeat(order.feedback.rating)}{"☆".repeat(5 - order.feedback.rating)}</span>
+                          {order.feedback.comment && (
+                            <span className="text-xs text-muted-foreground">{order.feedback.comment}</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))
               )}
