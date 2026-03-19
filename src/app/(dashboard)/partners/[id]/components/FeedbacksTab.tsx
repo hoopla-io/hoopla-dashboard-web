@@ -23,11 +23,13 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export function FeedbacksTab({ partnerId }: FeedbacksTabProps) {
-  const { data: feedbacks = [], isLoading } = useQuery({
+  const { data: feedbacksData, isLoading } = useQuery({
     queryKey: ["partner_feedbacks", partnerId],
     queryFn: () => partnersApi.getFeedbacks(partnerId),
     enabled: !!partnerId,
   });
+
+  const feedbacks = feedbacksData ?? [];
 
   const averageRating =
     feedbacks.length > 0
