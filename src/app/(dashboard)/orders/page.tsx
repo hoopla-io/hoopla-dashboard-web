@@ -166,6 +166,7 @@ function OrdersContent() {
               <TableHead>Time</TableHead>
               <TableHead>Last Update</TableHead>
               <TableHead>Fiscal Check</TableHead>
+              <TableHead>Feedback</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -173,11 +174,11 @@ function OrdersContent() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={11} className="text-center py-8">Loading...</TableCell>
               </TableRow>
             ) : filteredOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                   No orders found
                 </TableCell>
               </TableRow>
@@ -212,6 +213,20 @@ function OrdersContent() {
                       </a>
                     ) : (
                       "-"
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {order.feedback ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm font-medium">{"★".repeat(order.feedback.rating)}{"☆".repeat(5 - order.feedback.rating)}</span>
+                        {order.feedback.comment && (
+                          <span className="text-xs text-muted-foreground max-w-[120px] truncate" title={order.feedback.comment}>
+                            {order.feedback.comment}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell>

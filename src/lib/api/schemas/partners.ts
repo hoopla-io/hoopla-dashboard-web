@@ -15,6 +15,7 @@ export const PartnerSchema = z.object({
   created_at: z.string().optional().nullable(),
   deleted_at: z.string().optional().nullable(),
   status: z.boolean().optional(),
+  rating: z.number().optional().nullable(),
 });
 
 export const CreatePartnerSchema = z.object({
@@ -51,3 +52,13 @@ export const CreatePartnerAttributeSchema = z.object({
 
 export type PartnerAttribute = z.infer<typeof PartnerAttributeSchema>;
 export type CreatePartnerAttributeRequest = z.infer<typeof CreatePartnerAttributeSchema>;
+
+export const PartnerFeedbackSchema = z.object({
+  id: z.number(),
+  order_id: z.number(),
+  rating: z.number(),
+  comment: z.string().optional().nullable(),
+  created_at: z.string().optional().nullable(),
+});
+
+export type PartnerFeedback = z.infer<typeof PartnerFeedbackSchema>;
