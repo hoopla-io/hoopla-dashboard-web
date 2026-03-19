@@ -29,7 +29,7 @@ export function FeedbacksTab({ partnerId }: FeedbacksTabProps) {
     enabled: !!partnerId,
   });
 
-  const feedbacks = feedbacksData ?? [];
+  const feedbacks = Array.isArray(feedbacksData) ? feedbacksData : [];
 
   const averageRating =
     feedbacks.length > 0
