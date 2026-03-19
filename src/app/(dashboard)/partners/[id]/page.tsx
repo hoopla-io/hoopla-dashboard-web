@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,22 @@ import { OrdersTab } from "@/app/(dashboard)/partners/[id]/components/OrdersTab"
 import { AttributesTab } from "@/app/(dashboard)/partners/[id]/components/AttributesTab";
 import { FeedbacksTab } from "@/app/(dashboard)/partners/[id]/components/FeedbacksTab";
 
+const VALID_TABS = ["general", "shops", "drinks", "orders", "attributes", "feedbacks"];
+
 function PartnerDetailContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const partnerId = Number(params.id);
 
-  const [activeTab, setActiveTab] = useState("general");
+  const rawTab = searchParams.get("tab") ?? "general";
+  const activeTab = VALID_TABS.includes(rawTab) ? rawTab : "general";
+
+  function handleTabChange(tab: string) {
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set("tab", tab);
+    router.replace(`?${newParams.toString()}`, { scroll: false });
+  }
 
   const { data: partner, isLoading: isLoadingPartner } = useQuery({
     queryKey: ["partner", partnerId],
@@ -53,7 +63,7 @@ function PartnerDetailContent() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="shops">Shops</TabsTrigger>
