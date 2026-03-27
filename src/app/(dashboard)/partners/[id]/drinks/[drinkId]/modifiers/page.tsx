@@ -23,7 +23,7 @@ function ModifiersContent() {
   const queryClient = useQueryClient();
 
   const partnerId = Number(params.id);
-  const drinkId = Number(params.drinkId);
+  const partnerDrinkId = Number(params.drinkId);
   const drinkName = searchParams.get("drinkName") || "Drink";
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
@@ -32,8 +32,7 @@ function ModifiersContent() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingModifierId, setEditingModifierId] = useState<number | null>(null);
   const [formData, setFormData] = useState<CreatePartnerDrinkModifierRequest>({
-    drink_id: drinkId,
-    partner_id: partnerId,
+    partner_drink_id: partnerDrinkId,
     vendor_addon_id: "",
     vendor_addon_key: "",
     vendor_addon_name: "",
@@ -42,9 +41,9 @@ function ModifiersContent() {
   });
 
   const { data: modifiersData, isLoading } = useQuery({
-    queryKey: ["partner_drink_modifiers", partnerId, drinkId, currentPage, perPage],
-    queryFn: () => drinksApi.listModifiersByPartnerAndDrink(partnerId, drinkId, { page: currentPage, limit: perPage }),
-    enabled: !!partnerId && !!drinkId,
+    queryKey: ["partner_drink_modifiers", partnerDrinkId, currentPage, perPage],
+    queryFn: () => drinksApi.listModifiers(partnerDrinkId, { page: currentPage, limit: perPage }),
+    enabled: !!partnerDrinkId,
   });
 
   const modifiers = modifiersData?.data || [];
@@ -54,7 +53,7 @@ function ModifiersContent() {
   const createMutation = useMutation({
     mutationFn: (data: CreatePartnerDrinkModifierRequest) => drinksApi.createModifier(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId, drinkId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
       toast.success("Addon created successfully");
       setIsFormOpen(false);
     },
@@ -65,7 +64,7 @@ function ModifiersContent() {
     mutationFn: ({ id, data }: { id: number; data: UpdatePartnerDrinkModifierRequest }) =>
       drinksApi.updateModifier(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId, drinkId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
       toast.success("Addon updated successfully");
       setIsFormOpen(false);
     },
@@ -75,7 +74,7 @@ function ModifiersContent() {
   const deleteMutation = useMutation({
     mutationFn: drinksApi.deleteModifier,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerId, drinkId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
       toast.success("Addon deleted successfully");
     },
     onError: () => toast.error("Failed to delete addon"),
@@ -91,15 +90,14 @@ function ModifiersContent() {
       const updateData = { ...formData };
       updateMutation.mutate({ id: editingModifierId, data: updateData });
     } else {
-      createMutation.mutate({ ...formData, drink_id: drinkId, partner_id: partnerId });
+      createMutation.mutate({ ...formData, partner_drink_id: partnerDrinkId });
     }
   };
 
   const openCreateForm = () => {
     setEditingModifierId(null);
     setFormData({
-      drink_id: drinkId,
-      partner_id: partnerId,
+      partner_drink_id: partnerDrinkId,
       vendor_addon_id: "",
       vendor_addon_key: "",
       vendor_addon_name: "",
@@ -112,8 +110,7 @@ function ModifiersContent() {
   const openEditForm = (mod: PartnerDrinkModifier) => {
     setEditingModifierId(mod.id);
     setFormData({
-      drink_id: drinkId,
-      partner_id: partnerId,
+      partner_drink_id: partnerDrinkId,
       vendor_addon_id: mod.vendor_addon_id ?? "",
       vendor_addon_key: mod.vendor_addon_key ?? "",
       vendor_addon_name: mod.vendor_addon_name ?? "",

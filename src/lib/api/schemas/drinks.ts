@@ -49,18 +49,16 @@ export type UpdatePartnerDrinkRequest = z.infer<typeof UpdatePartnerDrinkSchema>
 
 export const PartnerDrinkModifierSchema = z.object({
   id: z.number(),
+  partner_drink_id: z.number(),
   vendor_addon_id: z.string(),
   vendor_addon_key: z.string().optional().nullable(),
   vendor_addon_name: z.string(),
   vendor_addon_price: z.number(),
   vendor_group_id: z.string().optional().nullable(),
-  partner_id: z.number().optional().nullable(),
-  drink_id: z.number().optional().nullable(),
 });
 
 export const CreatePartnerDrinkModifierSchema = z.object({
-  drink_id: z.number(),
-  partner_id: z.number(),
+  partner_drink_id: z.number(),
   vendor_addon_id: z.string(),
   vendor_addon_key: z.string().optional(),
   vendor_addon_name: z.string(),
@@ -68,7 +66,7 @@ export const CreatePartnerDrinkModifierSchema = z.object({
   vendor_group_id: z.string().optional(),
 });
 
-export const UpdatePartnerDrinkModifierSchema = CreatePartnerDrinkModifierSchema.omit({ drink_id: true, partner_id: true });
+export const UpdatePartnerDrinkModifierSchema = CreatePartnerDrinkModifierSchema.omit({ partner_drink_id: true });
 
 export type PartnerDrinkModifier = z.infer<typeof PartnerDrinkModifierSchema>;
 export type CreatePartnerDrinkModifierRequest = z.infer<typeof CreatePartnerDrinkModifierSchema>;
