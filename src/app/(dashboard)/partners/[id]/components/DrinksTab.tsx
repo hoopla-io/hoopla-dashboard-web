@@ -94,9 +94,8 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
   };
 
   const handleNavigateToModifiers = (pd: PartnerDrink) => {
-    const drinkIdParam = pd.drink_id || 0;
     const drinkName = encodeURIComponent(pd.vendor_product_name || pd.name || pd.drink?.name || "Drink");
-    router.push(`/partners/${partnerId}/drinks/${drinkIdParam}/modifiers?drinkName=${drinkName}`);
+    router.push(`/partners/${partnerId}/drinks/${pd.id}/modifiers?drinkName=${drinkName}`);
   };
 
   return (
