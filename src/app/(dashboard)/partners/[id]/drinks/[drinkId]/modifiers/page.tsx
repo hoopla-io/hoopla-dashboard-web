@@ -43,7 +43,7 @@ function ModifiersContent() {
   const [editingModifier, setEditingModifier] = useState<PartnerDrinkModifier | null>(null);
 
   const [addForm, setAddForm] = useState<CreatePartnerDrinkModifierRequest>(() => EMPTY_FORM(partnerDrinkId));
-  const [editForm, setEditForm] = useState<UpdatePartnerDrinkModifierRequest>({});
+  const [editForm, setEditForm] = useState<Partial<UpdatePartnerDrinkModifierRequest>>({});
 
   const { data: modifiersData, isLoading } = useQuery({
     queryKey: ["partner_drink_modifiers", partnerDrinkId, currentPage, perPage],
@@ -100,7 +100,7 @@ function ModifiersContent() {
       toast.error("Addon Name and Vendor Addon ID are required");
       return;
     }
-    updateMutation.mutate({ id: editingModifier.id, data: editForm });
+    updateMutation.mutate({ id: editingModifier.id, data: editForm as UpdatePartnerDrinkModifierRequest });
   };
 
   const openEditModal = (mod: PartnerDrinkModifier) => {
