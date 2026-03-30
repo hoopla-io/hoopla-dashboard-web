@@ -1,11 +1,31 @@
 import { z } from "zod";
 
+export const DrinkCategorySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+export const CategoryWithDrinksSchema = DrinkCategorySchema.extend({
+  drinks: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    image_url: z.string().optional(),
+  })).nullable(),
+});
+
+export type DrinkCategory = z.infer<typeof DrinkCategorySchema>;
+export type CategoryWithDrinks = z.infer<typeof CategoryWithDrinksSchema>;
+export type CreateCategoryRequest = { name: string };
+export type UpdateCategoryRequest = { name: string };
+export type LinkDrinkRequest = { drink_id: number; category_id: number };
+
 export const DrinkSchema = z.object({
   id: z.number(),
   name: z.string(),
   price: z.number().optional(),
   partner: z.string().optional(),
   image_url: z.string().optional(),
+  categories: z.array(DrinkCategorySchema).nullable().optional(),
 });
 
 export const CreateDrinkSchema = z.object({

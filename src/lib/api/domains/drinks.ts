@@ -1,8 +1,9 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { 
+import type {
   Drink, CreateDrinkRequest,
   PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
-  PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest
+  PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest,
+  DrinkCategory, CategoryWithDrinks, CreateCategoryRequest, UpdateCategoryRequest, LinkDrinkRequest,
 } from "@/lib/api/schemas/drinks";
 
 
@@ -113,5 +114,38 @@ export const drinksApi = {
 
   deleteModifier: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/partner/drink/modifier/delete/${id}`);
+  },
+};
+
+export const categoryApi = {
+  getAll: async (): Promise<DrinkCategory[]> => {
+    const response = await httpClient.get<ApiResponse<DrinkCategory[]>>("/api/v1/drink/category/list");
+    return response.data.data || [];
+  },
+
+  getById: async (id: number): Promise<CategoryWithDrinks> => {
+    const response = await httpClient.get<ApiResponse<CategoryWithDrinks>>(`/api/v1/drink/category/show/${id}`);
+    return response.data.data ?? response.data;
+  },
+
+  create: async (data: CreateCategoryRequest): Promise<{ categoryId: number }> => {
+    const response = await httpClient.post<ApiResponse<{ categoryId: number }>>("/api/v1/drink/category/store", data);
+    return response.data.data ?? response.data;
+  },
+
+  update: async (id: number, data: UpdateCategoryRequest): Promise<void> => {
+    await httpClient.put(`/api/v1/drink/category/edit/${id}`, data);
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await httpClient.delete(`/api/v1/drink/category/delete/${id}`);
+  },
+
+  linkDrink: async (data: LinkDrinkRequest): Promise<void> => {
+    await httpClient.post("/api/v1/drink/category/link", data);
+  },
+
+  unlinkDrink: async (drinkId: number, categoryId: number): Promise<void> => {
+    await httpClient.delete(`/api/v1/drink/category/unlink/${drinkId}/${categoryId}`);
   },
 };

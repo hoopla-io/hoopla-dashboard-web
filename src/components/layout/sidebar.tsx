@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Settings,
   ChevronDown,
+  Tag,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -28,6 +29,7 @@ const navigation = [
       { name: "Partners", href: "/partners", icon: Building2 },
       { name: "Shops", href: "/shops", icon: Store },
       { name: "Drinks", href: "/drinks", icon: Coffee },
+      { name: "Drink Categories", href: "/drink-categories", icon: Tag },
     ],
   },
   {
