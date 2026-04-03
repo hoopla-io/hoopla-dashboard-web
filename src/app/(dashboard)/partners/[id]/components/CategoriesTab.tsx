@@ -1,13 +1,12 @@
-"use client";
-
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Tag, Coffee } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, Coffee, X } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -24,34 +23,51 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { categoryApi } from "@/lib/api/domains/drinks";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { categoryApi, drinksApi } from "@/lib/api/domains/drinks";
 import type { DrinkCategory, CategoryWithDrinks } from "@/lib/api/schemas/drinks";
 
-function DrinkCategoriesContent() {
+interface CategoriesTabProps {
+  partnerId: number;
+}
+
+export function CategoriesTab({ partnerId }: CategoriesTabProps) {
   const queryClient = useQueryClient();
 
-  const [editingCategory, setEditingCategory] = useState<DrinkCategory | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<DrinkCategory | null>(null);
   const [formName, setFormName] = useState("");
 
   const [viewCategory, setViewCategory] = useState<DrinkCategory | null>(null);
+  const [selectedDrinkId, setSelectedDrinkId] = useState("");
 
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ["drink_categories"],
-    queryFn: categoryApi.getAll,
+    queryKey: ["partner_categories", partnerId],
+    queryFn: () => categoryApi.getAll(partnerId),
   });
 
   const { data: categoryDetail, isLoading: isDetailLoading } = useQuery({
-    queryKey: ["drink_categories", viewCategory?.id],
+    queryKey: ["partner_categories", viewCategory?.id],
     queryFn: () => categoryApi.getById(viewCategory!.id),
     enabled: !!viewCategory,
   });
 
+  const { data: partnerDrinks = [] } = useQuery({
+    queryKey: ["partner_drinks", partnerId],
+    queryFn: () => drinksApi.getByPartner(partnerId),
+    enabled: !!viewCategory,
+  });
+
   const createMutation = useMutation({
-    mutationFn: (name: string) => categoryApi.create({ name }),
+    mutationFn: (name: string) => categoryApi.create({ partner_id: partnerId, name }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["drink_categories"] });
+      queryClient.invalidateQueries({ queryKey: ["partner_categories", partnerId] });
       toast.success("Category created successfully!");
       setIsCreateOpen(false);
       setFormName("");
@@ -62,7 +78,7 @@ function DrinkCategoriesContent() {
   const updateMutation = useMutation({
     mutationFn: ({ id, name }: { id: number; name: string }) => categoryApi.update(id, { name }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["drink_categories"] });
+      queryClient.invalidateQueries({ queryKey: ["partner_categories", partnerId] });
       toast.success("Category updated successfully!");
       setEditingCategory(null);
       setFormName("");
@@ -73,18 +89,42 @@ function DrinkCategoriesContent() {
   const deleteMutation = useMutation({
     mutationFn: categoryApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["drink_categories"] });
+      queryClient.invalidateQueries({ queryKey: ["partner_categories", partnerId] });
       toast.success("Category deleted successfully!");
     },
     onError: () => toast.error("Failed to delete category"),
   });
 
+  const linkMutation = useMutation({
+    mutationFn: ({ partnerDrinkId, categoryId }: { partnerDrinkId: number; categoryId: number }) =>
+      categoryApi.linkDrink({ partner_drink_id: partnerDrinkId, category_id: categoryId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_categories", viewCategory?.id] });
+      setSelectedDrinkId("");
+      toast.success("Drink linked!");
+    },
+    onError: () => toast.error("Failed to link drink"),
+  });
+
+  const unlinkMutation = useMutation({
+    mutationFn: ({ partnerDrinkId, categoryId }: { partnerDrinkId: number; categoryId: number }) =>
+      categoryApi.unlinkDrink(partnerDrinkId, categoryId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_categories", viewCategory?.id] });
+      toast.success("Drink unlinked!");
+    },
+    onError: () => toast.error("Failed to unlink drink"),
+  });
+
+  const linkedDrinkIds = categoryDetail?.partner_drinks?.map((d) => d.id) ?? [];
+  const availableDrinks = partnerDrinks.filter((pd) => !linkedDrinkIds.includes(pd.id));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Drink Categories</h1>
-          <p className="text-muted-foreground">Manage drink category tags</p>
+          <h2 className="text-xl font-semibold">Drink Categories</h2>
+          <p className="text-sm text-muted-foreground">Manage categories for this partner</p>
         </div>
         <Button onClick={() => { setFormName(""); setIsCreateOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" />
@@ -128,7 +168,7 @@ function DrinkCategoriesContent() {
                         variant="ghost"
                         size="sm"
                         className="cursor-pointer text-xs"
-                        onClick={() => setViewCategory(category)}
+                        onClick={() => { setViewCategory(category); setSelectedDrinkId(""); }}
                       >
                         Drinks
                       </Button>
@@ -226,39 +266,78 @@ function DrinkCategoriesContent() {
         </DialogContent>
       </Dialog>
 
-      {/* View Drinks Dialog */}
+      {/* View & Link Drinks Dialog */}
       <Dialog open={!!viewCategory} onOpenChange={(open) => { if (!open) setViewCategory(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{viewCategory?.name} — Drinks</DialogTitle>
-            <DialogDescription>Drinks linked to this category</DialogDescription>
+            <DialogDescription>Manage drinks linked to this category</DialogDescription>
           </DialogHeader>
-          <div className="py-2 max-h-80 overflow-y-auto">
-            {isDetailLoading ? (
-              <p className="text-center text-muted-foreground py-4">Loading...</p>
-            ) : !categoryDetail?.drinks || categoryDetail.drinks.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">No drinks linked to this category</p>
-            ) : (
-              <div className="space-y-2">
-                {categoryDetail.drinks.map((drink) => (
-                  <div key={drink.id} className="flex items-center gap-3 rounded-lg border p-2">
-                    {drink.image_url ? (
-                      <div className="relative h-10 w-10 overflow-hidden rounded-md flex-shrink-0">
-                        <Image src={drink.image_url} alt={drink.name} fill className="object-cover" />
+          <div className="py-2 space-y-4">
+            <div className="max-h-60 overflow-y-auto">
+              {isDetailLoading ? (
+                <p className="text-center text-muted-foreground py-4">Loading...</p>
+              ) : !categoryDetail?.partner_drinks || categoryDetail.partner_drinks.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">No drinks linked to this category</p>
+              ) : (
+                <div className="space-y-2">
+                  {categoryDetail.partner_drinks.map((drink) => (
+                    <div key={drink.id} className="flex items-center gap-3 rounded-lg border p-2">
+                      {drink.image_url ? (
+                        <div className="relative h-10 w-10 overflow-hidden rounded-md flex-shrink-0">
+                          <Image src={drink.image_url} alt={drink.name} fill className="object-cover" />
+                        </div>
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted flex-shrink-0">
+                          <Coffee className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{drink.name}</p>
+                        {drink.product_price != null && (
+                          <p className="text-xs text-muted-foreground">{drink.product_price.toLocaleString()} UZS</p>
+                        )}
                       </div>
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted flex-shrink-0">
-                        <Coffee className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-medium">{drink.name}</p>
-                      <p className="text-xs text-muted-foreground">#{drink.id}</p>
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:text-destructive cursor-pointer"
+                        onClick={() => unlinkMutation.mutate({ partnerDrinkId: drink.id, categoryId: viewCategory!.id })}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-sm font-medium mb-2">Link a drink</p>
+              <div className="flex gap-2">
+                <Select value={selectedDrinkId} onValueChange={setSelectedDrinkId}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select drink..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDrinks.map((pd) => (
+                      <SelectItem key={pd.id} value={String(pd.id)}>
+                        {pd.vendor_product_name || pd.name || pd.drink?.name || `#${pd.id}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  disabled={!selectedDrinkId || linkMutation.isPending}
+                  onClick={() => {
+                    if (!viewCategory || !selectedDrinkId) return;
+                    linkMutation.mutate({ partnerDrinkId: Number(selectedDrinkId), categoryId: viewCategory.id });
+                  }}
+                >
+                  Link
+                </Button>
               </div>
-            )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setViewCategory(null)}>Close</Button>
@@ -266,13 +345,5 @@ function DrinkCategoriesContent() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-export default function DrinkCategoriesPage() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading categories...</div>}>
-      <DrinkCategoriesContent />
-    </Suspense>
   );
 }
