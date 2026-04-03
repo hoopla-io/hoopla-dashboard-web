@@ -118,34 +118,34 @@ export const drinksApi = {
 };
 
 export const categoryApi = {
-  getAll: async (): Promise<DrinkCategory[]> => {
-    const response = await httpClient.get<ApiResponse<DrinkCategory[]>>("/api/v1/drink/category/list");
+  getAll: async (partnerId: number): Promise<DrinkCategory[]> => {
+    const response = await httpClient.get<ApiResponse<DrinkCategory[]>>(`/api/v1/partner/category/list/${partnerId}`);
     return response.data.data || [];
   },
 
   getById: async (id: number): Promise<CategoryWithDrinks> => {
-    const response = await httpClient.get<ApiResponse<CategoryWithDrinks>>(`/api/v1/drink/category/show/${id}`);
+    const response = await httpClient.get<ApiResponse<CategoryWithDrinks>>(`/api/v1/partner/category/show/${id}`);
     return response.data.data ?? response.data;
   },
 
   create: async (data: CreateCategoryRequest): Promise<{ categoryId: number }> => {
-    const response = await httpClient.post<ApiResponse<{ categoryId: number }>>("/api/v1/drink/category/store", data);
+    const response = await httpClient.post<ApiResponse<{ categoryId: number }>>("/api/v1/partner/category/store", data);
     return response.data.data ?? response.data;
   },
 
   update: async (id: number, data: UpdateCategoryRequest): Promise<void> => {
-    await httpClient.put(`/api/v1/drink/category/edit/${id}`, data);
+    await httpClient.put(`/api/v1/partner/category/edit/${id}`, data);
   },
 
   delete: async (id: number): Promise<void> => {
-    await httpClient.delete(`/api/v1/drink/category/delete/${id}`);
+    await httpClient.delete(`/api/v1/partner/category/delete/${id}`);
   },
 
   linkDrink: async (data: LinkDrinkRequest): Promise<void> => {
-    await httpClient.post("/api/v1/drink/category/link", data);
+    await httpClient.post("/api/v1/partner/category/link", data);
   },
 
-  unlinkDrink: async (drinkId: number, categoryId: number): Promise<void> => {
-    await httpClient.delete(`/api/v1/drink/category/unlink/${drinkId}/${categoryId}`);
+  unlinkDrink: async (partnerDrinkId: number, categoryId: number): Promise<void> => {
+    await httpClient.delete(`/api/v1/partner/category/unlink/${partnerDrinkId}/${categoryId}`);
   },
 };

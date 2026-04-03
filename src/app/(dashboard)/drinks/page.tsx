@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Coffee, Tag, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Coffee } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -26,15 +26,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { drinksApi, categoryApi } from "@/lib/api/domains/drinks";
+import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -51,8 +44,6 @@ function DrinksContent() {
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [manageCategoriesDrink, setManageCategoriesDrink] = useState<Drink | null>(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -113,33 +104,6 @@ function DrinksContent() {
     onError: () => toast.error("Failed to delete drink"),
   });
 
-  const { data: allCategories = [] } = useQuery({
-    queryKey: ["drink_categories"],
-    queryFn: categoryApi.getAll,
-  });
-
-  const linkCategoryMutation = useMutation({
-    mutationFn: ({ drinkId, categoryId }: { drinkId: number; categoryId: number }) =>
-      categoryApi.linkDrink({ drink_id: drinkId, category_id: categoryId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      setSelectedCategoryId("");
-      toast.success("Category linked!");
-    },
-    onError: () => toast.error("Failed to link category"),
-  });
-
-  const unlinkCategoryMutation = useMutation({
-    mutationFn: ({ drinkId, categoryId }: { drinkId: number; categoryId: number }) =>
-      categoryApi.unlinkDrink(drinkId, categoryId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Category unlinked!");
-    },
-    onError: () => toast.error("Failed to unlink category"),
-  });
-
-
 
   return (
     <div className="space-y-6">
@@ -174,18 +138,17 @@ function DrinksContent() {
               <TableHead>ID</TableHead>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Drink</TableHead>
-              <TableHead>Categories</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={4} className="text-center py-8">Loading...</TableCell>
               </TableRow>
             ) : drinks.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   No drinks found
                 </TableCell>
               </TableRow>
@@ -213,33 +176,7 @@ function DrinksContent() {
                     <span className="font-medium">{drink.name}</span>
                   </TableCell>
                   <TableCell>
-                    {drink.categories && drink.categories.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {drink.categories.map((cat) => (
-                          <span key={cat.id} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium">
-                            <Tag className="h-3 w-3" />
-                            {cat.name}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="cursor-pointer"
-                        title="Manage categories"
-                        onClick={() => {
-                          setManageCategoriesDrink(drink);
-                          setSelectedCategoryId("");
-                        }}
-                      >
-                        <Tag className="h-4 w-4" />
-                      </Button>
                        <Button
                         variant="ghost"
                         size="icon"
@@ -322,96 +259,6 @@ function DrinksContent() {
               </Button>
             </DialogFooter>
           </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Manage Categories Dialog */}
-      <Dialog open={!!manageCategoriesDrink} onOpenChange={(open) => {
-        if (!open) { setManageCategoriesDrink(null); setSelectedCategoryId(""); }
-      }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Manage Categories — {manageCategoriesDrink?.name}</DialogTitle>
-            <DialogDescription>Link or unlink drink categories</DialogDescription>
-          </DialogHeader>
-          <div className="py-2 space-y-4">
-            <div>
-              <p className="text-sm font-medium mb-2">Current categories</p>
-              {!manageCategoriesDrink?.categories || manageCategoriesDrink.categories.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No categories linked</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {manageCategoriesDrink.categories.map((cat) => (
-                    <span key={cat.id} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs font-medium">
-                      <Tag className="h-3 w-3" />
-                      {cat.name}
-                      <button
-                        type="button"
-                        className="ml-1 hover:text-destructive cursor-pointer"
-                        onClick={() => {
-                          unlinkCategoryMutation.mutate(
-                            { drinkId: manageCategoriesDrink.id, categoryId: cat.id },
-                            {
-                              onSuccess: () => {
-                                setManageCategoriesDrink((prev) =>
-                                  prev ? { ...prev, categories: prev.categories?.filter((c) => c.id !== cat.id) ?? null } : null
-                                );
-                              },
-                            }
-                          );
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div>
-              <p className="text-sm font-medium mb-2">Link a category</p>
-              <div className="flex gap-2">
-                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select category..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allCategories
-                      .filter((c) => !manageCategoriesDrink?.categories?.some((mc) => mc.id === c.id))
-                      .map((cat) => (
-                        <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  disabled={!selectedCategoryId || linkCategoryMutation.isPending}
-                  onClick={() => {
-                    if (!manageCategoriesDrink || !selectedCategoryId) return;
-                    const catId = Number(selectedCategoryId);
-                    linkCategoryMutation.mutate(
-                      { drinkId: manageCategoriesDrink.id, categoryId: catId },
-                      {
-                        onSuccess: () => {
-                          const linkedCat = allCategories.find((c) => c.id === catId);
-                          if (linkedCat) {
-                            setManageCategoriesDrink((prev) =>
-                              prev ? { ...prev, categories: [...(prev.categories ?? []), linkedCat] } : null
-                            );
-                          }
-                        },
-                      }
-                    );
-                  }}
-                >
-                  Link
-                </Button>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setManageCategoriesDrink(null); setSelectedCategoryId(""); }}>Close</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

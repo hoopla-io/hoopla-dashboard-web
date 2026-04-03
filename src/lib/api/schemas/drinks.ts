@@ -6,18 +6,19 @@ export const DrinkCategorySchema = z.object({
 });
 
 export const CategoryWithDrinksSchema = DrinkCategorySchema.extend({
-  drinks: z.array(z.object({
+  partner_drinks: z.array(z.object({
     id: z.number(),
     name: z.string(),
     image_url: z.string().optional(),
+    product_price: z.number().optional(),
   })).nullable(),
 });
 
 export type DrinkCategory = z.infer<typeof DrinkCategorySchema>;
 export type CategoryWithDrinks = z.infer<typeof CategoryWithDrinksSchema>;
-export type CreateCategoryRequest = { name: string };
+export type CreateCategoryRequest = { partner_id: number; name: string };
 export type UpdateCategoryRequest = { name: string };
-export type LinkDrinkRequest = { drink_id: number; category_id: number };
+export type LinkDrinkRequest = { partner_drink_id: number; category_id: number };
 
 export const DrinkSchema = z.object({
   id: z.number(),
