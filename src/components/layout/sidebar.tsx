@@ -13,6 +13,7 @@ import {
   Settings,
   ChevronDown,
   Bell,
+  LayoutPanelTop,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -40,6 +41,11 @@ const navigation = [
     name: "Users",
     href: "/users",
     icon: Users,
+  },
+  {
+    name: "Banners",
+    href: "/banners",
+    icon: LayoutPanelTop,
   },
   {
     name: "Notifications",
