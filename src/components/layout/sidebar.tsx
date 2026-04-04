@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Bell,
   LayoutPanelTop,
+  LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -46,6 +47,11 @@ const navigation = [
     name: "Banners",
     href: "/banners",
     icon: LayoutPanelTop,
+  },
+  {
+    name: "Shop Categories",
+    href: "/shop-categories",
+    icon: LayoutGrid,
   },
   {
     name: "Notifications",
