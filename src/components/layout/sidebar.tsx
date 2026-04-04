@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Settings,
   ChevronDown,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -39,6 +40,11 @@ const navigation = [
     name: "Users",
     href: "/users",
     icon: Users,
+  },
+  {
+    name: "Notifications",
+    href: "/notifications",
+    icon: Bell,
   },
   {
     name: "Settings",
