@@ -3,10 +3,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LayoutPanelTop } from "lucide-react";
+import { Plus, Pencil, Trash2, LayoutPanelTop, Check, ChevronsUpDown, X, CalendarIcon } from "lucide-react";
 import Image from "next/image";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +23,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import { bannersApi } from "@/lib/api/domains/banners";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
@@ -30,18 +35,34 @@ import type { Banner, CreateBannerRequest } from "@/lib/api/schemas/banners";
 const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Drink", url: "URL" };
 const POSITION_LABELS: Record<string, string> = { main: "Main", partner: "Partner" };
 
-function formatDateForInput(dateStr: string | null | undefined): string {
+function dateToIso(dateStr: string | null | undefined): string {
   if (!dateStr) return "";
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return "";
-  return d.toISOString().slice(0, 16);
+  return d.toISOString();
 }
 
-function formatDateForApi(dateStr: string): string {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
+function isoToApi(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function getTimeFromIso(iso: string): string {
+  if (!iso) return "00:00";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "00:00";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function setTimeOnIso(iso: string, time: string): string {
+  const d = iso ? new Date(iso) : new Date();
+  const [hh, mm] = time.split(":").map(Number);
+  d.setHours(hh || 0, mm || 0, 0, 0);
+  return d.toISOString();
 }
 
 const defaultForm: CreateBannerRequest = {
@@ -55,6 +76,119 @@ const defaultForm: CreateBannerRequest = {
   end_date: "",
 };
 
+function DateTimePicker({
+  value,
+  onChange,
+  onClear,
+}: {
+  value: string;
+  onChange: (iso: string) => void;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const date = value ? new Date(value) : undefined;
+  const hasValue = !!value && !isNaN(new Date(value).getTime());
+
+  return (
+    <div className="space-y-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn("w-full justify-start text-left font-normal", !hasValue && "text-muted-foreground")}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {hasValue ? format(date!, "dd/MM/yyyy") : "Pick a date"}
+            {hasValue && (
+              <span
+                role="button"
+                tabIndex={0}
+                className="ml-auto"
+                onClick={(e) => { e.stopPropagation(); onClear(); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onClear(); } }}
+              >
+                <X className="h-4 w-4 opacity-50 hover:opacity-100" />
+              </span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={(d) => {
+              if (d) {
+                const prev = value ? new Date(value) : new Date();
+                d.setHours(prev.getHours(), prev.getMinutes(), 0, 0);
+                onChange(d.toISOString());
+              }
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+      {hasValue && (
+        <Input
+          type="time"
+          value={getTimeFromIso(value)}
+          onChange={(e) => onChange(setTimeOnIso(value, e.target.value))}
+        />
+      )}
+    </div>
+  );
+}
+
+function SearchableSelect({
+  value,
+  onValueChange,
+  placeholder,
+  searchPlaceholder,
+  items,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder: string;
+  searchPlaceholder: string;
+  items: { value: string; label: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = items.find((i) => i.value === value);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
+          {selected ? selected.label : placeholder}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder={searchPlaceholder} />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup>
+              {items.map((item) => (
+                <CommandItem
+                  key={item.value}
+                  value={item.label}
+                  onSelect={() => {
+                    onValueChange(item.value);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === item.value ? "opacity-100" : "opacity-0")} />
+                  {item.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function BannersContent() {
   const queryClient = useQueryClient();
 
@@ -66,6 +200,7 @@ function BannersContent() {
   const [editBanner, setEditBanner] = useState<Banner | null>(null);
   const [formData, setFormData] = useState<CreateBannerRequest>(defaultForm);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: bannersData, isLoading } = useQuery({
     queryKey: ["banners", currentPage, perPage, positionFilter],
@@ -139,8 +274,8 @@ function BannersContent() {
   function handleSubmitCreate(e: React.FormEvent) {
     e.preventDefault();
     const payload = { ...formData };
-    if (payload.start_date) payload.start_date = formatDateForApi(payload.start_date);
-    if (payload.end_date) payload.end_date = formatDateForApi(payload.end_date);
+    if (payload.start_date) payload.start_date = isoToApi(payload.start_date);
+    if (payload.end_date) payload.end_date = isoToApi(payload.end_date);
     createMutation.mutate({ data: payload, file: selectedFile || undefined });
   }
 
@@ -148,8 +283,8 @@ function BannersContent() {
     e.preventDefault();
     if (!editBanner) return;
     const payload = { ...formData };
-    if (payload.start_date) payload.start_date = formatDateForApi(payload.start_date);
-    if (payload.end_date) payload.end_date = formatDateForApi(payload.end_date);
+    if (payload.start_date) payload.start_date = isoToApi(payload.start_date);
+    if (payload.end_date) payload.end_date = isoToApi(payload.end_date);
     updateMutation.mutate({ id: editBanner.id, data: payload, file: selectedFile || undefined });
   }
 
@@ -163,8 +298,8 @@ function BannersContent() {
       partner_id: banner.partner_id ?? undefined,
       sort_order: banner.sort_order,
       is_active: banner.is_active,
-      start_date: formatDateForInput(banner.start_date),
-      end_date: formatDateForInput(banner.end_date),
+      start_date: dateToIso(banner.start_date),
+      end_date: dateToIso(banner.end_date),
     });
     setSelectedFile(null);
   }
@@ -180,38 +315,36 @@ function BannersContent() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label>Position</Label>
+        <Select
+          value={formData.position}
+          onValueChange={(v) => setFormData({ ...formData, position: v as "main" | "partner", partner_id: undefined })}
+        >
+          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="main">Main (Home)</SelectItem>
+            <SelectItem value="partner">Partner Page</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {formData.position === "partner" && (
         <div className="space-y-2">
-          <Label>Position</Label>
+          <Label>Partner</Label>
           <Select
-            value={formData.position}
-            onValueChange={(v) => setFormData({ ...formData, position: v as "main" | "partner", partner_id: undefined })}
+            value={formData.partner_id ? String(formData.partner_id) : ""}
+            onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
           >
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Select partner..." /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="main">Main (Home)</SelectItem>
-              <SelectItem value="partner">Partner Page</SelectItem>
+              {partners.map((p) => (
+                <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
-
-        {formData.position === "partner" && (
-          <div className="space-y-2">
-            <Label>Partner</Label>
-            <Select
-              value={formData.partner_id ? String(formData.partner_id) : ""}
-              onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
-            >
-              <SelectTrigger><SelectValue placeholder="Select partner..." /></SelectTrigger>
-              <SelectContent>
-                {partners.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-      </div>
+      )}
 
       <div className="space-y-2">
         <Label>Link Type</Label>
@@ -219,7 +352,7 @@ function BannersContent() {
           value={formData.link_type}
           onValueChange={(v) => setFormData({ ...formData, link_type: v as "partner" | "drink" | "url", link_value: "" })}
         >
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="partner">Partner</SelectItem>
             <SelectItem value="drink">Drink</SelectItem>
@@ -231,29 +364,21 @@ function BannersContent() {
       <div className="space-y-2">
         <Label>Link Value</Label>
         {formData.link_type === "partner" ? (
-          <Select
+          <SearchableSelect
             value={formData.link_value || ""}
             onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-          >
-            <SelectTrigger><SelectValue placeholder="Select partner..." /></SelectTrigger>
-            <SelectContent>
-              {partners.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Select partner..."
+            searchPlaceholder="Search partners..."
+            items={partners.map((p) => ({ value: String(p.id), label: p.name }))}
+          />
         ) : formData.link_type === "drink" ? (
-          <Select
+          <SearchableSelect
             value={formData.link_value || ""}
             onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-          >
-            <SelectTrigger><SelectValue placeholder="Select drink..." /></SelectTrigger>
-            <SelectContent>
-              {drinks.map((d) => (
-                <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Select drink..."
+            searchPlaceholder="Search drinks..."
+            items={drinks.map((d) => ({ value: String(d.id), label: d.name }))}
+          />
         ) : (
           <Input
             value={formData.link_value || ""}
@@ -284,49 +409,54 @@ function BannersContent() {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Start Date (Optional)</Label>
-          <Input
-            type="datetime-local"
+          <DateTimePicker
             value={formData.start_date || ""}
-            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+            onChange={(v) => setFormData({ ...formData, start_date: v })}
+            onClear={() => setFormData({ ...formData, start_date: "" })}
           />
         </div>
         <div className="space-y-2">
           <Label>End Date (Optional)</Label>
-          <Input
-            type="datetime-local"
+          <DateTimePicker
             value={formData.end_date || ""}
-            onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+            onChange={(v) => setFormData({ ...formData, end_date: v })}
+            onClear={() => setFormData({ ...formData, end_date: "" })}
           />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label>Image</Label>
-        <div className="flex items-center gap-4">
-          {editBanner && (
-            <div className="relative h-16 w-24 overflow-hidden rounded-lg border">
-              {selectedFile ? (
-                <Image src={URL.createObjectURL(selectedFile)} alt="Preview" fill className="object-cover" />
-              ) : editBanner.image_url ? (
-                <Image src={editBanner.image_url} alt={editBanner.title || "Banner"} fill className="object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted">
-                  <LayoutPanelTop className="h-6 w-6 text-muted-foreground" />
-                </div>
-              )}
+        {(selectedFile || editBanner?.image_url) && (() => {
+          const src = selectedFile ? URL.createObjectURL(selectedFile) : editBanner?.image_url || "";
+          return (
+            <div className="relative inline-block">
+              <button
+                type="button"
+                onClick={() => setPreviewImage(src)}
+                className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedFile(null)}
+                className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90"
+              >
+                <X className="h-3 w-3" />
+              </button>
             </div>
-          )}
-          <div className="flex-1">
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
-              }}
-            />
-            {editBanner && <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>}
-          </div>
-        </div>
+          );
+        })()}
+        <Input
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
+          }}
+        />
+        {editBanner && <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>}
       </div>
     </div>
   );
@@ -420,9 +550,9 @@ function BannersContent() {
                     />
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {banner.start_date ? new Date(banner.start_date).toLocaleDateString() : "—"}
+                    {banner.start_date ? new Date(banner.start_date).toLocaleDateString("ru-RU") : "—"}
                     {" → "}
-                    {banner.end_date ? new Date(banner.end_date).toLocaleDateString() : "—"}
+                    {banner.end_date ? new Date(banner.end_date).toLocaleDateString("ru-RU") : "—"}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -492,6 +622,20 @@ function BannersContent() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
+        <DialogContent className="max-w-3xl p-2">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image Preview</DialogTitle>
+            <DialogDescription>Banner image preview</DialogDescription>
+          </DialogHeader>
+          {previewImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={previewImage} alt="Banner preview" className="w-full h-auto rounded" />
+          )}
         </DialogContent>
       </Dialog>
     </div>
