@@ -523,9 +523,13 @@ function BannersContent() {
                   <TableCell className="text-muted-foreground">#{banner.id}</TableCell>
                   <TableCell>
                     {banner.image_url ? (
-                      <div className="relative h-10 w-20 overflow-hidden rounded">
+                      <button
+                        type="button"
+                        className="relative h-10 w-20 overflow-hidden rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setPreviewImage(banner.image_url!)}
+                      >
                         <Image src={banner.image_url} alt={banner.title || "Banner"} fill className="object-cover" />
-                      </div>
+                      </button>
                     ) : (
                       <div className="flex h-10 w-20 items-center justify-center rounded bg-muted">
                         <LayoutPanelTop className="h-5 w-5 text-muted-foreground" />

@@ -58,6 +58,7 @@ function PartnersContent() {
   const [formData, setFormData] = useState<CreatePartnerRequest>({ name: "", description: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: partnersData, isLoading } = useQuery({
     queryKey: ["partners", currentPage, search],
@@ -213,14 +214,20 @@ function PartnersContent() {
                   onClick={() => router.push(`/partners/${partner.id}`)}
                 >
                   <TableCell className="font-medium">#{partner.id}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     {partner.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={partner.image_url}
-                        alt={partner.name}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
+                      <button
+                        type="button"
+                        className="h-10 w-10 rounded-full overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setPreviewImage(partner.image_url!)}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={partner.image_url}
+                          alt={partner.name}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      </button>
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
                         <span className="text-xs font-medium">No Logo</span>
@@ -308,6 +315,20 @@ function PartnersContent() {
             </Button>
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
+        <DialogContent className="max-w-3xl p-2">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image Preview</DialogTitle>
+            <DialogDescription>Partner logo preview</DialogDescription>
+          </DialogHeader>
+          {previewImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={previewImage} alt="Partner preview" className="w-full h-auto rounded" />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>

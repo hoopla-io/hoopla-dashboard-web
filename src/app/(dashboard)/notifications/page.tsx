@@ -33,6 +33,7 @@ function NotificationsContent() {
   const [editNotification, setEditNotification] = useState<Notification | null>(null);
   const [formData, setFormData] = useState<CreateNotificationRequest>({ title: "", text: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: notificationsData, isLoading } = useQuery({
     queryKey: ["notifications", currentPage, search, perPage],
@@ -137,16 +138,20 @@ function NotificationsContent() {
                   onClick={() => router.push(`/notifications/${notification.id}`)}
                 >
                   <TableCell className="text-muted-foreground">#{notification.id}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     {notification.image_url ? (
-                      <div className="relative h-12 w-12 overflow-hidden rounded-lg">
+                      <button
+                        type="button"
+                        className="relative h-12 w-12 overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setPreviewImage(notification.image_url!)}
+                      >
                         <Image
                           src={notification.image_url}
                           alt={notification.title}
                           fill
                           className="object-cover"
                         />
-                      </div>
+                      </button>
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
                         <Bell className="h-6 w-6 text-muted-foreground" />
@@ -266,6 +271,20 @@ function NotificationsContent() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
+        <DialogContent className="max-w-3xl p-2">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image Preview</DialogTitle>
+            <DialogDescription>Notification image preview</DialogDescription>
+          </DialogHeader>
+          {previewImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={previewImage} alt="Notification preview" className="w-full h-auto rounded" />
+          )}
         </DialogContent>
       </Dialog>
 

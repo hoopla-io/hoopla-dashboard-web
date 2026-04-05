@@ -15,6 +15,7 @@ import {
   Bell,
   LayoutPanelTop,
   LayoutGrid,
+  BookOpen,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -52,6 +53,11 @@ const navigation = [
     name: "Shop Categories",
     href: "/shop-categories",
     icon: LayoutGrid,
+  },
+  {
+    name: "Stories",
+    href: "/stories",
+    icon: BookOpen,
   },
   {
     name: "Notifications",
