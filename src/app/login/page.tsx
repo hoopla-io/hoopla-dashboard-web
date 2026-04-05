@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Coffee, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,8 +53,11 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Coffee className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-4">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-12 w-12">
+              <rect width="48" height="48" rx="12" className="fill-primary" />
+              <text x="24" y="33" textAnchor="middle" className="fill-primary-foreground" style={{ fontSize: "27px", fontWeight: 800, fontFamily: "system-ui, sans-serif" }}>H</text>
+            </svg>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome to Hoopla</CardTitle>
           <CardDescription>Enter your credentials to access the dashboard</CardDescription>

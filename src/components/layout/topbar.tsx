@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { Search, Command, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,30 +17,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CommandPalette } from "@/components/layout/command-palette";
 
-function getBreadcrumbs(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-  const breadcrumbs = [{ name: "Dashboard", href: "/" }];
-
-  if (segments.length > 0) {
-    let currentPath = "";
-    segments.forEach((segment) => {
-      currentPath += `/${segment}`;
-      breadcrumbs.push({
-        name: segment.charAt(0).toUpperCase() + segment.slice(1),
-        href: currentPath,
-      });
-    });
-  }
-
-  return breadcrumbs;
-}
-
 export function TopBar() {
-  const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [commandOpen, setCommandOpen] = useState(false);
-  const breadcrumbs = getBreadcrumbs(pathname);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -75,22 +54,7 @@ export function TopBar() {
           </SheetContent>
         </Sheet>
 
-        <nav className="flex items-center gap-2 text-sm">
-          {breadcrumbs.map((crumb, index) => (
-            <span key={crumb.href} className="flex items-center gap-2">
-              {index > 0 && <span className="text-muted-foreground">&gt;</span>}
-              <span
-                className={
-                  index === breadcrumbs.length - 1
-                    ? "font-medium text-foreground"
-                    : "text-muted-foreground"
-                }
-              >
-                {crumb.name}
-              </span>
-            </span>
-          ))}
-        </nav>
+        <div className="flex-1" />
 
         <div className="flex items-center gap-4">
           <Button
