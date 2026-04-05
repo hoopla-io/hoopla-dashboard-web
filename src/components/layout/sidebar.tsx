@@ -17,6 +17,28 @@ import {
   LayoutGrid,
   BookOpen,
 } from "lucide-react";
+
+function HooplaLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <rect width="32" height="32" rx="8" className="fill-primary" />
+      <text
+        x="16"
+        y="22"
+        textAnchor="middle"
+        className="fill-primary-foreground"
+        style={{ fontSize: "18px", fontWeight: 800, fontFamily: "system-ui, sans-serif" }}
+      >
+        H
+      </text>
+    </svg>
+  );
+}
 import { useState } from "react";
 
 const navigation = [
@@ -84,11 +106,9 @@ export function SidebarContent() {
   return (
     <div className="flex h-full flex-col bg-sidebar">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <Coffee className="h-5 w-5 text-primary-foreground" />
-        </div>
-        <span className="text-lg font-semibold text-sidebar-foreground">Hoopla</span>
+      <div className="flex h-16 items-center gap-2.5 border-b border-border px-6">
+        <HooplaLogo className="h-8 w-8" />
+        <span className="text-lg font-bold tracking-tight text-sidebar-foreground">Hoopla</span>
       </div>
 
       {/* Navigation */}
