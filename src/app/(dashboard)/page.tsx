@@ -73,6 +73,9 @@ export default function DashboardPage() {
     queryFn: () => shopCategoriesApi.getAll(),
   });
 
+  const getTotal = (res?: { data?: unknown[]; meta?: { totalItems?: number } | null } | null) =>
+    res?.meta?.totalItems ?? res?.data?.length ?? 0;
+
   const activeStories = stories?.data?.filter((s) => s.is_active).length ?? 0;
   const activeBanners = banners?.data?.filter((b) => b.is_active).length ?? 0;
   const activeCategories = shopCategories?.data?.filter((c) => c.is_active).length ?? 0;
@@ -80,28 +83,28 @@ export default function DashboardPage() {
   const primaryStats = [
     {
       name: "Users",
-      value: users?.meta?.totalItems ?? 0,
+      value: getTotal(users),
       icon: Users,
       href: "/users",
       gradient: "from-blue-500 to-blue-600",
     },
     {
       name: "Partners",
-      value: partners?.meta?.totalItems ?? 0,
+      value: getTotal(partners),
       icon: Building2,
       href: "/partners",
       gradient: "from-violet-500 to-purple-600",
     },
     {
       name: "Shops",
-      value: shops?.meta?.totalItems ?? 0,
+      value: getTotal(shops),
       icon: Store,
       href: "/shops",
       gradient: "from-emerald-500 to-green-600",
     },
     {
       name: "Orders",
-      value: orders?.meta?.totalItems ?? 0,
+      value: getTotal(orders),
       icon: ShoppingCart,
       href: "/orders",
       gradient: "from-orange-500 to-amber-600",
@@ -111,7 +114,7 @@ export default function DashboardPage() {
   const contentStats = [
     {
       name: "Stories",
-      total: stories?.meta?.totalItems ?? 0,
+      total: getTotal(stories),
       active: activeStories,
       icon: BookOpen,
       href: "/stories",
@@ -119,7 +122,7 @@ export default function DashboardPage() {
     },
     {
       name: "Banners",
-      total: banners?.meta?.totalItems ?? 0,
+      total: getTotal(banners),
       active: activeBanners,
       icon: LayoutPanelTop,
       href: "/banners",
@@ -127,7 +130,7 @@ export default function DashboardPage() {
     },
     {
       name: "Notifications",
-      total: notifications?.meta?.totalItems ?? 0,
+      total: getTotal(notifications),
       active: null,
       icon: Bell,
       href: "/notifications",
@@ -135,7 +138,7 @@ export default function DashboardPage() {
     },
     {
       name: "Drinks",
-      total: drinks?.meta?.totalItems ?? 0,
+      total: getTotal(drinks),
       active: null,
       icon: Coffee,
       href: "/drinks",
@@ -143,7 +146,7 @@ export default function DashboardPage() {
     },
     {
       name: "Categories",
-      total: shopCategories?.meta?.totalItems ?? 0,
+      total: getTotal(shopCategories),
       active: activeCategories,
       icon: LayoutGrid,
       href: "/shop-categories",
