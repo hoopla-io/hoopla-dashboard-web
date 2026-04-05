@@ -18,6 +18,7 @@ import {
   ShoppingCart,
   Users,
   Plus,
+  BookOpen,
 } from "lucide-react";
 
 type CommandPaletteProps = {
@@ -80,6 +81,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <CommandItem onSelect={() => runCommand(() => router.push("/users"))}>
             <Users className="mr-2 h-4 w-4" />
             Users
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/stories"))}>
+            <BookOpen className="mr-2 h-4 w-4" />
+            Stories
           </CommandItem>
         </CommandGroup>
       </CommandList>

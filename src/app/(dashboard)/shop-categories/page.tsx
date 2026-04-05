@@ -267,9 +267,13 @@ function ShopCategoriesContent() {
                   <TableCell className="text-muted-foreground">#{category.id}</TableCell>
                   <TableCell>
                     {category.image_url ? (
-                      <div className="relative h-10 w-10 overflow-hidden rounded">
+                      <button
+                        type="button"
+                        className="relative h-10 w-10 overflow-hidden rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setPreviewImage(category.image_url!)}
+                      >
                         <Image src={category.image_url} alt={category.name} fill className="object-cover" />
-                      </div>
+                      </button>
                     ) : (
                       <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
                         <LayoutGrid className="h-5 w-5 text-muted-foreground" />

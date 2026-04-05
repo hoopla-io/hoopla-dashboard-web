@@ -32,6 +32,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     vendor_product_name: "",
   });
   const [drinkFile, setDrinkFile] = useState<File | undefined>(undefined);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: partnerDrinks, isLoading: isLoadingPartnerDrinks } = useQuery({
     queryKey: ["partner_drinks", partnerId],
@@ -148,11 +149,23 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                   <TableRow key={pd.id}>
                     <TableCell>
                       {pd.image_url || pd.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Drink"} className="h-10 w-10 rounded-md object-cover" />
+                        <button
+                          type="button"
+                          className="h-10 w-10 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => setPreviewImage(pd.image_url || pd.imageUrl || "")}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Drink"} className="h-10 w-10 rounded-md object-cover" />
+                        </button>
                       ) : pd.drink?.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={pd.drink.image_url} alt={pd.drink.name} className="h-10 w-10 rounded-md object-cover opacity-50" />
+                        <button
+                          type="button"
+                          className="h-10 w-10 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => setPreviewImage(pd.drink!.image_url!)}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={pd.drink.image_url} alt={pd.drink.name} className="h-10 w-10 rounded-md object-cover opacity-50" />
+                        </button>
                       ) : (
                         <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">No Img</div>
                       )}
@@ -207,6 +220,20 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
+        <DialogContent className="max-w-3xl p-2">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image Preview</DialogTitle>
+            <DialogDescription>Drink image preview</DialogDescription>
+          </DialogHeader>
+          {previewImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={previewImage} alt="Drink preview" className="w-full h-auto rounded" />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isDrinkDialogOpen} onOpenChange={setIsDrinkDialogOpen}>
         <DialogContent>

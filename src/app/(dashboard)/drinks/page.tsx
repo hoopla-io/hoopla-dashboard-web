@@ -58,6 +58,7 @@ function DrinksContent() {
   const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "" });
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: drinksData, isLoading } = useQuery({
     queryKey: ["drinks", currentPage, search, perPage],
@@ -158,14 +159,18 @@ function DrinksContent() {
                   <TableCell className="text-muted-foreground">#{drink.id}</TableCell>
                   <TableCell>
                     {drink.image_url ? (
-                      <div className="relative h-12 w-12 overflow-hidden rounded-lg">
+                      <button
+                        type="button"
+                        className="relative h-12 w-12 overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setPreviewImage(drink.image_url!)}
+                      >
                         <Image
                           src={drink.image_url}
                           alt={drink.name}
                           fill
                           className="object-cover"
                         />
-                      </div>
+                      </button>
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
                         <Coffee className="h-6 w-6 text-muted-foreground" />
@@ -259,6 +264,20 @@ function DrinksContent() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
+        <DialogContent className="max-w-3xl p-2">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image Preview</DialogTitle>
+            <DialogDescription>Drink image preview</DialogDescription>
+          </DialogHeader>
+          {previewImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={previewImage} alt="Drink preview" className="w-full h-auto rounded" />
+          )}
         </DialogContent>
       </Dialog>
 
