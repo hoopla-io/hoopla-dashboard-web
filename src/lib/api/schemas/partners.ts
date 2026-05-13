@@ -21,7 +21,7 @@ export const PartnerSchema = z.object({
 export const CreatePartnerSchema = z.object({
   name: z.string().min(1, "Name is required").max(255),
   description: z.string().max(1000).optional(),
-  vendor: z.enum(["iiko", "poster", "deliveryhub", "loyverse"]).optional(),
+  vendor: z.enum(["iiko", "poster", "deliveryhub", "loyverse", "hoopla"]).optional(),
   vendor_id: z.string().optional(),
   vendor_key: z.string().optional(),
   tin_type: z.enum(["tin", "pinfl"]).optional(),

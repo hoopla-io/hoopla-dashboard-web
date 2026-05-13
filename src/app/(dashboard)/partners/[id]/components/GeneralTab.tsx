@@ -163,25 +163,35 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                   <SelectItem value="poster">Poster</SelectItem>
                   <SelectItem value="deliveryhub">DeliveryHub</SelectItem>
                   <SelectItem value="loyverse">Loyverse</SelectItem>
+                  <SelectItem value="hoopla">Hoopla (in-house POS)</SelectItem>
                 </SelectContent>
               </Select>
+              {formData.vendor === "hoopla" && (
+                <p className="text-xs text-muted-foreground">
+                  Cashiers for this partner are managed in the Staff tab.
+                </p>
+              )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="vendor_id">Vendor ID</Label>
-              <Input
-                id="vendor_id"
-                value={formData.vendor_id || ""}
-                onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="vendor_key">Vendor Key</Label>
-              <Input
-                id="vendor_key"
-                value={formData.vendor_key || ""}
-                onChange={(e) => setFormData({ ...formData, vendor_key: e.target.value })}
-              />
-            </div>
+            {formData.vendor !== "hoopla" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="vendor_id">Vendor ID</Label>
+                  <Input
+                    id="vendor_id"
+                    value={formData.vendor_id || ""}
+                    onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vendor_key">Vendor Key</Label>
+                  <Input
+                    id="vendor_key"
+                    value={formData.vendor_key || ""}
+                    onChange={(e) => setFormData({ ...formData, vendor_key: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="space-y-4">

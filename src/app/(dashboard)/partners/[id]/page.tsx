@@ -14,8 +14,9 @@ import { OrdersTab } from "@/app/(dashboard)/partners/[id]/components/OrdersTab"
 import { AttributesTab } from "@/app/(dashboard)/partners/[id]/components/AttributesTab";
 import { FeedbacksTab } from "@/app/(dashboard)/partners/[id]/components/FeedbacksTab";
 import { CategoriesTab } from "@/app/(dashboard)/partners/[id]/components/CategoriesTab";
+import { StaffTab } from "@/app/(dashboard)/partners/[id]/components/StaffTab";
 
-const VALID_TABS = ["general", "shops", "drinks", "orders", "attributes", "feedbacks", "categories"];
+const VALID_TABS = ["general", "shops", "drinks", "orders", "attributes", "feedbacks", "categories", "staff"];
 
 function PartnerDetailContent() {
   const params = useParams();
@@ -73,6 +74,7 @@ function PartnerDetailContent() {
           <TabsTrigger value="attributes">Attributes</TabsTrigger>
           <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="staff">Staff</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -101,6 +103,10 @@ function PartnerDetailContent() {
 
         <TabsContent value="categories">
           <CategoriesTab partnerId={partnerId} />
+        </TabsContent>
+
+        <TabsContent value="staff">
+          <StaffTab partnerId={partnerId} />
         </TabsContent>
       </Tabs>
     </div>
