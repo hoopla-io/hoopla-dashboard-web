@@ -418,7 +418,7 @@ function StoriesContent() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Sort Order</Label>
           <Input
@@ -436,7 +436,7 @@ function StoriesContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Start Date (Optional)</Label>
           <DateTimePicker

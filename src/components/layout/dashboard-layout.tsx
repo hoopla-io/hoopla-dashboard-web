@@ -28,7 +28,7 @@ export function DashboardLayout() {
       <Sidebar />
       <div className="md:ml-60">
         <TopBar />
-        <main className="px-4 py-6 md:px-10 md:py-8">
+        <main className="min-w-0 overflow-x-hidden px-4 py-6 md:px-10 md:py-8">
           <Outlet />
         </main>
       </div>
