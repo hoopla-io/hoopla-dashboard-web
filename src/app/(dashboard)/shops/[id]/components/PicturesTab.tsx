@@ -129,7 +129,6 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {pictures.map((pic) => (
                 <div key={pic.id} className="group relative aspect-square rounded-lg border overflow-hidden bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={pic.image_url}
                     alt="Shop"

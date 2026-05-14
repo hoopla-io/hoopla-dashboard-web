@@ -1,9 +1,10 @@
-"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MapPin, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MapPin, MoreVertical } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,37 +39,41 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageToolbar } from "@/components/layout/page-toolbar";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { Shop, CreateShopRequest } from "@/lib/api/schemas/shops";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
-import { ErrorBoundary } from "@/components/error-boundary";
-
-const ITEMS_PER_PAGE = 10;
 
 function ShopsContent() {
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [search, setSearch] = useQueryState("search", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
+  const [perPage, setPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
+  const [search, setSearch] = useQueryState(
+    "search",
+    parseAsString.withOptions({ throttleMs: 500 }).withDefault("")
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
-
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
-      // Defer state update to avoid "setState during render" or effect warning
       setTimeout(() => setIsCreateOpen(true), 0);
       const params = new URLSearchParams(searchParams.toString());
       params.delete("action");
-      router.replace(`/shops?${params.toString()}`);
+      navigate(`/shops?${params.toString()}`, { replace: true });
     }
-  }, [searchParams, router]);
+  }, [searchParams, navigate]);
+
   const [formData, setFormData] = useState<Partial<CreateShopRequest> & { id?: number }>({
     partner_id: 0,
     name: "",
@@ -78,49 +83,65 @@ function ShopsContent() {
   });
 
   const { data: shopsData, isLoading } = useQuery({
-    queryKey: ["shops", currentPage, search],
-    queryFn: () => shopsApi.getAll({
+    queryKey: ["shops", currentPage, perPage, search],
+    queryFn: () =>
+      shopsApi.getAll({
         page: currentPage,
-        limit: ITEMS_PER_PAGE,
-        search: search || undefined
-    }),
+        limit: perPage,
+        search: search || undefined,
+      }),
   });
 
   const shops = shopsData?.data || [];
   const meta = shopsData?.meta;
   const totalPages = meta?.totalPages || 1;
-  const totalItems = meta?.totalItems || 0;
 
   const { data: partnersData } = useQuery({
     queryKey: ["partners-list"],
-    queryFn: () => partnersApi.getAll({
-        page: 1,
-        limit: 100
-    }),
+    queryFn: () => partnersApi.getAll({ page: 1, limit: 100 }),
   });
-  
   const partners = partnersData?.data || [];
 
   const createMutation = useMutation({
-    mutationFn: ({ data, file }: { data: CreateShopRequest; file?: File }) => shopsApi.create(data, file),
+    mutationFn: ({ data, file }: { data: CreateShopRequest; file?: File }) =>
+      shopsApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
-      toast.success("Shop created successfully!");
+      toast.success("Shop created");
       setIsCreateOpen(false);
-      setFormData({ partner_id: 0, name: "", location_lat: 0, location_long: 0, vendor_terminal_id: "" });
+      setFormData({
+        partner_id: 0,
+        name: "",
+        location_lat: 0,
+        location_long: 0,
+        vendor_terminal_id: "",
+      });
       setSelectedFile(undefined);
     },
     onError: () => toast.error("Failed to create shop"),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data, file }: { id: number; data: Partial<CreateShopRequest>; file?: File }) =>
-      shopsApi.update(id, data, file),
+    mutationFn: ({
+      id,
+      data,
+      file,
+    }: {
+      id: number;
+      data: Partial<CreateShopRequest>;
+      file?: File;
+    }) => shopsApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
-      toast.success("Shop updated successfully!");
+      toast.success("Shop updated");
       setIsCreateOpen(false);
-      setFormData({ partner_id: 0, name: "", location_lat: 0, location_long: 0, vendor_terminal_id: "" });
+      setFormData({
+        partner_id: 0,
+        name: "",
+        location_lat: 0,
+        location_long: 0,
+        vendor_terminal_id: "",
+      });
       setSelectedFile(undefined);
     },
     onError: () => toast.error("Failed to update shop"),
@@ -130,7 +151,7 @@ function ShopsContent() {
     mutationFn: shopsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
-      toast.success("Shop deleted successfully!");
+      toast.success("Shop deleted");
     },
     onError: () => toast.error("Failed to delete shop"),
   });
@@ -142,151 +163,168 @@ function ShopsContent() {
       name: shop.name,
       location_lat: shop.location?.lat ?? shop.location_lat ?? 0,
       location_long: shop.location?.lng ?? shop.location_long ?? 0,
-      vendor_terminal_id: shop.vendor_terminal_id || "", 
+      vendor_terminal_id: shop.vendor_terminal_id || "",
     });
     setIsCreateOpen(true);
   };
 
   const handleCreateOpen = () => {
-     setFormData({
-        partner_id: 0,
-        name: "",
-        location_lat: 0,
-        location_long: 0,
-        vendor_terminal_id: "",
-     });
-     setSelectedFile(undefined);
-     setIsCreateOpen(true);
+    setFormData({
+      partner_id: 0,
+      name: "",
+      location_lat: 0,
+      location_long: 0,
+      vendor_terminal_id: "",
+    });
+    setSelectedFile(undefined);
+    setIsCreateOpen(true);
   };
-
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Shops</h1>
-          <p className="text-muted-foreground">Manage shop locations</p>
+      <PageHeader
+        title="Shops"
+        description="Manage shop locations and POS bindings."
+        action={
+          <Button onClick={handleCreateOpen}>
+            <Plus className="size-4" />
+            Add shop
+          </Button>
+        }
+      />
+
+      <PageToolbar>
+        <div className="relative w-full max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search shops"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value || null);
+              setCurrentPage(1);
+            }}
+            className="pl-9"
+          />
         </div>
-        <Button onClick={handleCreateOpen}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Shop
-        </Button>
-      </div>
+      </PageToolbar>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search shops..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value || null);
-            setCurrentPage(1);
-          }}
-          className="pl-10"
-        />
-      </div>
-
-      <div className="rounded-lg border">
+      <DataTableShell>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px]">ID</TableHead>
-              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead className="w-[64px]">ID</TableHead>
+              <TableHead className="w-[64px]">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Partner</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+                  Loading…
+                </TableCell>
               </TableRow>
             ) : shops.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No shops found
+                <TableCell colSpan={7} className="p-0">
+                  <EmptyState
+                    title="No shops found"
+                    description={
+                      search
+                        ? "Try a different search term."
+                        : "Add your first shop to get started."
+                    }
+                    action={
+                      !search ? (
+                        <Button variant="outline" size="sm" onClick={handleCreateOpen}>
+                          <Plus className="size-4" />
+                          Add shop
+                        </Button>
+                      ) : null
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               shops.map((shop) => (
-                <TableRow 
+                <TableRow
                   key={shop.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => router.push(`/shops/${shop.id}`)}
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/shops/${shop.id}`)}
                 >
-                  <TableCell className="font-medium">#{shop.id}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    #{shop.id}
+                  </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     {shop.image_url ? (
                       <button
                         type="button"
-                        className="cursor-pointer overflow-hidden rounded-md border border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="overflow-hidden rounded-md ring-1 ring-border transition-opacity hover:opacity-80"
                         onClick={() => setSelectedImage(shop.image_url || undefined)}
                       >
-                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                           src={shop.image_url}
-                           alt={shop.name}
-                           width={40}
-                           height={40}
-                           className="h-10 w-10 object-cover hover:scale-110 transition-transform"
-                         />
+                        <img
+                          src={shop.image_url}
+                          alt={shop.name}
+                          width={36}
+                          height={36}
+                          className="size-9 object-cover"
+                        />
                       </button>
                     ) : (
-                      <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
-                        <span className="text-xs font-medium">No Img</span>
+                      <div className="flex size-9 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        N/A
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{shop.name}</TableCell>
-                  <TableCell>{shop.partner?.name || "-"}</TableCell>
+                  <TableCell className="text-sm font-medium text-foreground">{shop.name}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {shop.partner?.name || "—"}
+                  </TableCell>
                   <TableCell>
                     {shop.location_lat && shop.location_long ? (
                       <a
                         href={`https://yandex.com/maps/?text=${shop.location_lat},${shop.location_long}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-primary hover:underline"
+                        className="inline-flex items-center gap-1 font-mono text-xs tabular-nums text-foreground underline-offset-4 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <MapPin className="h-3 w-3" />
+                        <MapPin className="size-3 text-muted-foreground" />
                         {shop.location_lat.toFixed(4)}, {shop.location_long.toFixed(4)}
                       </a>
                     ) : (
-                      <span className="text-muted-foreground">-</span>
+                      <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                     <Switch 
-                        checked={shop.status !== false}
-                        onCheckedChange={(checked) => updateMutation.mutate({ id: shop.id, data: { status: checked } })}
-                      />
+                    <Switch
+                      checked={shop.status !== false}
+                      onCheckedChange={(checked) =>
+                        updateMutation.mutate({ id: shop.id, data: { status: checked } })
+                      }
+                    />
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-1">
-                       <Button 
-                        variant="ghost" 
-                        size="icon"
-                        className="cursor-pointer h-8 w-8"
-                        onClick={() => handleEdit(shop)}
-                      >
-                        <Pencil className="h-4 w-4" />
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon-sm" onClick={() => handleEdit(shop)}>
+                        <Pencil className="size-4" />
                       </Button>
-                      
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
+                          <Button variant="ghost" size="icon-sm">
+                            <MoreVertical className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                           <DropdownMenuItem
+                          <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => deleteMutation.mutate(shop.id)}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="size-4" />
                             Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -298,53 +336,42 @@ function ShopsContent() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-       <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-           Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, totalItems)} of {totalItems} shops
-        </div>
-        <div className="flex items-center gap-2">
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, (p || 1) - 1))}
-                disabled={currentPage === 1}
-            >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-            </Button>
-            <div className="text-sm font-medium">
-                Page {currentPage} of {totalPages}
-            </div>
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, (p || 1) + 1))}
-                disabled={currentPage === totalPages}
-            >
-                Next
-                <ChevronRight className="h-4 w-4" />
-            </Button>
-        </div>
-      </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => setCurrentPage(p)}
+          perPage={perPage}
+          onPerPageChange={(n) => {
+            setPerPage(n);
+            setCurrentPage(1);
+          }}
+          isLoading={isLoading}
+        />
+      </DataTableShell>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{formData.id ? "Edit Shop" : "Create Shop"}</DialogTitle>
-            <DialogDescription>{formData.id ? "Edit shop details" : "Add a new shop location"}</DialogDescription>
+            <DialogTitle>{formData.id ? "Edit shop" : "Create shop"}</DialogTitle>
+            <DialogDescription>
+              {formData.id ? "Update shop details." : "Add a new shop location."}
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { 
-            e.preventDefault(); 
-            if (formData.id) {
-               updateMutation.mutate({ id: formData.id, data: formData, file: selectedFile });
-            } else {
-               createMutation.mutate({ data: formData as CreateShopRequest, file: selectedFile });
-            }
-          }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (formData.id) {
+                updateMutation.mutate({ id: formData.id, data: formData, file: selectedFile });
+              } else {
+                createMutation.mutate({
+                  data: formData as CreateShopRequest,
+                  file: selectedFile,
+                });
+              }
+            }}
+          >
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label>Partner</Label>
                 <Select
                   value={String(formData.partner_id)}
@@ -355,42 +382,58 @@ function ShopsContent() {
                   </SelectTrigger>
                   <SelectContent>
                     {partners.map((p) => (
-                      <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                      <SelectItem key={p.id} value={String(p.id)}>
+                        {p.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label>Name</Label>
-                <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Shop name" />
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Shop name"
+                />
               </div>
-              <div className="space-y-2">
-                <Label>Vendor Terminal ID</Label>
-                <Input value={formData.vendor_terminal_id || ""} onChange={(e) => setFormData({ ...formData, vendor_terminal_id: e.target.value })} placeholder="Terminal ID" />
+              <div className="space-y-1.5">
+                <Label>Vendor terminal ID</Label>
+                <Input
+                  value={formData.vendor_terminal_id || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vendor_terminal_id: e.target.value })
+                  }
+                  placeholder="Terminal ID"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label>Latitude</Label>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     step="any"
-                    value={formData.location_lat === 0 ? "" : formData.location_lat} 
-                    onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })} 
+                    value={formData.location_lat === 0 ? "" : formData.location_lat}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location_lat: Number(e.target.value) })
+                    }
                     placeholder="Latitude"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label>Longitude</Label>
-                  <Input 
-                    type="number" 
+                  <Input
+                    type="number"
                     step="any"
-                    value={formData.location_long === 0 ? "" : formData.location_long} 
-                    onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })} 
+                    value={formData.location_long === 0 ? "" : formData.location_long}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location_long: Number(e.target.value) })
+                    }
                     placeholder="Longitude"
                   />
                 </div>
               </div>
-               <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="shop-file">Image</Label>
                 <Input
                   id="shop-file"
@@ -403,27 +446,45 @@ function ShopsContent() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => {
-                setIsCreateOpen(false);
-                setFormData({ partner_id: 0, name: "", location_lat: 0, location_long: 0 });
-                setSelectedFile(undefined);
-              }}>Cancel</Button>
-              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                {createMutation.isPending || updateMutation.isPending ? "Saving..." : (formData.id ? "Update" : "Create")}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsCreateOpen(false);
+                  setFormData({
+                    partner_id: 0,
+                    name: "",
+                    location_lat: 0,
+                    location_long: 0,
+                  });
+                  setSelectedFile(undefined);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createMutation.isPending || updateMutation.isPending}
+              >
+                {createMutation.isPending || updateMutation.isPending
+                  ? "Saving…"
+                  : formData.id
+                    ? "Save changes"
+                    : "Create"}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
+
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(undefined)}>
         <DialogContent className="max-w-3xl border-none bg-transparent shadow-none">
-          <DialogTitle className="sr-only">Image Preview</DialogTitle>
+          <DialogTitle className="sr-only">Image preview</DialogTitle>
           {selectedImage && (
-            <div className="relative h-[80vh] w-full flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+            <div className="relative flex h-[80vh] w-full items-center justify-center">
               <img
                 src={selectedImage}
-                alt="Shop Preview"
+                alt="Shop preview"
                 className="max-h-full max-w-full rounded-lg object-contain"
               />
             </div>
@@ -437,8 +498,14 @@ function ShopsContent() {
 export default function ShopsPage() {
   return (
     <ErrorBoundary pageName="Shops">
-      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading shops...</div>}>
-         <ShopsContent />
+      <Suspense
+        fallback={
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            Loading shops…
+          </div>
+        }
+      >
+        <ShopsContent />
       </Suspense>
     </ErrorBoundary>
   );

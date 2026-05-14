@@ -1,26 +1,16 @@
-"use client";
+import { Search, Menu } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { Search, Command, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/layout/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useAuthStore } from "@/stores/auth-store";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { CommandPalette } from "@/components/layout/command-palette";
+import { usePageHeaderStore } from "@/stores/page-header-store";
 
 export function TopBar() {
-  const router = useRouter();
-  const { user, logout } = useAuthStore();
   const [commandOpen, setCommandOpen] = useState(false);
+  const title = usePageHeaderStore((s) => s.title);
+  const description = usePageHeaderStore((s) => s.description);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,18 +24,13 @@ export function TopBar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
-
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-6">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/70 bg-background/80 px-4 backdrop-blur md:px-8">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="mr-4 md:hidden">
-              <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon-sm" className="md:hidden">
+              <Menu className="size-4" />
               <span className="sr-only">Toggle menu</span>
             </Button>
           </SheetTrigger>
@@ -54,50 +39,32 @@ export function TopBar() {
           </SheetContent>
         </Sheet>
 
-        <div className="flex-1" />
-
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            className="hidden h-9 w-64 justify-start gap-2 text-muted-foreground md:flex"
-            onClick={() => setCommandOpen(true)}
-          >
-            <Search className="h-4 w-4" />
-            <span>Search...</span>
-            <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              <Command className="h-3 w-3" />K
-            </kbd>
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="flex items-center gap-2 p-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">{user?.name || "Admin"}</span>
-                  <span className="text-xs text-muted-foreground">{user?.login}</span>
-                </div>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="min-w-0 flex-1">
+          {title ? (
+            <div className="flex flex-col gap-0.5">
+              <span className="truncate text-sm font-medium text-foreground">
+                {title}
+              </span>
+              {description ? (
+                <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+                  {description}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
+
+        <button
+          type="button"
+          onClick={() => setCommandOpen(true)}
+          className="hidden h-8 items-center gap-2 rounded-md border border-border bg-muted/40 px-3 text-xs text-muted-foreground transition-colors hover:bg-muted md:flex md:w-72"
+        >
+          <Search className="size-3.5" />
+          <span>Search…</span>
+          <kbd className="ml-auto inline-flex h-5 items-center gap-0.5 rounded border border-border bg-background px-1.5 font-mono text-[10px] text-muted-foreground">
+            <span className="text-[11px]">⌘</span>K
+          </kbd>
+        </button>
       </header>
 
       <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />

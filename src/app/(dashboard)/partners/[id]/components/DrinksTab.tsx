@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ interface DrinksTabProps {
 
 export function DrinksTab({ partnerId }: DrinksTabProps) {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [isDrinkDialogOpen, setIsDrinkDialogOpen] = useState(false);
   const [drinkEditId, setDrinkEditId] = useState<number | null>(null);
   const [drinksFilter, setDrinksFilter] = useState("");
@@ -96,7 +96,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
 
   const handleNavigateToModifiers = (pd: PartnerDrink) => {
     const drinkName = encodeURIComponent(pd.vendor_product_name || pd.name || pd.drink?.name || "Drink");
-    router.push(`/partners/${partnerId}/drinks/${pd.id}/modifiers?drinkName=${drinkName}`);
+    navigate(`/partners/${partnerId}/drinks/${pd.id}/modifiers?drinkName=${drinkName}`);
   };
 
   return (
@@ -154,7 +154,6 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                           className="h-10 w-10 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => setPreviewImage(pd.image_url || pd.imageUrl || "")}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Drink"} className="h-10 w-10 rounded-md object-cover" />
                         </button>
                       ) : pd.drink?.image_url ? (
@@ -163,7 +162,6 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                           className="h-10 w-10 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => setPreviewImage(pd.drink!.image_url!)}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={pd.drink.image_url} alt={pd.drink.name} className="h-10 w-10 rounded-md object-cover opacity-50" />
                         </button>
                       ) : (
@@ -229,7 +227,6 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
             <DialogDescription>Drink image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={previewImage} alt="Drink preview" className="w-full h-auto rounded" />
           )}
         </DialogContent>

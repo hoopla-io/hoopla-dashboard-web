@@ -1,7 +1,6 @@
-"use client";
 
 import { useState, Suspense } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
@@ -28,8 +27,8 @@ const EMPTY_FORM = (partnerDrinkId: number): CreatePartnerDrinkModifierRequest =
 
 function ModifiersContent() {
   const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   const partnerId = Number(params.id);
@@ -117,7 +116,7 @@ function ModifiersContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push(`/partners/${partnerId}?tab=drinks`)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`/partners/${partnerId}?tab=drinks`)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>

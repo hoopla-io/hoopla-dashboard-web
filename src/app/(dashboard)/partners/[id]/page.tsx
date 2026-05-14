@@ -1,11 +1,11 @@
-"use client";
 
 import { Suspense } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHeader } from "@/components/layout/page-header";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { GeneralTab } from "@/app/(dashboard)/partners/[id]/components/GeneralTab";
 import { ShopsTab } from "@/app/(dashboard)/partners/[id]/components/ShopsTab";
@@ -20,8 +20,8 @@ const VALID_TABS = ["general", "shops", "drinks", "orders", "attributes", "feedb
 
 function PartnerDetailContent() {
   const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const partnerId = Number(params.id);
 
   const rawTab = searchParams.get("tab") ?? "general";
@@ -30,7 +30,7 @@ function PartnerDetailContent() {
   function handleTabChange(tab: string) {
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set("tab", tab);
-    router.replace(`?${newParams.toString()}`, { scroll: false });
+    navigate(`?${newParams.toString()}`, { replace: true, preventScrollReset: true });
   }
 
   const { data: partner, isLoading: isLoadingPartner } = useQuery({
@@ -49,20 +49,20 @@ function PartnerDetailContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/partners")}>
-          <ArrowLeft className="h-4 w-4" />
+      <PageHeader title={partner.name} description="Manage partner details and settings." />
+
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="sm" onClick={() => navigate("/partners")}>
+          <ArrowLeft className="size-4" />
+          Back
         </Button>
-        <div className="flex items-center gap-4">
-          {partner.image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={partner.image_url} alt={partner.name} className="h-12 w-12 rounded-full object-cover border" />
-          )}
-          <div>
-            <h1 className="text-2xl font-bold">{partner.name}</h1>
-            <p className="text-sm text-muted-foreground">Manage partner details and settings</p>
-          </div>
-        </div>
+        {partner.image_url ? (
+          <img
+            src={partner.image_url}
+            alt={partner.name}
+            className="size-9 rounded-full object-cover ring-1 ring-border"
+          />
+        ) : null}
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">

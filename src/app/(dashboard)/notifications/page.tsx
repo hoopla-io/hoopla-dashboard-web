@@ -1,11 +1,10 @@
-"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, Bell } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import Image from "@/components/ui/image";
+import { useNavigate } from "react-router-dom";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 import { Button } from "@/components/ui/button";
@@ -17,13 +16,17 @@ import {
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageToolbar } from "@/components/layout/page-toolbar";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { notificationsApi } from "@/lib/api/domains/notifications";
 import type { Notification, CreateNotificationRequest } from "@/lib/api/schemas/notifications";
 
 function NotificationsContent() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [search, setSearch] = useQueryState("search", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
@@ -83,51 +86,64 @@ function NotificationsContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Notifications</h1>
-          <p className="text-muted-foreground">Manage push notifications</p>
+      <PageHeader
+        title="Notifications"
+        description="Send and manage push notifications delivered to the mobile app."
+        action={
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="size-4" />
+            Add notification
+          </Button>
+        }
+      />
+
+      <PageToolbar>
+        <div className="relative w-full max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search notifications"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value || null);
+              setCurrentPage(1);
+            }}
+            className="pl-9"
+          />
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Notification
-        </Button>
-      </div>
+      </PageToolbar>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search notifications..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value || null);
-            setCurrentPage(1);
-          }}
-          className="pl-10"
-        />
-      </div>
-
-      <div className="rounded-lg border">
+      <DataTableShell>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead className="w-[64px]">ID</TableHead>
+              <TableHead className="w-[64px]">Image</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Text</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                  Loading…
+                </TableCell>
               </TableRow>
             ) : notifications.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No notifications found
+                <TableCell colSpan={6} className="p-0">
+                  <EmptyState
+                    title="No notifications yet"
+                    description="Send your first push notification to reach app users."
+                    action={
+                      <Button variant="outline" size="sm" onClick={() => setIsCreateOpen(true)}>
+                        <Plus className="size-4" />
+                        Add notification
+                      </Button>
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -135,14 +151,16 @@ function NotificationsContent() {
                 <TableRow
                   key={notification.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`/notifications/${notification.id}`)}
+                  onClick={() => navigate(`/notifications/${notification.id}`)}
                 >
-                  <TableCell className="text-muted-foreground">#{notification.id}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    #{notification.id}
+                  </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     {notification.image_url ? (
                       <button
                         type="button"
-                        className="relative h-12 w-12 overflow-hidden rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                        className="relative size-10 overflow-hidden rounded-md ring-1 ring-border transition-opacity hover:opacity-80"
                         onClick={() => setPreviewImage(notification.image_url!)}
                       >
                         <Image
@@ -153,43 +171,49 @@ function NotificationsContent() {
                         />
                       </button>
                     ) : (
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-                        <Bell className="h-6 w-6 text-muted-foreground" />
+                      <div className="flex size-10 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        N/A
                       </div>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <span className="font-medium">{notification.title}</span>
+                  <TableCell className="text-sm font-medium text-foreground">
+                    {notification.title}
                   </TableCell>
                   <TableCell>
-                    <span className="text-muted-foreground line-clamp-1 max-w-[300px]">
+                    <span className="line-clamp-1 max-w-[360px] text-xs text-muted-foreground">
                       {notification.text}
                     </span>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-xs text-muted-foreground">
                     {new Date(notification.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <TableCell className="text-right">
+                    <div
+                      className="flex items-center justify-end gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="cursor-pointer"
+                        size="icon-sm"
                         onClick={() => {
                           setEditNotification(notification);
-                          setFormData({ title: notification.title, text: notification.text, url: notification.url || "" });
+                          setFormData({
+                            title: notification.title,
+                            text: notification.text,
+                            url: notification.url || "",
+                          });
                           setSelectedFile(null);
                         }}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="size-4" />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive cursor-pointer"
+                        size="icon-sm"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => deleteMutation.mutate(notification.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="size-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -198,19 +222,18 @@ function NotificationsContent() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        perPage={perPage}
-        onPerPageChange={(v) => {
-          setPerPage(v);
-          setCurrentPage(1);
-        }}
-        isLoading={isLoading}
-      />
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          perPage={perPage}
+          onPerPageChange={(v) => {
+            setPerPage(v);
+            setCurrentPage(1);
+          }}
+          isLoading={isLoading}
+        />
+      </DataTableShell>
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -282,7 +305,6 @@ function NotificationsContent() {
             <DialogDescription>Notification image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={previewImage} alt="Notification preview" className="w-full h-auto rounded" />
           )}
         </DialogContent>
@@ -358,8 +380,8 @@ function NotificationsContent() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-muted">
-                          <Bell className="h-8 w-8 text-muted-foreground" />
+                        <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-medium text-muted-foreground">
+                          N/A
                         </div>
                       )}
                     </div>

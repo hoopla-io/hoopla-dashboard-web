@@ -1,17 +1,15 @@
-"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LayoutPanelTop, Check, ChevronsUpDown, X, CalendarIcon } from "lucide-react";
-import Image from "next/image";
+import { Plus, Pencil, Trash2, Check, ChevronsUpDown, X, CalendarIcon } from "lucide-react";
+import Image from "@/components/ui/image";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -22,6 +20,10 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/layout/page-header";
+import { PageToolbar } from "@/components/layout/page-toolbar";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -436,7 +438,6 @@ function BannersContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
               </button>
               <button
@@ -463,18 +464,24 @@ function BannersContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Banners</h1>
-          <p className="text-muted-foreground">Manage promotional banners</p>
-        </div>
-        <Button onClick={() => { setFormData(defaultForm); setSelectedFile(null); setIsCreateOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Banner
-        </Button>
-      </div>
+      <PageHeader
+        title="Banners"
+        description="Manage promotional banners on the home and partner pages."
+        action={
+          <Button
+            onClick={() => {
+              setFormData(defaultForm);
+              setSelectedFile(null);
+              setIsCreateOpen(true);
+            }}
+          >
+            <Plus className="size-4" />
+            Add banner
+          </Button>
+        }
+      />
 
-      <div className="flex items-center gap-4">
+      <PageToolbar>
         <Select
           value={positionFilter || "all"}
           onValueChange={(v) => {
@@ -482,20 +489,22 @@ function BannersContent() {
             setCurrentPage(1);
           }}
         >
-          <SelectTrigger className="w-[180px]"><SelectValue placeholder="Filter by position" /></SelectTrigger>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by position" />
+          </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Positions</SelectItem>
+            <SelectItem value="all">All positions</SelectItem>
             <SelectItem value="main">Main</SelectItem>
             <SelectItem value="partner">Partner</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </PageToolbar>
 
-      <div className="rounded-lg border">
+      <DataTableShell>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead className="w-[64px]">ID</TableHead>
               <TableHead className="w-[100px]">Image</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Link</TableHead>
@@ -503,50 +512,81 @@ function BannersContent() {
               <TableHead>Order</TableHead>
               <TableHead>Active</TableHead>
               <TableHead>Schedule</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
+                  Loading…
+                </TableCell>
               </TableRow>
             ) : banners.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
-                  No banners found
+                <TableCell colSpan={9} className="p-0">
+                  <EmptyState
+                    title="No banners yet"
+                    description="Promotional banners shown in the app will appear here."
+                    action={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormData(defaultForm);
+                          setSelectedFile(null);
+                          setIsCreateOpen(true);
+                        }}
+                      >
+                        <Plus className="size-4" />
+                        Add banner
+                      </Button>
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               banners.map((banner) => (
                 <TableRow key={banner.id}>
-                  <TableCell className="text-muted-foreground">#{banner.id}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    #{banner.id}
+                  </TableCell>
                   <TableCell>
                     {banner.image_url ? (
                       <button
                         type="button"
-                        className="relative h-10 w-20 overflow-hidden rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        className="relative h-9 w-16 overflow-hidden rounded-md ring-1 ring-border transition-opacity hover:opacity-80"
                         onClick={() => setPreviewImage(banner.image_url!)}
                       >
                         <Image src={banner.image_url} alt={banner.title || "Banner"} fill className="object-cover" />
                       </button>
                     ) : (
-                      <div className="flex h-10 w-20 items-center justify-center rounded bg-muted">
-                        <LayoutPanelTop className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex h-9 w-16 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        N/A
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{banner.title || "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{LINK_TYPE_LABELS[banner.link_type]}</Badge>
-                    {banner.link_value && (
-                      <span className="ml-2 text-xs text-muted-foreground">{banner.link_value}</span>
-                    )}
+                  <TableCell className="text-sm font-medium text-foreground">
+                    {banner.title || "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{POSITION_LABELS[banner.position]}</Badge>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs font-medium text-foreground">
+                        {LINK_TYPE_LABELS[banner.link_type]}
+                      </span>
+                      {banner.link_value && (
+                        <span className="max-w-[180px] truncate font-mono text-[11px] text-muted-foreground">
+                          {banner.link_value}
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
-                  <TableCell>{banner.sort_order}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {POSITION_LABELS[banner.position]}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {banner.sort_order}
+                  </TableCell>
                   <TableCell>
                     <Switch
                       checked={banner.is_active}
@@ -554,22 +594,26 @@ function BannersContent() {
                     />
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {banner.start_date ? new Date(banner.start_date).toLocaleDateString("ru-RU") : "—"}
-                    {" → "}
-                    {banner.end_date ? new Date(banner.end_date).toLocaleDateString("ru-RU") : "—"}
+                    <span className="font-mono tabular-nums">
+                      {banner.start_date ? new Date(banner.start_date).toLocaleDateString("ru-RU") : "—"}
+                    </span>
+                    <span className="px-1">→</span>
+                    <span className="font-mono tabular-nums">
+                      {banner.end_date ? new Date(banner.end_date).toLocaleDateString("ru-RU") : "—"}
+                    </span>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="cursor-pointer" onClick={() => openEdit(banner)}>
-                        <Pencil className="h-4 w-4" />
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="icon-sm" onClick={() => openEdit(banner)}>
+                        <Pencil className="size-4" />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive cursor-pointer"
+                        size="icon-sm"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => deleteMutation.mutate(banner.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="size-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -578,16 +622,18 @@ function BannersContent() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        perPage={perPage}
-        onPerPageChange={(v) => { setPerPage(v); setCurrentPage(1); }}
-        isLoading={isLoading}
-      />
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          perPage={perPage}
+          onPerPageChange={(v) => {
+            setPerPage(v);
+            setCurrentPage(1);
+          }}
+          isLoading={isLoading}
+        />
+      </DataTableShell>
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -637,7 +683,6 @@ function BannersContent() {
             <DialogDescription>Banner image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={previewImage} alt="Banner preview" className="w-full h-auto rounded" />
           )}
         </DialogContent>

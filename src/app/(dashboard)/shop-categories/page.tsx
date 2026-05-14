@@ -1,10 +1,9 @@
-"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, LayoutGrid, Building2, X } from "lucide-react";
-import Image from "next/image";
+import { Plus, Pencil, Trash2, X } from "lucide-react";
+import Image from "@/components/ui/image";
 import { useQueryState, parseAsInteger } from "nuqs";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,9 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { PageHeader } from "@/components/layout/page-header";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { shopCategoriesApi } from "@/lib/api/domains/shop-categories";
 import { partnersApi } from "@/lib/api/domains/partners";
@@ -200,7 +202,6 @@ function ShopCategoriesContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
               </button>
               <button
@@ -227,87 +228,119 @@ function ShopCategoriesContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Shop Categories</h1>
-          <p className="text-muted-foreground">Manage shop categories and linked partners</p>
-        </div>
-        <Button onClick={() => { setFormData(defaultForm); setSelectedFile(null); setIsCreateOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Category
-        </Button>
-      </div>
+      <PageHeader
+        title="Shop Categories"
+        description="Group shops into categories shown in the mobile app."
+        action={
+          <Button
+            onClick={() => {
+              setFormData(defaultForm);
+              setSelectedFile(null);
+              setIsCreateOpen(true);
+            }}
+          >
+            <Plus className="size-4" />
+            Add category
+          </Button>
+        }
+      />
 
-      <div className="rounded-lg border">
+      <DataTableShell>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead className="w-[64px]">ID</TableHead>
+              <TableHead className="w-[64px]">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Order</TableHead>
               <TableHead>Active</TableHead>
-              <TableHead className="w-[160px]"></TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
+                  Loading…
+                </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  No categories found
+                <TableCell colSpan={6} className="p-0">
+                  <EmptyState
+                    title="No categories yet"
+                    description="Create your first category to group shops in the app."
+                    action={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormData(defaultForm);
+                          setSelectedFile(null);
+                          setIsCreateOpen(true);
+                        }}
+                      >
+                        <Plus className="size-4" />
+                        Add category
+                      </Button>
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((category) => (
                 <TableRow key={category.id}>
-                  <TableCell className="text-muted-foreground">#{category.id}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    #{category.id}
+                  </TableCell>
                   <TableCell>
                     {category.image_url ? (
                       <button
                         type="button"
-                        className="relative h-10 w-10 overflow-hidden rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        className="relative size-9 overflow-hidden rounded-md ring-1 ring-border transition-opacity hover:opacity-80"
                         onClick={() => setPreviewImage(category.image_url!)}
                       >
                         <Image src={category.image_url} alt={category.name} fill className="object-cover" />
                       </button>
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-                        <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex size-9 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        N/A
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{category.name}</TableCell>
-                  <TableCell>{category.sort_order}</TableCell>
+                  <TableCell className="text-sm font-medium text-foreground">{category.name}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {category.sort_order}
+                  </TableCell>
                   <TableCell>
                     <Switch
                       checked={category.is_active}
                       onCheckedChange={(v) => toggleActiveMutation.mutate({ id: category.id, is_active: v })}
                     />
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="cursor-pointer text-xs"
-                        onClick={() => { setViewCategory(category); setSelectedPartnerId(""); }}
+                        className="text-xs"
+                        onClick={() => {
+                          setViewCategory(category);
+                          setSelectedPartnerId("");
+                        }}
                       >
                         Partners
                       </Button>
-                      <Button variant="ghost" size="icon" className="cursor-pointer" onClick={() => openEdit(category)}>
-                        <Pencil className="h-4 w-4" />
+                      <Button variant="ghost" size="icon-sm" onClick={() => openEdit(category)}>
+                        <Pencil className="size-4" />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive cursor-pointer"
+                        size="icon-sm"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => deleteMutation.mutate(category.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="size-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -316,16 +349,18 @@ function ShopCategoriesContent() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        perPage={perPage}
-        onPerPageChange={(v) => { setPerPage(v); setCurrentPage(1); }}
-        isLoading={isLoading}
-      />
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          perPage={perPage}
+          onPerPageChange={(v) => {
+            setPerPage(v);
+            setCurrentPage(1);
+          }}
+          isLoading={isLoading}
+        />
+      </DataTableShell>
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -381,21 +416,28 @@ function ShopCategoriesContent() {
               ) : !categoryDetail?.partners || categoryDetail.partners.length === 0 ? (
                 <p className="text-center text-muted-foreground py-4">No partners linked to this category</p>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {categoryDetail.partners.map((partner) => (
-                    <div key={partner.id} className="flex items-center gap-3 rounded-lg border p-2">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted flex-shrink-0">
-                        <Building2 className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{partner.name}</p>
-                      </div>
+                    <div
+                      key={partner.id}
+                      className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2"
+                    >
+                      <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                        #{partner.id}
+                      </span>
+                      <p className="min-w-0 flex-1 truncate text-sm font-medium">{partner.name}</p>
                       <button
                         type="button"
-                        className="text-muted-foreground hover:text-destructive cursor-pointer"
-                        onClick={() => unlinkPartnerMutation.mutate({ partnerId: partner.id, categoryId: viewCategory!.id })}
+                        className="text-muted-foreground transition-colors hover:text-destructive"
+                        onClick={() =>
+                          unlinkPartnerMutation.mutate({
+                            partnerId: partner.id,
+                            categoryId: viewCategory!.id,
+                          })
+                        }
+                        aria-label="Unlink partner"
                       >
-                        <X className="h-4 w-4" />
+                        <X className="size-4" />
                       </button>
                     </div>
                   ))}
@@ -445,7 +487,6 @@ function ShopCategoriesContent() {
             <DialogDescription>Category image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={previewImage} alt="Category preview" className="w-full h-auto rounded" />
           )}
         </DialogContent>

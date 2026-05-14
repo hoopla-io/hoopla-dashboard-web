@@ -1,18 +1,8 @@
-"use client";
-
-import {
-  Building2,
-  Store,
-  ShoppingCart,
-  Users,
-  BookOpen,
-  LayoutPanelTop,
-  Bell,
-  Coffee,
-  LayoutGrid,
-  ArrowRight,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { format, formatDistanceToNow } from "date-fns";
+
 import { partnersApi } from "@/lib/api/domains/partners";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { ordersApi } from "@/lib/api/domains/orders";
@@ -23,7 +13,56 @@ import { notificationsApi } from "@/lib/api/domains/notifications";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import { shopCategoriesApi } from "@/lib/api/domains/shop-categories";
 import { useAuthStore } from "@/stores/auth-store";
-import Link from "next/link";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
+import { cn } from "@/lib/utils";
+
+type ListResponse = { data?: unknown[]; meta?: { totalItems?: number } | null } | null | undefined;
+
+const getTotal = (res: ListResponse) =>
+  res?.meta?.totalItems ?? res?.data?.length ?? 0;
+
+const statusTone: Record<string, StatusTone> = {
+  pending_payment: "pending",
+  pending: "warning",
+  processing: "processing",
+  completed: "success",
+  cancelled: "danger",
+};
+
+const statusLabel: Record<string, string> = {
+  pending_payment: "Awaiting payment",
+  pending: "Pending",
+  processing: "Processing",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+type StatCellProps = {
+  label: string;
+  value: number;
+  meta?: string;
+  href: string;
+};
+
+function StatCell({ label, value, meta, href }: StatCellProps) {
+  return (
+    <Link
+      to={href}
+      className="group flex flex-col gap-1 bg-card p-5 transition-colors hover:bg-muted/40"
+    >
+      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      <span className="font-mono text-3xl font-semibold tracking-tight tabular-nums text-foreground">
+        {value.toLocaleString()}
+      </span>
+      {meta ? (
+        <span className="text-xs text-muted-foreground">{meta}</span>
+      ) : null}
+    </Link>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -32,206 +71,218 @@ export default function DashboardPage() {
     queryKey: ["partners"],
     queryFn: () => partnersApi.getAll(),
   });
-
   const { data: shops } = useQuery({
     queryKey: ["shops"],
     queryFn: () => shopsApi.getAll(),
   });
-
   const { data: orders } = useQuery({
     queryKey: ["orders"],
     queryFn: () => ordersApi.getAll(),
   });
-
   const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: () => usersApi.getAll(),
   });
-
   const { data: stories } = useQuery({
     queryKey: ["stories"],
     queryFn: () => storiesApi.getAll(),
   });
-
   const { data: banners } = useQuery({
     queryKey: ["banners"],
     queryFn: () => bannersApi.getAll(),
   });
-
   const { data: notifications } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => notificationsApi.getAll(),
   });
-
   const { data: drinks } = useQuery({
     queryKey: ["drinks"],
     queryFn: () => drinksApi.getAll(),
   });
-
   const { data: shopCategories } = useQuery({
     queryKey: ["shop-categories"],
     queryFn: () => shopCategoriesApi.getAll(),
   });
 
-  const getTotal = (res?: { data?: unknown[]; meta?: { totalItems?: number } | null } | null) =>
-    res?.meta?.totalItems ?? res?.data?.length ?? 0;
-
   const activeStories = stories?.data?.filter((s) => s.is_active).length ?? 0;
   const activeBanners = banners?.data?.filter((b) => b.is_active).length ?? 0;
-  const activeCategories = shopCategories?.data?.filter((c) => c.is_active).length ?? 0;
+  const activeCategories =
+    shopCategories?.data?.filter((c) => c.is_active).length ?? 0;
 
-  const primaryStats = [
-    {
-      name: "Users",
-      value: getTotal(users),
-      icon: Users,
-      href: "/users",
-      gradient: "from-blue-500 to-blue-600",
-    },
-    {
-      name: "Partners",
-      value: getTotal(partners),
-      icon: Building2,
-      href: "/partners",
-      gradient: "from-violet-500 to-purple-600",
-    },
-    {
-      name: "Shops",
-      value: getTotal(shops),
-      icon: Store,
-      href: "/shops",
-      gradient: "from-emerald-500 to-green-600",
-    },
-    {
-      name: "Orders",
-      value: getTotal(orders),
-      icon: ShoppingCart,
-      href: "/orders",
-      gradient: "from-orange-500 to-amber-600",
-    },
+  const today = useMemo(() => format(new Date(), "EEEE, MMMM d"), []);
+
+  const recentOrders = (orders?.data ?? []).slice(0, 8);
+
+  const primaryStats: StatCellProps[] = [
+    { label: "Users", value: getTotal(users), href: "/users" },
+    { label: "Partners", value: getTotal(partners), href: "/partners" },
+    { label: "Shops", value: getTotal(shops), href: "/shops" },
+    { label: "Orders", value: getTotal(orders), href: "/orders" },
   ];
 
-  const contentStats = [
+  const contentStats: StatCellProps[] = [
     {
-      name: "Stories",
-      total: getTotal(stories),
-      active: activeStories,
-      icon: BookOpen,
+      label: "Stories",
+      value: getTotal(stories),
+      meta: `${activeStories} active`,
       href: "/stories",
-      color: "bg-pink-500/10 text-pink-500",
     },
     {
-      name: "Banners",
-      total: getTotal(banners),
-      active: activeBanners,
-      icon: LayoutPanelTop,
+      label: "Banners",
+      value: getTotal(banners),
+      meta: `${activeBanners} active`,
       href: "/banners",
-      color: "bg-orange-500/10 text-orange-500",
     },
     {
-      name: "Notifications",
-      total: getTotal(notifications),
-      active: null,
-      icon: Bell,
-      href: "/notifications",
-      color: "bg-sky-500/10 text-sky-500",
-    },
-    {
-      name: "Drinks",
-      total: getTotal(drinks),
-      active: null,
-      icon: Coffee,
+      label: "Drinks",
+      value: getTotal(drinks),
       href: "/drinks",
-      color: "bg-rose-500/10 text-rose-500",
     },
     {
-      name: "Categories",
-      total: getTotal(shopCategories),
-      active: activeCategories,
-      icon: LayoutGrid,
+      label: "Categories",
+      value: getTotal(shopCategories),
+      meta: `${activeCategories} active`,
       href: "/shop-categories",
-      color: "bg-teal-500/10 text-teal-500",
+    },
+    {
+      label: "Notifications",
+      value: getTotal(notifications),
+      href: "/notifications",
     },
   ];
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-primary to-primary/80 px-6 py-8 md:px-8 md:py-10">
-        <div className="relative z-10">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary-foreground">
-            Welcome back{user?.name ? `, ${user.name}` : ""}!
-          </h1>
-          <p className="mt-1.5 text-primary-foreground/70 text-sm md:text-base">
-            Here&apos;s what&apos;s happening with your platform today.
-          </p>
+    <div className="space-y-8">
+      <PageHeader
+        title="Dashboard"
+        description={
+          user?.name
+            ? `${today} · Welcome back, ${user.name}.`
+            : today
+        }
+      />
+
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-foreground">Overview</h2>
+          <span className="text-xs text-muted-foreground">Across the platform</span>
         </div>
-        {/* Decorative circles */}
-        <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-white/10" />
-        <div className="absolute -right-2 top-8 h-20 w-20 rounded-full bg-white/5" />
-        <div className="absolute right-20 -bottom-4 h-16 w-16 rounded-full bg-white/5" />
-      </div>
-
-      {/* Primary Stats - Gradient Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {primaryStats.map((stat) => (
-          <Link key={stat.name} href={stat.href} className="group">
-            <div className={`relative overflow-hidden rounded-xl bg-linear-to-br ${stat.gradient} p-5 transition-transform hover:scale-[1.02] active:scale-[0.98]`}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-3xl font-bold text-white">
-                    {stat.value.toLocaleString()}
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-white/80">
-                    {stat.name}
-                  </p>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
-                  <stat.icon className="h-5 w-5 text-white" />
-                </div>
-              </div>
-              {/* Decorative */}
-              <div className="absolute -bottom-3 -right-3 h-16 w-16 rounded-full bg-white/10" />
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Content & Engagement Section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Content & Engagement</h2>
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-          {contentStats.map((stat) => (
-            <Link key={stat.name} href={stat.href} className="group flex">
-              <div className="flex flex-col flex-1 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.color}`}>
-                    <stat.icon className="h-5 w-5" />
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                </div>
-                <p className="text-sm font-medium text-muted-foreground">{stat.name}</p>
-                <div className="mt-1 flex items-baseline gap-1.5">
-                  <span className="text-2xl font-bold">{stat.total}</span>
-                  {stat.active !== null && (
-                    <span className="text-xs font-medium text-emerald-500">
-                      {stat.active} active
-                    </span>
-                  )}
-                </div>
-                <div className="mt-auto pt-3">
-                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-emerald-500 transition-all"
-                      style={{ width: stat.active !== null && stat.total > 0 ? `${Math.min((stat.active / stat.total) * 100, 100)}%` : "0%" }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Link>
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4">
+          {primaryStats.map((stat) => (
+            <StatCell key={stat.label} {...stat} />
           ))}
         </div>
-      </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-foreground">Content & engagement</h2>
+          <span className="text-xs text-muted-foreground">Live counts</span>
+        </div>
+        <div
+          className={cn(
+            "grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border",
+            "md:grid-cols-3 lg:grid-cols-5"
+          )}
+        >
+          {contentStats.map((stat) => (
+            <StatCell key={stat.label} {...stat} />
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-3 lg:col-span-2">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-medium text-foreground">Recent orders</h2>
+            <Link
+              to="/orders"
+              className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
+            {recentOrders.length === 0 ? (
+              <div className="flex min-h-[200px] items-center justify-center px-6 py-10 text-center">
+                <p className="text-xs text-muted-foreground">
+                  No orders yet. New orders will appear here.
+                </p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-border">
+                {recentOrders.map((order) => {
+                  const tone = statusTone[order.status] ?? "neutral";
+                  const label = statusLabel[order.status] ?? order.status;
+                  const ts = order.time ? new Date(order.time) : null;
+                  return (
+                    <li key={order.id}>
+                      <Link
+                        to="/orders"
+                        className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/40"
+                      >
+                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                          #{order.id}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm text-foreground">
+                            {order.drink?.name ?? "Drink"}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {order.shop?.name ?? "—"}
+                            {order.user?.name ? ` · ${order.user.name}` : ""}
+                          </p>
+                        </div>
+                        <StatusBadge label={label} tone={tone} />
+                        <span className="hidden w-24 text-right text-xs text-muted-foreground sm:inline">
+                          {ts ? formatDistanceToNow(ts, { addSuffix: true }) : "—"}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <h2 className="text-sm font-medium text-foreground">Quick actions</h2>
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+            <Link
+              to="/partners?action=create"
+              className="text-sm text-foreground underline-offset-4 hover:underline"
+            >
+              Add a partner
+            </Link>
+            <Link
+              to="/shops?action=create"
+              className="text-sm text-foreground underline-offset-4 hover:underline"
+            >
+              Add a shop
+            </Link>
+            <Link
+              to="/drinks?action=create"
+              className="text-sm text-foreground underline-offset-4 hover:underline"
+            >
+              Add a drink
+            </Link>
+            <Link
+              to="/stories?action=create"
+              className="text-sm text-foreground underline-offset-4 hover:underline"
+            >
+              Publish a story
+            </Link>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Tip: press{" "}
+              <kbd className="inline-flex h-5 items-center rounded border border-border bg-muted px-1.5 font-mono text-[10px] text-muted-foreground">
+                ⌘K
+              </kbd>{" "}
+              from anywhere to jump.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
