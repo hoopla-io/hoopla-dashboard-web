@@ -275,7 +275,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                   onChange={(e) => setDrinkFormData({ ...drinkFormData, vendor_product_id: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="product_price">Price</Label>
                   <Input

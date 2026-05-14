@@ -1,6 +1,7 @@
 
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -19,17 +20,107 @@ function Tabs({
 
 function TabsList({
   className,
+  children,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.List>) {
+  const listRef = React.useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = React.useState(false)
+  const [canScrollRight, setCanScrollRight] = React.useState(false)
+
+  const updateScroll = React.useCallback(() => {
+    const el = listRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 1)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+  }, [])
+
+  React.useEffect(() => {
+    const el = listRef.current
+    if (!el) return
+    updateScroll()
+    el.addEventListener("scroll", updateScroll, { passive: true })
+    const ro = new ResizeObserver(updateScroll)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener("scroll", updateScroll)
+      ro.disconnect()
+    }
+  }, [updateScroll])
+
+  const SCROLL_BUTTON_WIDTH = 40
+
+  const scrollToward = (direction: "left" | "right") => {
+    const el = listRef.current
+    if (!el) return
+    const tabs = Array.from(
+      el.querySelectorAll<HTMLElement>('[role="tab"]')
+    )
+    if (tabs.length === 0) return
+
+    const viewLeft = el.scrollLeft + SCROLL_BUTTON_WIDTH
+    const viewRight =
+      el.scrollLeft + el.clientWidth - SCROLL_BUTTON_WIDTH
+    const maxScroll = el.scrollWidth - el.clientWidth
+
+    if (direction === "left") {
+      for (let i = tabs.length - 1; i >= 0; i--) {
+        if (tabs[i].offsetLeft < viewLeft) {
+          const target = Math.max(0, tabs[i].offsetLeft - SCROLL_BUTTON_WIDTH)
+          el.scrollTo({ left: target, behavior: "smooth" })
+          return
+        }
+      }
+      el.scrollTo({ left: 0, behavior: "smooth" })
+    } else {
+      for (const t of tabs) {
+        const tRight = t.offsetLeft + t.offsetWidth
+        if (tRight > viewRight) {
+          const target = Math.min(
+            maxScroll,
+            tRight - el.clientWidth + SCROLL_BUTTON_WIDTH
+          )
+          el.scrollTo({ left: Math.max(0, target), behavior: "smooth" })
+          return
+        }
+      }
+      el.scrollTo({ left: maxScroll, behavior: "smooth" })
+    }
+  }
+
   return (
-    <TabsPrimitive.List
-      data-slot="tabs-list"
-      className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-lg p-[3px]",
-        className
-      )}
-      {...props}
-    />
+    <div className="relative inline-flex max-w-full">
+      {canScrollLeft ? (
+        <button
+          type="button"
+          aria-label="Scroll tabs left"
+          onClick={() => scrollToward("left")}
+          className="absolute left-0 top-0 z-10 flex h-full w-10 items-center justify-start rounded-l-lg bg-linear-to-r from-muted via-muted/90 to-transparent pl-2 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+      ) : null}
+      <TabsPrimitive.List
+        ref={listRef}
+        data-slot="tabs-list"
+        className={cn(
+          "bg-muted text-muted-foreground inline-flex h-9 w-fit max-w-full items-center justify-center overflow-x-auto rounded-lg p-[3px] scrollbar-none [&::-webkit-scrollbar]:hidden",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </TabsPrimitive.List>
+      {canScrollRight ? (
+        <button
+          type="button"
+          aria-label="Scroll tabs right"
+          onClick={() => scrollToward("right")}
+          className="absolute right-0 top-0 z-10 flex h-full w-10 items-center justify-end rounded-r-lg bg-linear-to-l from-muted via-muted/90 to-transparent pr-2 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      ) : null}
+    </div>
   )
 }
 
