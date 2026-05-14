@@ -1,4 +1,3 @@
-"use client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,96 +24,101 @@ export function PaginationControls({
   onPageChange,
   perPage,
   onPerPageChange,
-  isLoading
+  isLoading,
 }: PaginationControlsProps) {
-  
   const getPageNumbers = () => {
-    const pages = [];
+    const pages: (number | string)[] = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 4) {
+      for (let i = 1; i <= 5; i++) pages.push(i);
+      pages.push("...");
+      pages.push(totalPages);
+    } else if (currentPage >= totalPages - 3) {
+      pages.push(1);
+      pages.push("...");
+      for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
     } else {
-      if (currentPage <= 4) {
-        for (let i = 1; i <= 5; i++) pages.push(i);
-        pages.push("...");
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 3) {
-        pages.push(1);
-        pages.push("...");
-        for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push("...");
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-        pages.push("...");
-        pages.push(totalPages);
-      }
+      pages.push(1);
+      pages.push("...");
+      for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+      pages.push("...");
+      pages.push(totalPages);
     }
     return pages;
   };
 
   return (
-    <div className="flex items-center justify-between mt-4">
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Rows per page</span>
+    <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/30 px-4 py-2.5">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span>Rows</span>
         <Select
           value={String(perPage)}
           onValueChange={(v) => onPerPageChange(Number(v))}
         >
-          <SelectTrigger className="h-8 w-[70px]">
+          <SelectTrigger className="h-7 w-[64px] text-xs">
             <SelectValue placeholder={String(perPage)} />
           </SelectTrigger>
           <SelectContent>
             {[10, 20, 50, 100].map((size) => (
-              <SelectItem key={size} value={String(size)}>
+              <SelectItem key={size} value={String(size)} className="text-xs">
                 {size}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <span className="hidden sm:inline">
+          Page <span className="font-mono tabular-nums text-foreground">{currentPage}</span> of{" "}
+          <span className="font-mono tabular-nums text-foreground">{totalPages || 1}</span>
+        </span>
       </div>
 
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
-          size="sm"
+          size="icon-sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1 || isLoading}
-          className="h-8 w-8 p-0"
+          className="size-7"
         >
-          <span className="sr-only">Go to previous page</span>
-          <ChevronLeft className="h-4 w-4" />
+          <span className="sr-only">Previous page</span>
+          <ChevronLeft className="size-4" />
         </Button>
-        
-        {getPageNumbers().map((page, i) => (
-          typeof page === "number" ? (
-             <Button
-              key={i}
-              variant={currentPage === page ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => onPageChange(page)}
-              disabled={isLoading}
-              className={`h-8 w-8 p-0 font-normal ${
-                  currentPage === page ? "bg-muted text-foreground hover:bg-muted" : "text-muted-foreground"
-              }`}
-            >
-              {page}
-            </Button>
-          ) : (
-            <span key={i} className="px-2 text-muted-foreground">
-              {page}
-            </span>
-          )
-        ))}
+
+        <div className="hidden items-center gap-0.5 sm:flex">
+          {getPageNumbers().map((page, i) =>
+            typeof page === "number" ? (
+              <Button
+                key={i}
+                variant="ghost"
+                size="sm"
+                onClick={() => onPageChange(page)}
+                disabled={isLoading}
+                className={
+                  currentPage === page
+                    ? "h-7 min-w-7 px-2 font-mono text-xs tabular-nums bg-muted text-foreground hover:bg-muted"
+                    : "h-7 min-w-7 px-2 font-mono text-xs tabular-nums text-muted-foreground"
+                }
+              >
+                {page}
+              </Button>
+            ) : (
+              <span key={i} className="px-1 text-xs text-muted-foreground">
+                {page}
+              </span>
+            )
+          )}
+        </div>
 
         <Button
           variant="ghost"
-          size="sm"
+          size="icon-sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages || isLoading}
-          className="h-8 w-8 p-0"
+          className="size-7"
         >
-          <span className="sr-only">Go to next page</span>
-          <ChevronRight className="h-4 w-4" />
+          <span className="sr-only">Next page</span>
+          <ChevronRight className="size-4" />
         </Button>
       </div>
     </div>

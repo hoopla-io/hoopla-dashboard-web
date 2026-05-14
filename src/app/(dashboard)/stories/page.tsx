@@ -1,18 +1,16 @@
-"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useCallback, Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Eye, BookOpen, X, CalendarIcon, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { useQueryState, parseAsInteger } from "nuqs";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -23,9 +21,12 @@ import {
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { PageHeader } from "@/components/layout/page-header";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import { format } from "date-fns";
 import { storiesApi } from "@/lib/api/domains/stories";
-import type { Story, StoryWithItems, StoryItem, CreateStoryRequest } from "@/lib/api/schemas/stories";
+import type { Story, StoryWithItems, CreateStoryRequest } from "@/lib/api/schemas/stories";
 
 function dateToIso(dateStr: string | null | undefined): string {
   if (!dateStr) return "";
@@ -305,7 +306,7 @@ function StoryPreview({
 
 function StoriesContent() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
@@ -465,7 +466,6 @@ function StoriesContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
               </button>
               <button
@@ -492,40 +492,65 @@ function StoriesContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Stories</h1>
-          <p className="text-muted-foreground">Manage stories and their slides</p>
-        </div>
-        <Button onClick={() => { setFormData(defaultForm); setSelectedFile(null); setIsCreateOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Story
-        </Button>
-      </div>
+      <PageHeader
+        title="Stories"
+        description="Publish stories with timed slides shown in the mobile app."
+        action={
+          <Button
+            onClick={() => {
+              setFormData(defaultForm);
+              setSelectedFile(null);
+              setIsCreateOpen(true);
+            }}
+          >
+            <Plus className="size-4" />
+            Add story
+          </Button>
+        }
+      />
 
-      <div className="rounded-lg border">
+      <DataTableShell>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead className="w-[80px]">Cover</TableHead>
+              <TableHead className="w-[64px]">ID</TableHead>
+              <TableHead className="w-[64px]">Cover</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Slides</TableHead>
               <TableHead>Order</TableHead>
               <TableHead>Active</TableHead>
               <TableHead>Schedule</TableHead>
-              <TableHead className="w-[120px]"></TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
+                  Loading…
+                </TableCell>
               </TableRow>
             ) : stories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                  No stories found
+                <TableCell colSpan={8} className="p-0">
+                  <EmptyState
+                    title="No stories yet"
+                    description="Publish your first story to engage users in the mobile app."
+                    action={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormData(defaultForm);
+                          setSelectedFile(null);
+                          setIsCreateOpen(true);
+                        }}
+                      >
+                        <Plus className="size-4" />
+                        Add story
+                      </Button>
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -533,29 +558,33 @@ function StoriesContent() {
                 <TableRow
                   key={story.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`/stories/${story.id}`)}
+                  onClick={() => navigate(`/stories/${story.id}`)}
                 >
-                  <TableCell className="text-muted-foreground">#{story.id}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    #{story.id}
+                  </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     {story.image_url ? (
                       <button
                         type="button"
-                        className="relative h-10 w-10 overflow-hidden rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        className="relative size-9 overflow-hidden rounded-md ring-1 ring-border transition-opacity hover:opacity-80"
                         onClick={() => setPreviewImage(story.image_url!)}
                       >
                         <Image src={story.image_url} alt={story.title} fill className="object-cover" />
                       </button>
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-                        <BookOpen className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex size-9 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
+                        N/A
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{story.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{story.item_count ?? 0} slides</Badge>
+                  <TableCell className="text-sm font-medium text-foreground">{story.title}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {story.item_count ?? 0}
                   </TableCell>
-                  <TableCell>{story.sort_order}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {story.sort_order}
+                  </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Switch
                       checked={story.is_active}
@@ -563,30 +592,33 @@ function StoriesContent() {
                     />
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {story.start_date ? new Date(story.start_date).toLocaleDateString("ru-RU") : "—"}
-                    {" → "}
-                    {story.end_date ? new Date(story.end_date).toLocaleDateString("ru-RU") : "—"}
+                    <span className="font-mono tabular-nums">
+                      {story.start_date ? new Date(story.start_date).toLocaleDateString("ru-RU") : "—"}
+                    </span>
+                    <span className="px-1">→</span>
+                    <span className="font-mono tabular-nums">
+                      {story.end_date ? new Date(story.end_date).toLocaleDateString("ru-RU") : "—"}
+                    </span>
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-1">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="cursor-pointer"
+                        size="icon-sm"
                         onClick={() => setPreviewStoryId(story.id)}
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="size-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="cursor-pointer" onClick={() => openEdit(story)}>
-                        <Pencil className="h-4 w-4" />
+                      <Button variant="ghost" size="icon-sm" onClick={() => openEdit(story)}>
+                        <Pencil className="size-4" />
                       </Button>
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive cursor-pointer"
+                        size="icon-sm"
+                        className="text-destructive hover:text-destructive"
                         onClick={() => deleteMutation.mutate(story.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="size-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -595,16 +627,18 @@ function StoriesContent() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        perPage={perPage}
-        onPerPageChange={(v) => { setPerPage(v); setCurrentPage(1); }}
-        isLoading={isLoading}
-      />
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          perPage={perPage}
+          onPerPageChange={(v) => {
+            setPerPage(v);
+            setCurrentPage(1);
+          }}
+          isLoading={isLoading}
+        />
+      </DataTableShell>
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -654,7 +688,6 @@ function StoriesContent() {
             <DialogDescription>Story image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={previewImage} alt="Story preview" className="w-full h-auto rounded" />
           )}
         </DialogContent>

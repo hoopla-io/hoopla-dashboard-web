@@ -1,7 +1,6 @@
-"use client";
 
 import { useState, Suspense } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 
 function ShopDetailContent() {
   const params = useParams();
-  const router = useRouter();
+  const navigate = useNavigate();
   const shopId = Number(params.id);
 
   const [activeTab, setActiveTab] = useState("general");
@@ -37,12 +36,11 @@ function ShopDetailContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/shops")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/shops")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-4">
           {shop.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={shop.image_url} alt={shop.name} className="h-12 w-12 rounded-lg object-cover border" />
           ) : (
             <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center border">

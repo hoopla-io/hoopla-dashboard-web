@@ -193,7 +193,6 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
 
               {(shop?.image_url || selectedFile) && (
                 <div className="mb-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={selectedFile ? URL.createObjectURL(selectedFile) : (shop?.image_url || "")}
                     alt="Shop Preview"

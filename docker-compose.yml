@@ -4,6 +4,4 @@ services:
       context: .
     restart: always
     ports:
-      - "3020:3000"
-    environment:
-      - NODE_ENV=production
+      - "3020:80"

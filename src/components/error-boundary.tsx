@@ -1,4 +1,3 @@
-"use client";
 
 import { Component, ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Copy, Check } from "lucide-react";

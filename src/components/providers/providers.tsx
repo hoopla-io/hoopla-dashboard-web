@@ -1,9 +1,8 @@
-"use client";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { useState } from "react";
+
 import { Toaster } from "@/components/ui/sonner";
 
 type ProvidersProps = {

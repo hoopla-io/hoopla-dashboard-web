@@ -1,10 +1,9 @@
-"use client";
 
 import { Suspense } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Bell } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { notificationsApi } from "@/lib/api/domains/notifications";
@@ -15,8 +14,8 @@ const VALID_TABS = ["general", "translations"];
 
 function NotificationDetailContent() {
   const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const notificationId = Number(params.id);
 
   const rawTab = searchParams.get("tab") ?? "general";
@@ -25,7 +24,7 @@ function NotificationDetailContent() {
   function handleTabChange(tab: string) {
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set("tab", tab);
-    router.replace(`?${newParams.toString()}`, { scroll: false });
+    navigate(`?${newParams.toString()}`, { replace: true, preventScrollReset: true });
   }
 
   const { data: notification, isLoading } = useQuery({
@@ -45,7 +44,7 @@ function NotificationDetailContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/notifications")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/notifications")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-4">

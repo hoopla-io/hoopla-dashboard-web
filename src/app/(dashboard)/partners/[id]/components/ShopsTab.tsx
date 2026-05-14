@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ interface ShopsTabProps {
 }
 
 export function ShopsTab({ partnerId }: ShopsTabProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
   const [shopFormData, setShopFormData] = useState<CreateShopRequest>({
@@ -167,12 +167,11 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                   <TableRow 
                     key={shop.id} 
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/shops/${shop.id}`)}
+                    onClick={() => navigate(`/shops/${shop.id}`)}
                   >
                     <TableCell>#{shop.id}</TableCell>
                     <TableCell>
                       {shop.image_url ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={shop.image_url}
                           alt={shop.name}

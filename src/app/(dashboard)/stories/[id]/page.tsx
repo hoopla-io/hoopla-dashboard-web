@@ -1,11 +1,10 @@
-"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, ArrowLeft, BookOpen, X, Check, ChevronsUpDown } from "lucide-react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -93,7 +92,7 @@ const defaultItemForm: Omit<CreateStoryItemRequest, "story_id"> = {
 
 function StoryDetailContent() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const navigate = useNavigate();
   const params = useParams();
   const storyId = Number(params.id);
 
@@ -289,7 +288,6 @@ function StoryDetailContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
               </button>
               <button
@@ -326,7 +324,7 @@ function StoryDetailContent() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/stories")}>
+        <Button variant="ghost" size="icon" onClick={() => navigate("/stories")}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-4 flex-1">
@@ -493,7 +491,6 @@ function StoryDetailContent() {
             <DialogDescription>Slide image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={previewImage} alt="Slide preview" className="w-full h-auto rounded" />
           )}
         </DialogContent>
