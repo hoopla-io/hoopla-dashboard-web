@@ -8,7 +8,6 @@ export const PartnerUserSchema = z.object({
   shop_id: z.number().optional().nullable(),
   name: z.string().optional().nullable(),
   phone_number: z.string(),
-  mobile_provider: z.string().optional().nullable(),
   role: z.string(),
   created_at: z.string().optional().nullable(),
   updated_at: z.string().optional().nullable(),
@@ -39,7 +38,6 @@ export const CreatePartnerUserSchema = z.object({
     .max(20),
   password: z.string().min(1).optional(),
   role: z.enum(PARTNER_USER_ROLES).optional(),
-  mobile_provider: z.string().optional(),
   vendor_pin: z.string().regex(/^\d{4}$/, "PIN must be exactly 4 digits").optional(),
 });
 
@@ -50,7 +48,6 @@ export const UpdatePartnerUserSchema = z.object({
   phone_number: z.string().min(9).max(20).optional(),
   password: z.string().min(1).optional(),
   role: z.enum(PARTNER_USER_ROLES).optional(),
-  mobile_provider: z.string().optional(),
   vendor_pin: z.string().regex(/^\d{4}$/, "PIN must be exactly 4 digits").optional(),
 });
 
