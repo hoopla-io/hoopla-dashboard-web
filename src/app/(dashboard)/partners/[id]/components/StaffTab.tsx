@@ -47,7 +47,6 @@ type RoleFilter = "ALL" | PartnerUserRole;
 interface StaffFormState {
   name: string;
   phone_number: string;
-  mobile_provider: string;
   password: string;
   role: PartnerUserRole;
   shop_id: number | null;
@@ -57,7 +56,6 @@ interface StaffFormState {
 const EMPTY_FORM: StaffFormState = {
   name: "",
   phone_number: "",
-  mobile_provider: "",
   password: "",
   role: "CASHIER",
   shop_id: null,
@@ -164,7 +162,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     setForm({
       name: user.name ?? "",
       phone_number: user.phone_number,
-      mobile_provider: user.mobile_provider ?? "",
       password: "",
       role: (user.role === "MANAGER" || user.role === "CASHIER" ? user.role : "CASHIER") as PartnerUserRole,
       shop_id: user.shop_id ?? null,
@@ -198,7 +195,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
 
     const name = form.name.trim();
     const password = form.password.trim();
-    const mobileProvider = form.mobile_provider.trim();
     const vendorPin = form.vendor_pin.trim();
     if (vendorPin && !/^\d{4}$/.test(vendorPin)) {
       return toast.error("PIN must be exactly 4 digits");
@@ -211,7 +207,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         shop_id: form.shop_id,
         name: name || undefined,
         phone_number: form.phone_number.trim(),
-        mobile_provider: mobileProvider,
         password: password || undefined,
         role: form.role,
         vendor_pin: vendorPin || undefined,
@@ -222,7 +217,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         shop_id: form.shop_id,
         name: name || undefined,
         phone_number: form.phone_number.trim(),
-        mobile_provider: mobileProvider,
         password: password || undefined,
         role: form.role,
         vendor_pin: vendorPin || undefined,
@@ -295,26 +289,25 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                 <TableHead>Phone (login)</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Shop</TableHead>
-                <TableHead>Mobile provider</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                     Loading staff...
                   </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-destructive">
+                  <TableCell colSpan={5} className="text-center py-6 text-destructive">
                     Failed to load staff
                   </TableCell>
                 </TableRow>
               ) : filteredStaff.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
                     No staff members
                   </TableCell>
                 </TableRow>
@@ -330,9 +323,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                       {user.shop_id
                         ? user.shop?.name ?? shopById.get(user.shop_id) ?? `#${user.shop_id}`
                         : "-"}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {user.mobile_provider || "-"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
@@ -477,15 +467,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="staff-provider">Mobile provider (optional)</Label>
-                <Input
-                  id="staff-provider"
-                  value={form.mobile_provider}
-                  onChange={(e) => setForm({ ...form, mobile_provider: e.target.value })}
-                  placeholder="Leave blank for cassa cashiers"
-                />
-              </div>
             </div>
 
             <DialogFooter>
