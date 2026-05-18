@@ -7,7 +7,7 @@ export const PartnerUserSchema = z.object({
   partner_id: z.number().optional().nullable(),
   shop_id: z.number().optional().nullable(),
   name: z.string().optional().nullable(),
-  phone_number: z.string(),
+  phone_number: z.string().optional().nullable(),
   role: z.string(),
   created_at: z.string().optional().nullable(),
   updated_at: z.string().optional().nullable(),
@@ -32,11 +32,6 @@ export const CreatePartnerUserSchema = z.object({
   partner_id: z.number(),
   shop_id: z.number().int().positive("Shop is required so the cashier can log in"),
   name: z.string().max(100).optional(),
-  phone_number: z
-    .string()
-    .min(9, "Phone number is required")
-    .max(20),
-  password: z.string().min(1).optional(),
   role: z.enum(PARTNER_USER_ROLES).optional(),
   vendor_pin: z.string().regex(/^\d{4}$/, "PIN must be exactly 4 digits").optional(),
 });
@@ -45,8 +40,6 @@ export const UpdatePartnerUserSchema = z.object({
   partner_id: z.number().optional(),
   shop_id: z.number().int().positive().optional(),
   name: z.string().max(100).optional(),
-  phone_number: z.string().min(9).max(20).optional(),
-  password: z.string().min(1).optional(),
   role: z.enum(PARTNER_USER_ROLES).optional(),
   vendor_pin: z.string().regex(/^\d{4}$/, "PIN must be exactly 4 digits").optional(),
 });

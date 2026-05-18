@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,8 +46,6 @@ type RoleFilter = "ALL" | PartnerUserRole;
 
 interface StaffFormState {
   name: string;
-  phone_number: string;
-  password: string;
   role: PartnerUserRole;
   shop_id: number | null;
   vendor_pin: string;
@@ -55,8 +53,6 @@ interface StaffFormState {
 
 const EMPTY_FORM: StaffFormState = {
   name: "",
-  phone_number: "",
-  password: "",
   role: "CASHIER",
   shop_id: null,
   vendor_pin: "",
@@ -79,7 +75,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editing, setEditing] = useState<PartnerUser | null>(null);
   const [form, setForm] = useState<StaffFormState>(EMPTY_FORM);
-  const [showPassword, setShowPassword] = useState(false);
 
   const { data: shops } = useQuery({
     queryKey: ["shops", partnerId],
@@ -106,8 +101,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
       if (shopFilter !== "ALL" && u.shop_id !== shopFilter) return false;
       if (q) {
         const name = (u.name ?? "").toLowerCase();
-        const phone = u.phone_number.toLowerCase();
-        if (!name.includes(q) && !phone.includes(q)) return false;
+        if (!name.includes(q)) return false;
       }
       return true;
     });
@@ -153,7 +147,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
   function openCreate() {
     setEditing(null);
     setForm(EMPTY_FORM);
-    setShowPassword(false);
     setIsDialogOpen(true);
   }
 
@@ -161,13 +154,10 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     setEditing(user);
     setForm({
       name: user.name ?? "",
-      phone_number: user.phone_number,
-      password: "",
       role: (user.role === "MANAGER" || user.role === "CASHIER" ? user.role : "CASHIER") as PartnerUserRole,
       shop_id: user.shop_id ?? null,
       vendor_pin: "",
     });
-    setShowPassword(false);
     setIsDialogOpen(true);
   }
 
@@ -175,7 +165,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     setIsDialogOpen(false);
     setEditing(null);
     setForm(EMPTY_FORM);
-    setShowPassword(false);
   }
 
   function handleShopChange(value: string) {
@@ -185,16 +174,11 @@ export function StaffTab({ partnerId }: StaffTabProps) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!form.phone_number.trim()) return toast.error("Phone number is required");
     if (!form.shop_id) {
-      return toast.error("Shop is required so the user can log in to cassa.hoopla.uz");
-    }
-    if (!editing && !form.password.trim()) {
-      return toast.error("Set a password so the cashier can log in");
+      return toast.error("Shop is required so the cashier can log in to cassa");
     }
 
     const name = form.name.trim();
-    const password = form.password.trim();
     const vendorPin = form.vendor_pin.trim();
     if (vendorPin && !/^\d{4}$/.test(vendorPin)) {
       return toast.error("PIN must be exactly 4 digits");
@@ -206,8 +190,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         partner_id: partnerId,
         shop_id: form.shop_id,
         name: name || undefined,
-        phone_number: form.phone_number.trim(),
-        password: password || undefined,
         role: form.role,
         vendor_pin: vendorPin || undefined,
       });
@@ -216,8 +198,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         partner_id: partnerId,
         shop_id: form.shop_id,
         name: name || undefined,
-        phone_number: form.phone_number.trim(),
-        password: password || undefined,
         role: form.role,
         vendor_pin: vendorPin || undefined,
       });
@@ -225,7 +205,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
   }
 
   function handleDelete(user: PartnerUser) {
-    if (!confirm(`Delete ${user.name ?? user.phone_number}?`)) return;
+    if (!confirm(`Delete ${user.name ?? `#${user.id}`}?`)) return;
     deleteMutation.mutate(user.id);
   }
 
@@ -236,7 +216,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <Input
-            placeholder="Search by name or phone"
+            placeholder="Search by name"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="md:w-64"
@@ -286,7 +266,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Phone (login)</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Shop</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
@@ -295,19 +274,19 @@ export function StaffTab({ partnerId }: StaffTabProps) {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
                     Loading staff...
                   </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-destructive">
+                  <TableCell colSpan={4} className="text-center py-6 text-destructive">
                     Failed to load staff
                   </TableCell>
                 </TableRow>
               ) : filteredStaff.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
                     No staff members
                   </TableCell>
                 </TableRow>
@@ -315,7 +294,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                 filteredStaff.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
-                    <TableCell className="font-mono text-xs">{user.phone_number}</TableCell>
                     <TableCell>
                       <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
                     </TableCell>
@@ -353,8 +331,8 @@ export function StaffTab({ partnerId }: StaffTabProps) {
               <DialogTitle>{editing ? "Edit staff member" : "Add staff member"}</DialogTitle>
               <DialogDescription>
                 {editing
-                  ? "Update staff details. Leave password blank to keep the current one."
-                  : "Phone number is the login for cassa.hoopla.uz."}
+                  ? "Update staff details. Leave PIN blank to keep the current one."
+                  : "Cashier picks themselves on cassa and signs in with the 4-digit PIN."}
               </DialogDescription>
             </DialogHeader>
 
@@ -368,43 +346,6 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                   placeholder="Full name (optional)"
                   maxLength={100}
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="staff-phone">Phone number (login)</Label>
-                <Input
-                  id="staff-phone"
-                  value={form.phone_number}
-                  onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
-                  placeholder="998XXXXXXXXX"
-                />
-                <p className="text-xs text-muted-foreground">
-                  The cashier types this exact value at cassa.hoopla.uz.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="staff-password">
-                  {editing ? "New password (leave blank to keep)" : "Password"}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="staff-password"
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    placeholder={editing ? "••••••••" : "Share this with the cashier"}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowPassword((v) => !v)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
