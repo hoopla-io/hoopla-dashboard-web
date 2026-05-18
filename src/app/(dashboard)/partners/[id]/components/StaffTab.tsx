@@ -51,6 +51,7 @@ interface StaffFormState {
   password: string;
   role: PartnerUserRole;
   shop_id: number | null;
+  vendor_pin: string;
 }
 
 const EMPTY_FORM: StaffFormState = {
@@ -60,6 +61,7 @@ const EMPTY_FORM: StaffFormState = {
   password: "",
   role: "CASHIER",
   shop_id: null,
+  vendor_pin: "",
 };
 
 const ROLE_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
@@ -166,6 +168,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
       password: "",
       role: (user.role === "MANAGER" || user.role === "CASHIER" ? user.role : "CASHIER") as PartnerUserRole,
       shop_id: user.shop_id ?? null,
+      vendor_pin: "",
     });
     setShowPassword(false);
     setIsDialogOpen(true);
@@ -196,6 +199,10 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     const name = form.name.trim();
     const password = form.password.trim();
     const mobileProvider = form.mobile_provider.trim();
+    const vendorPin = form.vendor_pin.trim();
+    if (vendorPin && !/^\d{4}$/.test(vendorPin)) {
+      return toast.error("PIN must be exactly 4 digits");
+    }
 
     if (editing) {
       updateMutation.mutate({
@@ -207,6 +214,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         mobile_provider: mobileProvider,
         password: password || undefined,
         role: form.role,
+        vendor_pin: vendorPin || undefined,
       });
     } else {
       createMutation.mutate({
@@ -217,6 +225,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         mobile_provider: mobileProvider,
         password: password || undefined,
         role: form.role,
+        vendor_pin: vendorPin || undefined,
       });
     }
   }
@@ -446,6 +455,27 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                   </Select>
                 </div>
               </div>
+
+              {(form.role === "CASHIER" || form.role === "MANAGER") && (
+                <div className="space-y-2">
+                  <Label htmlFor="staff-pin">Cassa PIN (4 digits)</Label>
+                  <Input
+                    id="staff-pin"
+                    value={form.vendor_pin}
+                    onChange={(e) =>
+                      setForm({ ...form, vendor_pin: e.target.value.replace(/\D/g, "").slice(0, 4) })
+                    }
+                    placeholder={editing ? "Leave blank to keep" : "e.g. 1234"}
+                    inputMode="numeric"
+                    pattern="\d{4}"
+                    maxLength={4}
+                    autoComplete="off"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Cashier types this after picking themselves on cassa.hoopla.uz.
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="staff-provider">Mobile provider (optional)</Label>

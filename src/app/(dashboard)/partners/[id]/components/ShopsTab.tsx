@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,10 +26,14 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     location_lat: 0,
     location_long: 0,
     vendor_terminal_id: "",
+    vendor_login: "",
+    vendor_password: "",
+    vendor_organization_id: "",
   });
   const [shopFile, setShopFile] = useState<File | undefined>(undefined);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editingShop, setEditingShop] = useState<any | null>(null);
+  const [showVendorPassword, setShowVendorPassword] = useState(false);
 
   const { data: shopsData, isLoading: isLoadingShops } = useQuery({
     queryKey: ["shops", partnerId],
@@ -51,8 +55,12 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
         location_lat: 0,
         location_long: 0,
         vendor_terminal_id: "",
+        vendor_login: "",
+        vendor_password: "",
+        vendor_organization_id: "",
       });
       setShopFile(undefined);
+      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to create shop"),
   });
@@ -70,9 +78,13 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
         location_lat: 0,
         location_long: 0,
         vendor_terminal_id: "",
+        vendor_login: "",
+        vendor_password: "",
+        vendor_organization_id: "",
       });
       setShopFile(undefined);
       setEditingShop(null);
+      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to update shop"),
   });
@@ -114,8 +126,12 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       location_lat: shop.location?.lat ?? shop.location_lat ?? 0,
       location_long: shop.location?.lng ?? shop.location_long ?? 0,
       vendor_terminal_id: shop.vendor_terminal_id || "",
+      vendor_login: shop.vendor_login || "",
+      vendor_password: "",
+      vendor_organization_id: shop.vendor_organization_id || "",
     });
     setShopFile(undefined);
+    setShowVendorPassword(false);
     setIsCreateShopOpen(true);
   };
 
@@ -127,7 +143,11 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       location_lat: 0,
       location_long: 0,
       vendor_terminal_id: "",
+      vendor_login: "",
+      vendor_password: "",
+      vendor_organization_id: "",
     });
+    setShowVendorPassword(false);
     setShopFile(undefined);
     setIsCreateShopOpen(true);
   };
@@ -255,6 +275,51 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                   value={shopFormData.vendor_terminal_id || ""}
                   onChange={(e) => setShopFormData({ ...shopFormData, vendor_terminal_id: e.target.value })}
                   placeholder="Terminal ID"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shop-vendor-login">Vendor Login</Label>
+                <Input
+                  id="shop-vendor-login"
+                  value={shopFormData.vendor_login || ""}
+                  onChange={(e) => setShopFormData({ ...shopFormData, vendor_login: e.target.value })}
+                  placeholder="Cassa login"
+                  maxLength={255}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shop-vendor-password">
+                  {editingShop ? "Vendor Password (leave blank to keep)" : "Vendor Password"}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="shop-vendor-password"
+                    type={showVendorPassword ? "text" : "password"}
+                    value={shopFormData.vendor_password || ""}
+                    onChange={(e) => setShopFormData({ ...shopFormData, vendor_password: e.target.value })}
+                    placeholder={editingShop ? "••••••••" : "Cassa password"}
+                    minLength={4}
+                    maxLength={255}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowVendorPassword((v) => !v)}
+                  >
+                    {showVendorPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shop-vendor-org-id">Vendor Organization ID</Label>
+                <Input
+                  id="shop-vendor-org-id"
+                  value={shopFormData.vendor_organization_id || ""}
+                  onChange={(e) => setShopFormData({ ...shopFormData, vendor_organization_id: e.target.value })}
+                  placeholder="Organization ID"
+                  maxLength={255}
                 />
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

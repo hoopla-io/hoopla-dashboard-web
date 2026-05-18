@@ -31,3 +31,16 @@ export function formatUZS(
   }).format(sum);
   return opts.suffix ? `${formatted} ${opts.suffix}` : formatted;
 }
+
+// Orders endpoints return price already in som (the backend converts from
+// tiyin before responding), so the regular formatUZS would divide again.
+export function formatSomUZS(
+  sum: number | null | undefined,
+  opts: { suffix?: string } = {},
+): string {
+  const value = sum ?? 0;
+  const formatted = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+  }).format(value);
+  return opts.suffix ? `${formatted} ${opts.suffix}` : formatted;
+}

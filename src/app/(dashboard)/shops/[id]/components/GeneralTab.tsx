@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -44,9 +45,13 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
     location_lat: 0,
     location_long: 0,
     vendor_terminal_id: "",
+    vendor_login: "",
+    vendor_password: "",
+    vendor_organization_id: "",
     status: true,
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+  const [showVendorPassword, setShowVendorPassword] = useState(false);
 
   useEffect(() => {
     if (shop) {
@@ -58,6 +63,9 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
         location_lat: shop.location_lat || shop.location?.lat || 0,
         location_long: shop.location_long || shop.location?.lng || 0,
         vendor_terminal_id: shop.vendor_terminal_id || "",
+        vendor_login: shop.vendor_login || "",
+        vendor_password: "",
+        vendor_organization_id: shop.vendor_organization_id || "",
         status: shop.status ?? true,
       }));
     }
@@ -72,6 +80,8 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       toast.success("Shop updated successfully!");
       setSelectedFile(undefined);
+      setFormData((prev) => ({ ...prev, vendor_password: "" }));
+      setShowVendorPassword(false);
     },
     onError: () => {
       toast.error("Failed to update shop");
@@ -149,6 +159,54 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                   value={formData.vendor_terminal_id}
                   onChange={(e) => setFormData({ ...formData, vendor_terminal_id: e.target.value })}
                   placeholder="Terminal ID"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="vendor_login">Vendor Login</Label>
+                <Input
+                  id="vendor_login"
+                  value={formData.vendor_login || ""}
+                  onChange={(e) => setFormData({ ...formData, vendor_login: e.target.value })}
+                  placeholder="Cassa login"
+                  maxLength={255}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="vendor_password">
+                  Vendor Password (leave blank to keep)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="vendor_password"
+                    type={showVendorPassword ? "text" : "password"}
+                    value={formData.vendor_password || ""}
+                    onChange={(e) => setFormData({ ...formData, vendor_password: e.target.value })}
+                    placeholder="••••••••"
+                    minLength={4}
+                    maxLength={255}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowVendorPassword((v) => !v)}
+                  >
+                    {showVendorPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="vendor_organization_id">Vendor Organization ID</Label>
+                <Input
+                  id="vendor_organization_id"
+                  value={formData.vendor_organization_id || ""}
+                  onChange={(e) => setFormData({ ...formData, vendor_organization_id: e.target.value })}
+                  placeholder="Organization ID"
+                  maxLength={255}
                 />
               </div>
 

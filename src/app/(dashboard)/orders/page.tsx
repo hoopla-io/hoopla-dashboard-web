@@ -51,9 +51,9 @@ const statusOptions = [
 const formatStatus = (status: string) =>
   status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
 
-import { formatUZS } from "@/lib/money";
+import { formatSomUZS } from "@/lib/money";
 
-const formatPrice = (priceTiyin?: number) => formatUZS(priceTiyin);
+const formatPrice = (price?: number) => formatSomUZS(price);
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return "—";

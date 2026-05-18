@@ -26,7 +26,6 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
     name: "",
     description: "",
     vendor: undefined,
-    vendor_id: "",
     vendor_key: "",
     tin_type: undefined,
     tin_num: "",
@@ -44,7 +43,6 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
         description: partner.description || "",
         // @ts-expect-error: vendor property may be null or undefined
         vendor: partner.vendor || undefined,
-        vendor_id: partner.vendor_id || "",
         vendor_key: partner.vendor_key || "",
         // @ts-expect-error: tin_type property may be null or undefined
         tin_type: partner.tin_type || undefined,
@@ -172,24 +170,14 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               )}
             </div>
             {formData.vendor !== "hoopla" && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="vendor_id">Vendor ID</Label>
-                  <Input
-                    id="vendor_id"
-                    value={formData.vendor_id || ""}
-                    onChange={(e) => setFormData({ ...formData, vendor_id: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="vendor_key">Vendor Key</Label>
-                  <Input
-                    id="vendor_key"
-                    value={formData.vendor_key || ""}
-                    onChange={(e) => setFormData({ ...formData, vendor_key: e.target.value })}
-                  />
-                </div>
-              </>
+              <div className="space-y-2">
+                <Label htmlFor="vendor_key">Vendor Key</Label>
+                <Input
+                  id="vendor_key"
+                  value={formData.vendor_key || ""}
+                  onChange={(e) => setFormData({ ...formData, vendor_key: e.target.value })}
+                />
+              </div>
             )}
           </div>
 
