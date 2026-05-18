@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { formatUZS } from "@/lib/money";
 import {
   Table,
   TableBody,
@@ -74,9 +75,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
     statusMutation.mutate({ id: orderId, status: newStatus });
   };
 
-  const formatPrice = (price?: number) => {
-    return price ? new Intl.NumberFormat("uz-UZ").format(price) : "0";
-  };
+  const formatPrice = (priceTiyin?: number) => formatUZS(priceTiyin);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "-";

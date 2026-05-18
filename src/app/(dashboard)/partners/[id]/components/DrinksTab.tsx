@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { drinksApi } from "@/lib/api/domains/drinks";
+import { formatUZS } from "@/lib/money";
 import type { CreatePartnerDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
 
 interface DrinksTabProps {
@@ -171,8 +172,8 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                     <TableCell className="font-medium">{pd.name || pd.drink?.name || "-"}</TableCell>
                     <TableCell>{pd.vendor_product_name || "-"}</TableCell>
                     <TableCell>{pd.vendor_product_id || "-"}</TableCell>
-                    <TableCell>{pd.product_price?.toLocaleString() || "-"}</TableCell>
-                    <TableCell>{pd.vendor_product_price?.toLocaleString() || "-"}</TableCell>
+                    <TableCell>{pd.product_price != null ? formatUZS(pd.product_price) : "-"}</TableCell>
+                    <TableCell>{pd.vendor_product_price != null ? formatUZS(pd.vendor_product_price) : "-"}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
