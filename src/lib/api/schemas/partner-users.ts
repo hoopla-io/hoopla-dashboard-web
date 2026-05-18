@@ -40,6 +40,7 @@ export const CreatePartnerUserSchema = z.object({
   password: z.string().min(1).optional(),
   role: z.enum(PARTNER_USER_ROLES).optional(),
   mobile_provider: z.string().optional(),
+  vendor_pin: z.string().regex(/^\d{4}$/, "PIN must be exactly 4 digits").optional(),
 });
 
 export const UpdatePartnerUserSchema = z.object({
@@ -50,6 +51,7 @@ export const UpdatePartnerUserSchema = z.object({
   password: z.string().min(1).optional(),
   role: z.enum(PARTNER_USER_ROLES).optional(),
   mobile_provider: z.string().optional(),
+  vendor_pin: z.string().regex(/^\d{4}$/, "PIN must be exactly 4 digits").optional(),
 });
 
 export type PartnerUserRole = (typeof PARTNER_USER_ROLES)[number];

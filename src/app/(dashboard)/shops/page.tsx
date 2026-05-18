@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MapPin, MoreVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MapPin, MoreVertical, Eye, EyeOff } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
@@ -64,6 +64,7 @@ function ShopsContent() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+  const [showVendorPassword, setShowVendorPassword] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -80,6 +81,9 @@ function ShopsContent() {
     location_lat: 0,
     location_long: 0,
     vendor_terminal_id: "",
+    vendor_login: "",
+    vendor_password: "",
+    vendor_organization_id: "",
   });
 
   const { data: shopsData, isLoading } = useQuery({
@@ -115,8 +119,12 @@ function ShopsContent() {
         location_lat: 0,
         location_long: 0,
         vendor_terminal_id: "",
+        vendor_login: "",
+        vendor_password: "",
+        vendor_organization_id: "",
       });
       setSelectedFile(undefined);
+      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to create shop"),
   });
@@ -141,8 +149,12 @@ function ShopsContent() {
         location_lat: 0,
         location_long: 0,
         vendor_terminal_id: "",
+        vendor_login: "",
+        vendor_password: "",
+        vendor_organization_id: "",
       });
       setSelectedFile(undefined);
+      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to update shop"),
   });
@@ -164,7 +176,11 @@ function ShopsContent() {
       location_lat: shop.location?.lat ?? shop.location_lat ?? 0,
       location_long: shop.location?.lng ?? shop.location_long ?? 0,
       vendor_terminal_id: shop.vendor_terminal_id || "",
+      vendor_login: shop.vendor_login || "",
+      vendor_password: "",
+      vendor_organization_id: shop.vendor_organization_id || "",
     });
+    setShowVendorPassword(false);
     setIsCreateOpen(true);
   };
 
@@ -175,8 +191,12 @@ function ShopsContent() {
       location_lat: 0,
       location_long: 0,
       vendor_terminal_id: "",
+      vendor_login: "",
+      vendor_password: "",
+      vendor_organization_id: "",
     });
     setSelectedFile(undefined);
+    setShowVendorPassword(false);
     setIsCreateOpen(true);
   };
 
@@ -407,6 +427,54 @@ function ShopsContent() {
                   placeholder="Terminal ID"
                 />
               </div>
+              <div className="space-y-1.5">
+                <Label>Vendor login</Label>
+                <Input
+                  value={formData.vendor_login || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vendor_login: e.target.value })
+                  }
+                  placeholder="Cassa login"
+                  maxLength={255}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>
+                  {formData.id ? "Vendor password (leave blank to keep)" : "Vendor password"}
+                </Label>
+                <div className="relative">
+                  <Input
+                    type={showVendorPassword ? "text" : "password"}
+                    value={formData.vendor_password || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, vendor_password: e.target.value })
+                    }
+                    placeholder={formData.id ? "••••••••" : "Cassa password"}
+                    minLength={4}
+                    maxLength={255}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowVendorPassword((v) => !v)}
+                  >
+                    {showVendorPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Vendor organization ID</Label>
+                <Input
+                  value={formData.vendor_organization_id || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, vendor_organization_id: e.target.value })
+                  }
+                  placeholder="Organization ID"
+                  maxLength={255}
+                />
+              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>Latitude</Label>
@@ -456,8 +524,13 @@ function ShopsContent() {
                     name: "",
                     location_lat: 0,
                     location_long: 0,
+                    vendor_terminal_id: "",
+                    vendor_login: "",
+                    vendor_password: "",
+                    vendor_organization_id: "",
                   });
                   setSelectedFile(undefined);
+                  setShowVendorPassword(false);
                 }}
               >
                 Cancel

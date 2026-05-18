@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ordersApi } from "@/lib/api/domains/orders";
-import { formatUZS } from "@/lib/money";
+import { formatSomUZS } from "@/lib/money";
 
 interface OrdersTabProps {
   partnerId: number;
@@ -64,7 +64,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                     <TableCell className="font-medium">#{order.id}</TableCell>
                     <TableCell>{order.user?.name || order.user?.phone_number || "-"}</TableCell>
                     <TableCell>{order.shop?.name || "-"}</TableCell>
-                    <TableCell>{formatUZS(order.price)} сум</TableCell>
+                    <TableCell>{formatSomUZS(order.price)} сум</TableCell>
                     <TableCell>
                       <Badge variant={
                         order.status === "completed" ? "default" :

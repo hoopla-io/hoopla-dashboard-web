@@ -30,6 +30,9 @@ export const shopsApi = {
     formData.append("location_lat", String(data.location_lat));
     formData.append("location_long", String(data.location_long));
     if (data.vendor_terminal_id) formData.append("vendor_terminal_id", data.vendor_terminal_id);
+    if (data.vendor_login) formData.append("vendor_login", data.vendor_login);
+    if (data.vendor_password) formData.append("vendor_password", data.vendor_password);
+    if (data.vendor_organization_id) formData.append("vendor_organization_id", data.vendor_organization_id);
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<Shop>>("/api/v1/shop/store", formData, {
@@ -45,6 +48,9 @@ export const shopsApi = {
     if (data.location_lat) formData.append("location_lat", String(data.location_lat));
     if (data.location_long) formData.append("location_long", String(data.location_long));
     if (data.vendor_terminal_id) formData.append("vendor_terminal_id", data.vendor_terminal_id);
+    if (data.vendor_login) formData.append("vendor_login", data.vendor_login);
+    if (data.vendor_password) formData.append("vendor_password", data.vendor_password);
+    if (data.vendor_organization_id) formData.append("vendor_organization_id", data.vendor_organization_id);
     if (data.status !== undefined) formData.append("status", String(data.status));
     if (file) formData.append("file", file);
 

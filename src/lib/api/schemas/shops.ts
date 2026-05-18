@@ -20,6 +20,8 @@ export const ShopSchema = z.object({
     image_url: z.string(),
   })).optional(),
   vendor_terminal_id: z.string().optional(),
+  vendor_login: z.string().optional().nullable(),
+  vendor_organization_id: z.string().optional().nullable(),
   can_accept_orders: z.boolean().optional(),
   phoneNumbers: z.any().optional().nullable(),
   workingHours: z.array(z.object({
@@ -38,6 +40,9 @@ export const CreateShopSchema = z.object({
   location_lat: z.number(),
   location_long: z.number(),
   vendor_terminal_id: z.string().optional(),
+  vendor_login: z.string().max(255).optional(),
+  vendor_password: z.string().min(4).max(255).optional(),
+  vendor_organization_id: z.string().max(255).optional(),
   status: z.boolean().optional(),
 });
 

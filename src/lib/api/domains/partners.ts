@@ -24,7 +24,6 @@ export const partnersApi = {
     formData.append("name", data.name);
     if (data.description) formData.append("description", data.description);
     if (data.vendor) formData.append("vendor", data.vendor);
-    if (data.vendor_id) formData.append("vendor_id", data.vendor_id);
     if (data.vendor_key) formData.append("vendor_key", data.vendor_key);
     if (data.tin_type) formData.append("tin_type", data.tin_type);
     if (data.tin_num) formData.append("tin_num", data.tin_num);
@@ -44,7 +43,6 @@ export const partnersApi = {
     if (data.name) formData.append("name", data.name);
     if (data.description) formData.append("description", data.description);
     if (data.vendor) formData.append("vendor", data.vendor);
-    if (data.vendor_id) formData.append("vendor_id", data.vendor_id);
     if (data.vendor_key) formData.append("vendor_key", data.vendor_key);
     if (data.tin_type) formData.append("tin_type", data.tin_type);
     if (data.tin_num) formData.append("tin_num", data.tin_num);
