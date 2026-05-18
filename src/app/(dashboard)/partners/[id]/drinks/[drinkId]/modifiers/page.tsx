@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { drinksApi } from "@/lib/api/domains/drinks";
+import { formatUZS } from "@/lib/money";
 import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest } from "@/lib/api/schemas/drinks";
 
 const EMPTY_FORM = (partnerDrinkId: number): CreatePartnerDrinkModifierRequest => ({
@@ -156,7 +157,7 @@ function ModifiersContent() {
                   <TableRow key={mod.id}>
                     <TableCell className="font-medium">{mod.vendor_addon_name}</TableCell>
                     <TableCell>{mod.vendor_addon_id}</TableCell>
-                    <TableCell>{mod.vendor_addon_price?.toLocaleString() ?? "0"}</TableCell>
+                    <TableCell>{formatUZS(mod.vendor_addon_price)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" onClick={() => openEditModal(mod)}>

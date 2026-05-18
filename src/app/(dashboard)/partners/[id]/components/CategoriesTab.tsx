@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Tag, Coffee, X } from "lucide-react";
 import Image from "@/components/ui/image";
 
+import { formatUZS } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -295,7 +296,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{drink.name}</p>
                         {drink.product_price != null && (
-                          <p className="text-xs text-muted-foreground">{drink.product_price.toLocaleString()} UZS</p>
+                          <p className="text-xs text-muted-foreground">{formatUZS(drink.product_price)} UZS</p>
                         )}
                       </div>
                       <button
