@@ -10,6 +10,7 @@ import { GeneralTab } from "./components/GeneralTab";
 import { PicturesTab } from "./components/PicturesTab";
 import { HoursTab } from "./components/HoursTab";
 import { OrdersTab } from "./components/OrdersTab";
+import { StaffTab } from "./components/StaffTab";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 function ShopDetailContent() {
@@ -68,6 +69,7 @@ function ShopDetailContent() {
           <TabsTrigger value="pictures">Pictures</TabsTrigger>
           <TabsTrigger value="hours">Hours</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="staff">Staff</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -84,6 +86,10 @@ function ShopDetailContent() {
 
         <TabsContent value="orders">
           <OrdersTab shopId={shopId} />
+        </TabsContent>
+
+        <TabsContent value="staff">
+          <StaffTab shopId={shopId} />
         </TabsContent>
       </Tabs>
     </div>
