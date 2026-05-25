@@ -54,7 +54,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
   });
 
   const { data: categoryDetail, isLoading: isDetailLoading } = useQuery({
-    queryKey: ["partner_categories", viewCategory?.id],
+    queryKey: ["partner_category_detail", viewCategory?.id],
     queryFn: () => categoryApi.getById(viewCategory!.id),
     enabled: !!viewCategory,
   });
@@ -100,7 +100,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
     mutationFn: ({ partnerDrinkId, categoryId }: { partnerDrinkId: number; categoryId: number }) =>
       categoryApi.linkDrink({ partner_drink_id: partnerDrinkId, category_id: categoryId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_categories", viewCategory?.id] });
+      queryClient.invalidateQueries({ queryKey: ["partner_category_detail", viewCategory?.id] });
       setSelectedDrinkId("");
       toast.success("Drink linked!");
     },
@@ -111,7 +111,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
     mutationFn: ({ partnerDrinkId, categoryId }: { partnerDrinkId: number; categoryId: number }) =>
       categoryApi.unlinkDrink(partnerDrinkId, categoryId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["partner_categories", viewCategory?.id] });
+      queryClient.invalidateQueries({ queryKey: ["partner_category_detail", viewCategory?.id] });
       toast.success("Drink unlinked!");
     },
     onError: () => toast.error("Failed to unlink drink"),
