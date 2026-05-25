@@ -49,7 +49,7 @@ export const drinksApi = {
 
   getByPartner: async (partnerId: number): Promise<PartnerDrink[]> => {
     const response = await httpClient.get<ApiResponse<PartnerDrink[]>>(`/api/v1/partner/drink/list/${partnerId}`);
-    return response.data.data || [];
+    return Array.isArray(response.data.data) ? response.data.data : [];
   },
 
   assignToPartner: async (data: CreatePartnerDrinkRequest, file?: File): Promise<PartnerDrink> => {
@@ -120,7 +120,7 @@ export const drinksApi = {
 export const categoryApi = {
   getAll: async (partnerId: number): Promise<DrinkCategory[]> => {
     const response = await httpClient.get<ApiResponse<DrinkCategory[]>>(`/api/v1/partner/category/list/${partnerId}`);
-    return response.data.data || [];
+    return Array.isArray(response.data.data) ? response.data.data : [];
   },
 
   getById: async (id: number): Promise<CategoryWithDrinks> => {
