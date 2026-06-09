@@ -82,9 +82,11 @@ export function StaffTab({ shopId }: StaffTabProps) {
   const partnerId = shop?.partner?.id;
 
   const { data: staffData, isLoading, error } = useQuery({
-    queryKey: ["partner-users", "shop", shopId],
-    queryFn: () => partnerUsersApi.getAll({ page: 1, limit: PAGE_SIZE }),
-    enabled: !!shopId,
+    // Scope to the shop's partner so a shop's cashiers don't fall off page 1
+    // once platform-wide partner_users exceed the 100-row cap.
+    queryKey: ["partner-users", "shop", shopId, partnerId],
+    queryFn: () => partnerUsersApi.getAll({ page: 1, limit: PAGE_SIZE, partner_id: partnerId }),
+    enabled: !!shopId && !!partnerId,
   });
 
   const allStaff = useMemo(() => staffData?.data ?? [], [staffData]);

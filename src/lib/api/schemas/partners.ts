@@ -11,6 +11,7 @@ export const PartnerSchema = z.object({
   tin_num: z.string().optional().nullable(),
   tin_percent: z.number().optional().nullable(),
   cashback_percent: z.number().optional().nullable(),
+  commission_percent: z.number().optional().nullable(),
   created_at: z.string().optional().nullable(),
   deleted_at: z.string().optional().nullable(),
   status: z.boolean().optional(),
@@ -26,6 +27,7 @@ export const CreatePartnerSchema = z.object({
   tin_num: z.string().optional(),
   tin_percent: z.number().optional(),
   cashback_percent: z.number().optional(),
+  commission_percent: z.number().optional(),
   status: z.boolean().optional(),
 });
 

@@ -8,6 +8,7 @@ import { formatUZS } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -24,15 +25,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { categoryApi, drinksApi } from "@/lib/api/domains/drinks";
-import type { DrinkCategory, CategoryWithDrinks } from "@/lib/api/schemas/drinks";
+import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
 interface CategoriesTabProps {
   partnerId: number;
@@ -46,7 +40,12 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
   const [formName, setFormName] = useState("");
 
   const [viewCategory, setViewCategory] = useState<DrinkCategory | null>(null);
-  const [selectedDrinkId, setSelectedDrinkId] = useState("");
+  const [selectedDrinkIds, setSelectedDrinkIds] = useState<number[]>([]);
+
+  const toggleSelectDrink = (id: number) =>
+    setSelectedDrinkIds((prev) =>
+      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
+    );
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ["partner_categories", partnerId],
@@ -97,14 +96,14 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
   });
 
   const linkMutation = useMutation({
-    mutationFn: ({ partnerDrinkId, categoryId }: { partnerDrinkId: number; categoryId: number }) =>
-      categoryApi.linkDrink({ partner_drink_id: partnerDrinkId, category_id: categoryId }),
+    mutationFn: (partnerDrinkIds: number[]) =>
+      categoryApi.linkDrink({ category_id: viewCategory!.id, partner_drink_ids: partnerDrinkIds }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_category_detail", viewCategory?.id] });
-      setSelectedDrinkId("");
-      toast.success("Drink linked!");
+      setSelectedDrinkIds([]);
+      toast.success("Drinks linked!");
     },
-    onError: () => toast.error("Failed to link drink"),
+    onError: () => toast.error("Failed to link drinks"),
   });
 
   const unlinkMutation = useMutation({
@@ -169,7 +168,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                         variant="ghost"
                         size="sm"
                         className="cursor-pointer text-xs"
-                        onClick={() => { setViewCategory(category); setSelectedDrinkId(""); }}
+                        onClick={() => { setViewCategory(category); setSelectedDrinkIds([]); }}
                       >
                         Drinks
                       </Button>
@@ -294,7 +293,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{drink.name}</p>
+                        <p className="text-sm font-medium truncate">{drink.vendor_product_name || drink.name}</p>
                         {drink.product_price != null && (
                           <p className="text-xs text-muted-foreground">{formatUZS(drink.product_price)} UZS</p>
                         )}
@@ -313,31 +312,42 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
             </div>
 
             <div>
-              <p className="text-sm font-medium mb-2">Link a drink</p>
-              <div className="flex gap-2">
-                <Select value={selectedDrinkId} onValueChange={setSelectedDrinkId}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select drink..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableDrinks.map((pd) => (
-                      <SelectItem key={pd.id} value={String(pd.id)}>
-                        {pd.vendor_product_name || pd.name || pd.drink?.name || `#${pd.id}`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  disabled={!selectedDrinkId || linkMutation.isPending}
-                  onClick={() => {
-                    if (!viewCategory || !selectedDrinkId) return;
-                    linkMutation.mutate({ partnerDrinkId: Number(selectedDrinkId), categoryId: viewCategory.id });
-                  }}
-                >
-                  Link
-                </Button>
-              </div>
+              <p className="text-sm font-medium mb-2">Link drinks</p>
+              {availableDrinks.length === 0 ? (
+                <p className="text-xs text-muted-foreground">All drinks are already linked to this category.</p>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
+                    {availableDrinks.map((pd) => {
+                      const selected = selectedDrinkIds.includes(pd.id);
+                      const label = pd.vendor_product_name || pd.name || pd.drink?.name || `#${pd.id}`;
+                      return (
+                        <Badge
+                          key={pd.id}
+                          variant={selected ? "default" : "outline"}
+                          className="cursor-pointer select-none"
+                          onClick={() => toggleSelectDrink(pd.id)}
+                        >
+                          {label}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={selectedDrinkIds.length === 0 || linkMutation.isPending}
+                    onClick={() => {
+                      if (!viewCategory || selectedDrinkIds.length === 0) return;
+                      linkMutation.mutate(selectedDrinkIds);
+                    }}
+                  >
+                    {linkMutation.isPending
+                      ? "Linking..."
+                      : `Link${selectedDrinkIds.length > 0 ? ` (${selectedDrinkIds.length})` : ""}`}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>

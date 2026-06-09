@@ -9,6 +9,7 @@ export const CategoryWithDrinksSchema = DrinkCategorySchema.extend({
   partner_drinks: z.array(z.object({
     id: z.number(),
     name: z.string(),
+    vendor_product_name: z.string().optional(),
     image_url: z.string().optional(),
     product_price: z.number().optional(),
   })).nullable(),
@@ -18,7 +19,8 @@ export type DrinkCategory = z.infer<typeof DrinkCategorySchema>;
 export type CategoryWithDrinks = z.infer<typeof CategoryWithDrinksSchema>;
 export type CreateCategoryRequest = { partner_id: number; name: string };
 export type UpdateCategoryRequest = { name: string };
-export type LinkDrinkRequest = { partner_drink_id: number; category_id: number };
+// Multi-select link: link one or more partner drinks to a category at once.
+export type LinkDrinkRequest = { category_id: number; partner_drink_ids: number[] };
 
 export const DrinkSchema = z.object({
   id: z.number(),
@@ -49,6 +51,8 @@ export const PartnerDrinkSchema = z.object({
   product_price: z.number().optional(),
   vendor_product_price: z.number().optional(),
   vendor_product_name: z.string().optional(),
+  is_active: z.boolean().optional(),
+  category_ids: z.array(z.number()).nullable().optional(),
   imageUrl: z.string().optional(),
   image_url: z.string().nullable().optional(),
 });
@@ -60,6 +64,8 @@ export const CreatePartnerDrinkSchema = z.object({
   product_price: z.number().optional(),
   vendor_product_price: z.number().optional(),
   vendor_product_name: z.string().optional(),
+  is_active: z.boolean().optional(),
+  category_ids: z.array(z.number()).optional(),
 });
 
 export const UpdatePartnerDrinkSchema = CreatePartnerDrinkSchema.partial().omit({ partner_id: true, drink_id: true });
