@@ -6,7 +6,7 @@ import type {
 } from "@/lib/api/schemas/partner-users";
 import type { PaginatedResponse, ApiResponse, PaginationParams } from "@/lib/api/types";
 
-export type PartnerUsersGetAllParams = PaginationParams;
+export type PartnerUsersGetAllParams = PaginationParams & { partner_id?: number };
 
 export const partnerUsersApi = {
   getAll: async (params?: PartnerUsersGetAllParams): Promise<PaginatedResponse<PartnerUser>> => {

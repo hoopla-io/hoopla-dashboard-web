@@ -33,43 +33,47 @@ import {
 import { partnerUsersApi } from "@/lib/api/domains/partner-users";
 import { shopsApi } from "@/lib/api/domains/shops";
 import {
-  PARTNER_USER_ROLES,
+  PORTAL_ROLES,
   type PartnerUser,
-  type PartnerUserRole,
+  type PortalUserRole,
 } from "@/lib/api/schemas/partner-users";
 
 interface StaffTabProps {
   partnerId: number;
 }
 
-type RoleFilter = "ALL" | PartnerUserRole;
+type RoleFilter = "ALL" | PortalUserRole;
 
 interface StaffFormState {
   name: string;
-  role: PartnerUserRole;
+  role: PortalUserRole;
+  phone_number: string;
+  password: string;
   shop_id: number | null;
-  vendor_pin: string;
 }
 
 const EMPTY_FORM: StaffFormState = {
   name: "",
-  role: "CASHIER",
+  role: "OWNER",
+  phone_number: "",
+  password: "",
   shop_id: null,
-  vendor_pin: "",
 };
 
 const ROLE_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
-  MANAGER: "secondary",
-  CASHIER: "outline",
+  OWNER: "default",
+  ACCOUNTANT: "secondary",
+  MANAGER: "outline",
 };
 
 const PAGE_SIZE = 100;
+const isPortalRole = (role: string): role is PortalUserRole =>
+  (PORTAL_ROLES as readonly string[]).includes(role);
 
 export function StaffTab({ partnerId }: StaffTabProps) {
   const queryClient = useQueryClient();
 
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("ALL");
-  const [shopFilter, setShopFilter] = useState<number | "ALL">("ALL");
   const [search, setSearch] = useState("");
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -84,28 +88,30 @@ export function StaffTab({ partnerId }: StaffTabProps) {
 
   const { data: staffData, isLoading, error } = useQuery({
     queryKey: ["partner-users", partnerId],
-    queryFn: () => partnerUsersApi.getAll({ page: 1, limit: PAGE_SIZE }),
+    queryFn: () => partnerUsersApi.getAll({ page: 1, limit: PAGE_SIZE, partner_id: partnerId }),
     enabled: !!partnerId,
   });
 
-  const allStaff = useMemo(() => staffData?.data ?? [], [staffData]);
-  const partnerStaff = useMemo(
-    () => allStaff.filter((u) => u.partner_id === partnerId),
-    [allStaff, partnerId]
+  // The server already scopes by partner_id (owner rows + this partner's shop
+  // staff). Show only PORTAL roles here — cassa cashiers are managed in the
+  // SHOP-detail Staff tab and must not be touched from here.
+  const portalStaff = useMemo(
+    () => (staffData?.data ?? []).filter((u) => isPortalRole(u.role)),
+    [staffData]
   );
 
   const filteredStaff = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return partnerStaff.filter((u) => {
+    return portalStaff.filter((u) => {
       if (roleFilter !== "ALL" && u.role !== roleFilter) return false;
-      if (shopFilter !== "ALL" && u.shop_id !== shopFilter) return false;
       if (q) {
         const name = (u.name ?? "").toLowerCase();
-        if (!name.includes(q)) return false;
+        const phone = (u.phone_number ?? "").toLowerCase();
+        if (!name.includes(q) && !phone.includes(q)) return false;
       }
       return true;
     });
-  }, [partnerStaff, roleFilter, shopFilter, search]);
+  }, [portalStaff, roleFilter, search]);
 
   const shopsList = useMemo(() => shops ?? [], [shops]);
   const shopById = useMemo(() => {
@@ -118,10 +124,10 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     mutationFn: partnerUsersApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("Staff member created");
+      toast.success("User created");
       closeDialog();
     },
-    onError: () => toast.error("Failed to create staff member"),
+    onError: () => toast.error("Failed to create user"),
   });
 
   const updateMutation = useMutation({
@@ -129,19 +135,19 @@ export function StaffTab({ partnerId }: StaffTabProps) {
       partnerUsersApi.update(id, rest),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("Staff member updated");
+      toast.success("User updated");
       closeDialog();
     },
-    onError: () => toast.error("Failed to update staff member"),
+    onError: () => toast.error("Failed to update user"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: partnerUsersApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("Staff member deleted");
+      toast.success("User deleted");
     },
-    onError: () => toast.error("Failed to delete staff member"),
+    onError: () => toast.error("Failed to delete user"),
   });
 
   function openCreate() {
@@ -154,9 +160,10 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     setEditing(user);
     setForm({
       name: user.name ?? "",
-      role: (user.role === "MANAGER" || user.role === "CASHIER" ? user.role : "CASHIER") as PartnerUserRole,
-      shop_id: user.shop_id ?? null,
-      vendor_pin: "",
+      role: isPortalRole(user.role) ? user.role : "OWNER",
+      phone_number: user.phone_number ?? "",
+      password: "",
+      shop_id: user.shop_id ?? user.shop?.id ?? null,
     });
     setIsDialogOpen(true);
   }
@@ -167,45 +174,44 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     setForm(EMPTY_FORM);
   }
 
-  function handleShopChange(value: string) {
-    setForm((prev) => ({ ...prev, shop_id: Number(value) }));
-  }
-
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!form.shop_id) {
-      return toast.error("Shop is required so the cashier can log in to cassa");
+    const name = form.name.trim();
+    const phone = form.phone_number.trim();
+    const password = form.password.trim();
+
+    if (!phone) {
+      return toast.error("Phone number is required");
+    }
+    if (!editing && !password) {
+      return toast.error("Password is required for a new user");
+    }
+    // MANAGER is shop-scoped; OWNER / ACCOUNTANT are partner-wide.
+    const isManager = form.role === "MANAGER";
+    if (isManager && !form.shop_id) {
+      return toast.error("Select a shop for a Manager");
     }
 
-    const name = form.name.trim();
-    const vendorPin = form.vendor_pin.trim();
-    if (vendorPin && !/^\d{4}$/.test(vendorPin)) {
-      return toast.error("PIN must be exactly 4 digits");
-    }
+    const payload = {
+      // Owner/Accountant attach to the partner; Manager attaches to a shop.
+      partner_id: isManager ? undefined : partnerId,
+      shop_id: isManager ? form.shop_id ?? undefined : undefined,
+      name: name || undefined,
+      phone_number: phone,
+      role: form.role,
+      password: password || undefined, // blank on edit => keep current
+    };
 
     if (editing) {
-      updateMutation.mutate({
-        id: editing.id,
-        partner_id: partnerId,
-        shop_id: form.shop_id,
-        name: name || undefined,
-        role: form.role,
-        vendor_pin: vendorPin || undefined,
-      });
+      updateMutation.mutate({ id: editing.id, ...payload });
     } else {
-      createMutation.mutate({
-        partner_id: partnerId,
-        shop_id: form.shop_id,
-        name: name || undefined,
-        role: form.role,
-        vendor_pin: vendorPin || undefined,
-      });
+      createMutation.mutate(payload);
     }
   }
 
   function handleDelete(user: PartnerUser) {
-    if (!confirm(`Delete ${user.name ?? `#${user.id}`}?`)) return;
+    if (!confirm(`Delete ${user.name ?? user.phone_number ?? `#${user.id}`}?`)) return;
     deleteMutation.mutate(user.id);
   }
 
@@ -216,7 +222,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <Input
-            placeholder="Search by name"
+            placeholder="Search by name or phone"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="md:w-64"
@@ -227,25 +233,9 @@ export function StaffTab({ partnerId }: StaffTabProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">All roles</SelectItem>
-              {PARTNER_USER_ROLES.map((r) => (
+              {PORTAL_ROLES.map((r) => (
                 <SelectItem key={r} value={r}>
                   {r}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={shopFilter === "ALL" ? "ALL" : String(shopFilter)}
-            onValueChange={(v) => setShopFilter(v === "ALL" ? "ALL" : Number(v))}
-          >
-            <SelectTrigger className="md:w-48">
-              <SelectValue placeholder="Shop" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All shops</SelectItem>
-              {shopsList.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -253,19 +243,20 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Staff
+          Add User
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Staff</CardTitle>
+          <CardTitle>Merchant users</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Shop</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
@@ -274,50 +265,56 @@ export function StaffTab({ partnerId }: StaffTabProps) {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
-                    Loading staff...
+                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                    Loading users...
                   </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-destructive">
-                    Failed to load staff
+                  <TableCell colSpan={5} className="text-center py-6 text-destructive">
+                    Failed to load users
                   </TableCell>
                 </TableRow>
               ) : filteredStaff.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
-                    No staff members
+                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                    No merchant users
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredStaff.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {user.shop_id
-                        ? user.shop?.name ?? shopById.get(user.shop_id) ?? `#${user.shop_id}`
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => handleDelete(user)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                filteredStaff.map((user) => {
+                  const shopId = user.shop_id ?? user.shop?.id ?? null;
+                  return (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {user.phone_number ?? "-"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {user.role === "MANAGER" && shopId
+                          ? user.shop?.name ?? shopById.get(shopId) ?? `#${shopId}`
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => handleDelete(user)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -328,19 +325,19 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{editing ? "Edit staff member" : "Add staff member"}</DialogTitle>
+              <DialogTitle>{editing ? "Edit merchant user" : "Add merchant user"}</DialogTitle>
               <DialogDescription>
                 {editing
-                  ? "Update staff details. Leave PIN blank to keep the current one."
-                  : "Cashier picks themselves on cassa and signs in with the 4-digit PIN."}
+                  ? "Update details. Leave password blank to keep the current one."
+                  : "Merchant-portal user (merchant.hoopla.uz). They sign in with phone + password."}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="staff-name">Name</Label>
+                <Label htmlFor="portal-name">Name</Label>
                 <Input
-                  id="staff-name"
+                  id="portal-name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="Full name (optional)"
@@ -350,16 +347,42 @@ export function StaffTab({ partnerId }: StaffTabProps) {
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="staff-role">Role</Label>
+                  <Label htmlFor="portal-phone">Phone number</Label>
+                  <Input
+                    id="portal-phone"
+                    value={form.phone_number}
+                    onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
+                    placeholder="+998 90 123 45 67"
+                    maxLength={255}
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="portal-password">Password</Label>
+                  <Input
+                    id="portal-password"
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    placeholder={editing ? "Leave blank to keep" : "Set a password"}
+                    maxLength={255}
+                    autoComplete="new-password"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="portal-role">Role</Label>
                   <Select
                     value={form.role}
-                    onValueChange={(v) => setForm({ ...form, role: v as PartnerUserRole })}
+                    onValueChange={(v) => setForm({ ...form, role: v as PortalUserRole })}
                   >
-                    <SelectTrigger id="staff-role">
+                    <SelectTrigger id="portal-role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {PARTNER_USER_ROLES.map((r) => (
+                      {PORTAL_ROLES.map((r) => (
                         <SelectItem key={r} value={r}>
                           {r}
                         </SelectItem>
@@ -367,47 +390,31 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="staff-shop">Shop (required)</Label>
-                  <Select
-                    value={form.shop_id ? String(form.shop_id) : undefined}
-                    onValueChange={handleShopChange}
-                  >
-                    <SelectTrigger id="staff-shop">
-                      <SelectValue placeholder="Select shop" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {shopsList.map((s) => (
-                        <SelectItem key={s.id} value={String(s.id)}>
-                          {s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {form.role === "MANAGER" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="portal-shop">Shop (required)</Label>
+                    <Select
+                      value={form.shop_id ? String(form.shop_id) : undefined}
+                      onValueChange={(v) => setForm({ ...form, shop_id: Number(v) })}
+                    >
+                      <SelectTrigger id="portal-shop">
+                        <SelectValue placeholder="Select shop" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {shopsList.map((s) => (
+                          <SelectItem key={s.id} value={String(s.id)}>
+                            {s.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-
-              {(form.role === "CASHIER" || form.role === "MANAGER") && (
-                <div className="space-y-2">
-                  <Label htmlFor="staff-pin">Cassa PIN (4 digits)</Label>
-                  <Input
-                    id="staff-pin"
-                    value={form.vendor_pin}
-                    onChange={(e) =>
-                      setForm({ ...form, vendor_pin: e.target.value.replace(/\D/g, "").slice(0, 4) })
-                    }
-                    placeholder={editing ? "Leave blank to keep" : "e.g. 1234"}
-                    inputMode="numeric"
-                    pattern="\d{4}"
-                    maxLength={4}
-                    autoComplete="off"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Cashier types this after picking themselves on cassa.hoopla.uz.
-                  </p>
-                </div>
-              )}
-
+              <p className="text-xs text-muted-foreground">
+                Owners and Accountants see the whole partner; a Manager is limited to one shop.
+                Cassa cashier PINs are managed in the shop's Staff tab.
+              </p>
             </div>
 
             <DialogFooter>
@@ -415,7 +422,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSaving}>
-                {isSaving ? "Saving..." : editing ? "Save changes" : "Create staff"}
+                {isSaving ? "Saving..." : editing ? "Save changes" : "Create user"}
               </Button>
             </DialogFooter>
           </form>
