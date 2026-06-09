@@ -10,6 +10,15 @@ import type {
 
 import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
 
+// appendCategoryIds tells the backend to sync this drink's category links to
+// exactly `ids` (sync_categories=true). When ids is undefined the category links
+// are left untouched; an empty array clears them.
+function appendCategoryIds(formData: FormData, ids?: number[]) {
+  if (!ids) return;
+  formData.append("sync_categories", "true");
+  ids.forEach((id) => formData.append("category_ids", String(id)));
+}
+
 export const drinksApi = {
   getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Drink>> => {
     const response = await httpClient.get<ApiResponse<Drink[]>>("/api/v1/drink/list", { params });
@@ -60,6 +69,8 @@ export const drinksApi = {
     if (data.product_price) formData.append("product_price", String(data.product_price));
     if (data.vendor_product_price) formData.append("vendor_product_price", String(data.vendor_product_price));
     if (data.vendor_product_name) formData.append("vendor_product_name", data.vendor_product_name);
+    if (data.is_active !== undefined) formData.append("is_active", String(data.is_active));
+    appendCategoryIds(formData, data.category_ids);
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<PartnerDrink>>("/api/v1/partner/drink/store", formData, {
@@ -68,18 +79,30 @@ export const drinksApi = {
     return response.data.data ?? response.data;
   },
 
-  updatePartnerDrink: async (id: number, data: UpdatePartnerDrinkRequest, file?: File): Promise<PartnerDrink> => {
+  updatePartnerDrink: async (
+    id: number,
+    data: UpdatePartnerDrinkRequest & { drink_id?: number },
+    file?: File
+  ): Promise<PartnerDrink> => {
     const formData = new FormData();
+    if (data.drink_id) formData.append("drink_id", String(data.drink_id));
     if (data.vendor_product_id) formData.append("vendor_product_id", data.vendor_product_id);
     if (data.product_price) formData.append("product_price", String(data.product_price));
     if (data.vendor_product_price) formData.append("vendor_product_price", String(data.vendor_product_price));
     if (data.vendor_product_name) formData.append("vendor_product_name", data.vendor_product_name);
+    if (data.is_active !== undefined) formData.append("is_active", String(data.is_active));
+    appendCategoryIds(formData, data.category_ids);
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<PartnerDrink>>(`/api/v1/partner/drink/edit/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       return response.data.data ?? response.data;
+  },
+
+  // Toggle a partner drink's active/hidden state (controls consumer-app visibility).
+  toggleActive: async (id: number, isActive: boolean): Promise<void> => {
+    await httpClient.put(`/api/v1/partner/drink/toggle/${id}`, { is_active: isActive });
   },
 
   getPartnerDrinkById: async (id: number): Promise<PartnerDrink> => {
@@ -141,6 +164,7 @@ export const categoryApi = {
     await httpClient.delete(`/api/v1/partner/category/delete/${id}`);
   },
 
+  // Link one or more partner drinks to a category in a single request.
   linkDrink: async (data: LinkDrinkRequest): Promise<void> => {
     await httpClient.post("/api/v1/partner/category/link", data);
   },

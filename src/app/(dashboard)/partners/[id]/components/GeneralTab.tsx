@@ -31,6 +31,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
     tin_num: "",
     tin_percent: 0,
     cashback_percent: 0,
+    commission_percent: 10,
     status: true,
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
@@ -49,6 +50,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
         tin_num: partner.tin_num || "",
         tin_percent: partner.tin_percent || 0,
         cashback_percent: partner.cashback_percent || 0,
+        commission_percent: partner.commission_percent ?? 10,
         status: partner.status ?? true,
       });
     }
@@ -226,6 +228,19 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                 value={formData.cashback_percent || 0}
                 onChange={(e) => setFormData({ ...formData, cashback_percent: parseFloat(e.target.value) })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="commission_percent">Commission Percent</Label>
+              <Input
+                id="commission_percent"
+                type="number"
+                step="0.01"
+                value={formData.commission_percent || 0}
+                onChange={(e) => setFormData({ ...formData, commission_percent: parseFloat(e.target.value) })}
+              />
+              <p className="text-xs text-muted-foreground">
+                % Hoopla keeps from each order in settlements after the partner's first 3 months (default 10%).
+              </p>
             </div>
           </div>
         </div>

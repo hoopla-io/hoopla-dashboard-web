@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -6,11 +6,13 @@ import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { drinksApi } from "@/lib/api/domains/drinks";
+import { drinksApi, categoryApi } from "@/lib/api/domains/drinks";
 import { formatSomUZS } from "@/lib/money";
 import type { CreatePartnerDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
 
@@ -31,6 +33,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     product_price: 0,
     vendor_product_price: 0,
     vendor_product_name: "",
+    category_ids: [],
   });
   const [drinkFile, setDrinkFile] = useState<File | undefined>(undefined);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -46,6 +49,34 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     queryFn: () => drinksApi.getAll(),
   });
   const allDrinks = allDrinksData?.data || [];
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["partner_categories", partnerId],
+    queryFn: () => categoryApi.getAll(partnerId),
+    enabled: !!partnerId,
+  });
+
+  // Next vendor product id = highest existing numeric id + 1 (collision-safe
+  // after deletes); used as a convenience default that the admin can override.
+  const nextVendorProductId = useMemo(() => {
+    const nums = (partnerDrinks ?? [])
+      .map((pd) => parseInt(pd.vendor_product_id ?? "", 10))
+      .filter((n) => Number.isFinite(n));
+    const max = nums.length ? Math.max(...nums) : 0;
+    return String(max + 1);
+  }, [partnerDrinks]);
+
+  const toggleCategory = (id: number) => {
+    setDrinkFormData((prev) => {
+      const current = prev.category_ids ?? [];
+      return {
+        ...prev,
+        category_ids: current.includes(id)
+          ? current.filter((c) => c !== id)
+          : [...current, id],
+      };
+    });
+  };
 
   const filteredDrinks = (partnerDrinks || []).filter(pd =>
     pd.vendor_product_name?.toLowerCase().includes(drinksFilter.toLowerCase()) ||
@@ -83,12 +114,28 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     onError: () => toast.error("Failed to remove drink"),
   });
 
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) =>
+      drinksApi.toggleActive(id, isActive),
+    onSuccess: (_data, { isActive }) => {
+      queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
+      toast.success(isActive ? "Drink shown in app" : "Drink hidden from app");
+    },
+    onError: () => toast.error("Failed to update drink status"),
+  });
+
   const handleSaveDrink = () => {
     if (drinkEditId) {
       updateDrinkMutation.mutate({ id: drinkEditId, data: drinkFormData, file: drinkFile });
     } else {
       if (!drinkFormData.drink_id) {
         toast.error("Please select a drink");
+        return;
+      }
+      if (!drinkFile) {
+        // The backend requires an image on create (the upload is unconditional);
+        // guard here so the admin gets a clear message instead of a 500.
+        toast.error("Please select an image");
         return;
       }
       createDrinkMutation.mutate({ data: { ...drinkFormData, partner_id: partnerId }, file: drinkFile });
@@ -114,7 +161,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
         </div>
         <Button onClick={() => {
           setDrinkEditId(null);
-          setDrinkFormData({ partner_id: partnerId, drink_id: 0, product_price: 0, vendor_product_price: 0, vendor_product_name: "", vendor_product_id: "" });
+          setDrinkFormData({ partner_id: partnerId, drink_id: 0, product_price: 0, vendor_product_price: 0, vendor_product_name: "", vendor_product_id: nextVendorProductId, category_ids: [] });
           setDrinkFile(undefined);
           setIsDrinkDialogOpen(true);
         }}>
@@ -137,14 +184,15 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                 <TableHead>Vendor ID</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Vendor Price</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="w-[100px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingPartnerDrinks ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-4">Loading drinks...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-4">Loading drinks...</TableCell></TableRow>
               ) : filteredDrinks.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-4 text-muted-foreground">No drinks found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-4 text-muted-foreground">No drinks found</TableCell></TableRow>
               ) : (
                 filteredDrinks.map(pd => (
                   <TableRow key={pd.id}>
@@ -176,6 +224,19 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                     <TableCell>{pd.vendor_product_price != null ? formatSomUZS(pd.vendor_product_price) : "-"}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
+                        <Switch
+                          checked={pd.is_active !== false}
+                          onCheckedChange={(checked) => toggleActiveMutation.mutate({ id: pd.id, isActive: checked })}
+                          disabled={toggleActiveMutation.isPending}
+                          aria-label={pd.is_active !== false ? "Hide drink from app" : "Show drink in app"}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                          {pd.is_active !== false ? "Active" : "Hidden"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -195,6 +256,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                               product_price: pd.product_price || 0,
                               vendor_product_price: pd.vendor_product_price || 0,
                               vendor_product_name: pd.vendor_product_name || "",
+                              category_ids: pd.category_ids ?? [],
                             });
                             setDrinkFile(undefined);
                             setIsDrinkDialogOpen(true);
@@ -241,25 +303,22 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleSaveDrink(); }}>
             <div className="space-y-4 py-4">
-              {!drinkEditId && (
-                <div className="space-y-2">
-                  <Label htmlFor="drink-select">Select Drink</Label>
-                  <Select
-                    value={String(drinkFormData.drink_id)}
-                    onValueChange={(val) => setDrinkFormData({ ...drinkFormData, drink_id: Number(val) })}
-                    disabled={!!drinkEditId}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a drink" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allDrinks.map(d => (
-                        <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="drink-select">Select Drink</Label>
+                <Select
+                  value={drinkFormData.drink_id ? String(drinkFormData.drink_id) : undefined}
+                  onValueChange={(val) => setDrinkFormData({ ...drinkFormData, drink_id: Number(val) })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a drink" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allDrinks.map(d => (
+                      <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="vendor_product_name">Vendor Product Name</Label>
                 <Input
@@ -295,6 +354,28 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                     onChange={(e) => setDrinkFormData({ ...drinkFormData, vendor_product_price: parseFloat(e.target.value) })}
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Categories</Label>
+                {categories.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No categories yet. Create them in the Categories tab.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((c) => {
+                      const selected = (drinkFormData.category_ids ?? []).includes(c.id);
+                      return (
+                        <Badge
+                          key={c.id}
+                          variant={selected ? "default" : "outline"}
+                          className="cursor-pointer select-none"
+                          onClick={() => toggleCategory(c.id)}
+                        >
+                          {c.name}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="drink-file">Image</Label>
