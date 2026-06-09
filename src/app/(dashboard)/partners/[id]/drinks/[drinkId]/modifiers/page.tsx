@@ -1,5 +1,5 @@
 
-import { useState, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -51,17 +51,28 @@ function ModifiersContent() {
     enabled: !!partnerDrinkId,
   });
 
-  const modifiers = modifiersData?.data || [];
+  const modifiers = useMemo(() => modifiersData?.data || [], [modifiersData]);
   const meta = modifiersData?.meta;
   const totalPages = meta?.totalPages || 1;
 
+  // Convenience default for Vendor Addon ID: next integer after the highest
+  // existing numeric id (editable). Mirrors the drink Vendor Product ID autofill.
+  const nextVendorAddonId = useMemo(() => {
+    const nums = modifiers
+      .map((m) => parseInt(m.vendor_addon_id ?? "", 10))
+      .filter((n) => Number.isFinite(n));
+    const max = nums.length ? Math.max(...nums) : 0;
+    return String(max + 1);
+  }, [modifiers]);
+
   const createMutation = useMutation({
     mutationFn: (data: CreatePartnerDrinkModifierRequest) => drinksApi.createModifier(data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
       toast.success("Addon created successfully");
-      // Clear form but keep modal open for next addon
-      setAddForm(EMPTY_FORM(partnerDrinkId));
+      // Keep the modal open and pre-fill the next Vendor Addon ID (prev + 1).
+      const nextId = String((parseInt(variables.vendor_addon_id ?? "", 10) || 0) + 1);
+      setAddForm({ ...EMPTY_FORM(partnerDrinkId), vendor_addon_id: nextId });
     },
     onError: () => toast.error("Failed to create addon"),
   });
@@ -127,7 +138,7 @@ function ModifiersContent() {
       </div>
 
       <div className="flex justify-end">
-        <Button onClick={() => { setAddForm(EMPTY_FORM(partnerDrinkId)); setAddModalOpen(true); }}>
+        <Button onClick={() => { setAddForm({ ...EMPTY_FORM(partnerDrinkId), vendor_addon_id: nextVendorAddonId }); setAddModalOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Addon
         </Button>
