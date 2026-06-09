@@ -29,6 +29,7 @@ export const partnersApi = {
     if (data.tin_num) formData.append("tin_num", data.tin_num);
     if (data.tin_percent !== undefined) formData.append("tin_percent", String(data.tin_percent));
     if (data.cashback_percent !== undefined) formData.append("cashback_percent", String(data.cashback_percent));
+    if (data.commission_percent !== undefined) formData.append("commission_percent", String(data.commission_percent));
     if (data.status !== undefined) formData.append("status", data.status ? "1" : "0");
     if (file) formData.append("file", file);
 
@@ -48,6 +49,7 @@ export const partnersApi = {
     if (data.tin_num) formData.append("tin_num", data.tin_num);
     if (data.tin_percent !== undefined) formData.append("tin_percent", String(data.tin_percent));
     if (data.cashback_percent !== undefined) formData.append("cashback_percent", String(data.cashback_percent));
+    if (data.commission_percent !== undefined) formData.append("commission_percent", String(data.commission_percent));
     if (data.status !== undefined) formData.append("status", data.status ? "1" : "0");
     if (file) formData.append("file", file);
 
