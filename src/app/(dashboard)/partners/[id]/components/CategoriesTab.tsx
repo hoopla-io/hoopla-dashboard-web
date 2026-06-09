@@ -116,8 +116,10 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
     onError: () => toast.error("Failed to unlink drink"),
   });
 
-  const linkedDrinkIds = categoryDetail?.partner_drinks?.map((d) => d.id) ?? [];
-  const availableDrinks = partnerDrinks.filter((pd) => !linkedDrinkIds.includes(pd.id));
+  // Offer only drinks that aren't in ANY category yet — these are the ones the
+  // app shows under "Other". Drinks already in this (or another) category are
+  // excluded so each drink is linked from its uncategorized state.
+  const availableDrinks = partnerDrinks.filter((pd) => (pd.category_ids?.length ?? 0) === 0);
 
   return (
     <div className="space-y-6">
