@@ -55,11 +55,11 @@ function ModifiersContent() {
   const meta = modifiersData?.meta;
   const totalPages = meta?.totalPages || 1;
 
-  // Convenience default for Vendor Addon ID: next integer after the highest
-  // existing numeric id (editable). Mirrors the drink Vendor Product ID autofill.
-  const nextVendorAddonId = useMemo(() => {
+  // Convenience default for Vendor Group ID: next integer after the highest
+  // existing numeric group id (editable). Vendor Addon ID stays manual.
+  const nextVendorGroupId = useMemo(() => {
     const nums = modifiers
-      .map((m) => parseInt(m.vendor_addon_id ?? "", 10))
+      .map((m) => parseInt(m.vendor_group_id ?? "", 10))
       .filter((n) => Number.isFinite(n));
     const max = nums.length ? Math.max(...nums) : 0;
     return String(max + 1);
@@ -70,9 +70,9 @@ function ModifiersContent() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
       toast.success("Addon created successfully");
-      // Keep the modal open and pre-fill the next Vendor Addon ID (prev + 1).
-      const nextId = String((parseInt(variables.vendor_addon_id ?? "", 10) || 0) + 1);
-      setAddForm({ ...EMPTY_FORM(partnerDrinkId), vendor_addon_id: nextId });
+      // Keep the modal open and pre-fill the next Vendor Group ID (prev + 1).
+      const nextGroupId = String((parseInt(variables.vendor_group_id ?? "", 10) || 0) + 1);
+      setAddForm({ ...EMPTY_FORM(partnerDrinkId), vendor_group_id: nextGroupId });
     },
     onError: () => toast.error("Failed to create addon"),
   });
@@ -138,7 +138,7 @@ function ModifiersContent() {
       </div>
 
       <div className="flex justify-end">
-        <Button onClick={() => { setAddForm({ ...EMPTY_FORM(partnerDrinkId), vendor_addon_id: nextVendorAddonId }); setAddModalOpen(true); }}>
+        <Button onClick={() => { setAddForm({ ...EMPTY_FORM(partnerDrinkId), vendor_group_id: nextVendorGroupId }); setAddModalOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Addon
         </Button>
