@@ -42,4 +42,26 @@ export const promocodesApi = {
   delete: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/promocode/delete/${id}`);
   },
+
+  bulkCreate: async (
+    data: Omit<CreatePromocodeRequest, "code"> & {
+      count: number;
+      code_prefix?: string;
+      code_length?: number;
+    }
+  ): Promise<{ count: number; codes: string[] }> => {
+    const response = await httpClient.post<ApiResponse<{ count: number; codes: string[] }>>(
+      "/api/v1/promocode/bulk",
+      data
+    );
+    return response.data.data ?? response.data;
+  },
+
+  exportCsv: async (params?: { code?: string; is_active?: boolean }): Promise<Blob> => {
+    const response = await httpClient.get("/api/v1/promocode/export", {
+      params,
+      responseType: "blob",
+    });
+    return response.data as Blob;
+  },
 };

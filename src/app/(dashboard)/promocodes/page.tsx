@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, CalendarIcon, X, Check, ChevronsUpDown } from "lucide-react";
+import { Plus, Pencil, Trash2, CalendarIcon, X, Check, ChevronsUpDown, Layers, Download } from "lucide-react";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { format } from "date-fns";
 
@@ -67,6 +67,16 @@ function numOrUndef(v: string): number | undefined {
   if (v === "") return undefined;
   const n = Number(v);
   return isNaN(n) ? undefined : n;
+}
+
+function downloadFile(filename: string, content: Blob | string) {
+  const blob = typeof content === "string" ? new Blob([content], { type: "text/csv" }) : content;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 const defaultForm: CreatePromocodeRequest = {
@@ -207,6 +217,11 @@ function PromocodesContent() {
   const [activeFilter, setActiveFilter] = useQueryState("active", parseAsString.withDefault(""));
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
+  const [bulkCount, setBulkCount] = useState(10);
+  const [bulkPrefix, setBulkPrefix] = useState("");
+  const [bulkLength, setBulkLength] = useState(8);
+  const [exporting, setExporting] = useState(false);
   const [editPromocode, setEditPromocode] = useState<Promocode | null>(null);
   const [formData, setFormData] = useState<CreatePromocodeRequest>(defaultForm);
 
@@ -241,6 +256,43 @@ function PromocodesContent() {
     },
     onError: (err: unknown) => toast.error(extractError(err, "Failed to create promocode")),
   });
+
+  const bulkMutation = useMutation({
+    mutationFn: () => {
+      const { code: _code, ...settings } = buildPayload();
+      void _code;
+      return promocodesApi.bulkCreate({
+        ...settings,
+        count: bulkCount,
+        code_prefix: bulkPrefix.trim() || undefined,
+        code_length: bulkLength,
+      });
+    },
+    onSuccess: (res) => {
+      invalidate();
+      toast.success(`${res.count} promocodes created`);
+      // Download the generated codes so they can be distributed.
+      const csv = "code\n" + res.codes.join("\n") + "\n";
+      downloadFile(`promocodes-${res.count}.csv`, csv);
+      setIsBulkOpen(false);
+    },
+    onError: (err: unknown) => toast.error(extractError(err, "Failed to create promocodes")),
+  });
+
+  async function handleExportCsv() {
+    try {
+      setExporting(true);
+      const blob = await promocodesApi.exportCsv({
+        code: codeFilter || undefined,
+        is_active: activeFilter === "" ? undefined : activeFilter === "true",
+      });
+      downloadFile("promocodes.csv", blob);
+    } catch {
+      toast.error("Failed to export promocodes");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<CreatePromocodeRequest> }) =>
@@ -469,15 +521,31 @@ function PromocodesContent() {
         title="Promocodes"
         description="Create and manage discount codes customers can apply at checkout."
         action={
-          <Button
-            onClick={() => {
-              setFormData(defaultForm);
-              setIsCreateOpen(true);
-            }}
-          >
-            <Plus className="size-4" />
-            Add promocode
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleExportCsv} disabled={exporting}>
+              <Download className="size-4" />
+              {exporting ? "Exporting…" : "Export CSV"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFormData(defaultForm);
+                setIsBulkOpen(true);
+              }}
+            >
+              <Layers className="size-4" />
+              Bulk create
+            </Button>
+            <Button
+              onClick={() => {
+                setFormData(defaultForm);
+                setIsCreateOpen(true);
+              }}
+            >
+              <Plus className="size-4" />
+              Add promocode
+            </Button>
+          </div>
         }
       />
 
@@ -637,6 +705,50 @@ function PromocodesContent() {
           isLoading={isLoading}
         />
       </DataTableShell>
+
+      {/* Bulk Create Dialog */}
+      <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Bulk create promocodes</DialogTitle>
+            <DialogDescription>
+              Generate many single codes that share the settings below. The codes download as a CSV.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); bulkMutation.mutate(); }}>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>How many</Label>
+                  <Input type="number" min={1} max={1000} value={bulkCount}
+                    onChange={(e) => setBulkCount(Number(e.target.value))} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Code prefix</Label>
+                  <Input value={bulkPrefix} placeholder="SUMMER-"
+                    onChange={(e) => setBulkPrefix(e.target.value.toUpperCase())} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Random length</Label>
+                  <Input type="number" min={4} max={24} value={bulkLength}
+                    onChange={(e) => setBulkLength(Number(e.target.value))} />
+                </div>
+              </div>
+              <p className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                Codes are generated automatically, e.g. <span className="font-mono text-foreground">{(bulkPrefix || "") + "AB7KMN2P"}</span>.
+                The <b>Code</b> field below is ignored — only the discount settings are used.
+              </p>
+              {formFields}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsBulkOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={bulkMutation.isPending}>
+                {bulkMutation.isPending ? "Generating…" : `Generate ${bulkCount} & download CSV`}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Create Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
