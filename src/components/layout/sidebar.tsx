@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   BookOpen,
   Wallet,
+  TicketPercent,
   LogOut,
 } from "lucide-react";
 
@@ -58,6 +59,7 @@ const sections: NavSection[] = [
       { name: "Shops", href: "/shops", icon: Store },
       { name: "Drinks", href: "/drinks", icon: Coffee },
       { name: "Orders", href: "/orders", icon: ShoppingCart },
+      { name: "Promocodes", href: "/promocodes", icon: TicketPercent },
       { name: "Settlements", href: "/settlements", icon: Wallet },
       { name: "Users", href: "/users", icon: Users },
     ],
