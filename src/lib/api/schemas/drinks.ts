@@ -101,7 +101,7 @@ export type UpdatePartnerDrinkModifierRequest = z.infer<typeof UpdatePartnerDrin
 
 // --- Modifier Groups (name + min/max selection rules) ---
 export const ModifierGroupSchema = z.object({
-  vendor_group_id: z.string(),
+  key: z.string(),
   name: z.string(),
   min_select: z.number(),
   max_select: z.number().nullable().optional(),
@@ -110,7 +110,7 @@ export const ModifierGroupSchema = z.object({
 export type ModifierGroup = z.infer<typeof ModifierGroupSchema>;
 
 export interface UpdateModifierGroupRequest {
-  vendor_group_id: string;
+  key: string;
   name?: string;
   min_select: number;
   max_select?: number | null;

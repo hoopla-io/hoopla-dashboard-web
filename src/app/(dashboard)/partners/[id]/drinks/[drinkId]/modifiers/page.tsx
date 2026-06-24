@@ -44,7 +44,7 @@ function GroupRow({
 
   return (
     <TableRow>
-      <TableCell className="font-mono text-[11px] text-muted-foreground">{group.vendor_group_id}</TableCell>
+      <TableCell className="font-mono text-[11px] text-muted-foreground">{group.key}</TableCell>
       <TableCell><Input value={name} onChange={(e) => setName(e.target.value)} /></TableCell>
       <TableCell><Input type="number" min={0} className="w-[80px]" value={min} onChange={(e) => setMin(Number(e.target.value))} /></TableCell>
       <TableCell><Input type="number" min={0} className="w-[80px]" placeholder="∞" value={max} onChange={(e) => setMax(e.target.value)} /></TableCell>
@@ -53,7 +53,7 @@ function GroupRow({
         <Button
           size="sm"
           disabled={!dirty || saving}
-          onClick={() => onSave({ vendor_group_id: group.vendor_group_id, name, min_select: min, max_select: max === "" ? null : Number(max) })}
+          onClick={() => onSave({ key: group.key, name, min_select: min, max_select: max === "" ? null : Number(max) })}
         >
           Save
         </Button>
@@ -105,7 +105,7 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
               <TableRow><TableCell colSpan={6} className="py-6 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
             ) : (
               groups.map((g) => (
-                <GroupRow key={g.vendor_group_id} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
+                <GroupRow key={g.key} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
               ))
             )}
           </TableBody>
