@@ -178,7 +178,9 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     e.preventDefault();
 
     const name = form.name.trim();
-    const phone = form.phone_number.trim();
+    // Canonical phone is digits only ("998..."); strip "+", spaces and any
+    // separators so it matches what the merchant/cassa send at login.
+    const phone = form.phone_number.replace(/\D/g, "");
     const password = form.password.trim();
 
     if (!phone) {
@@ -352,7 +354,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                     id="portal-phone"
                     value={form.phone_number}
                     onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
-                    placeholder="+998 90 123 45 67"
+                    placeholder="998 90 123 45 67"
                     maxLength={255}
                     autoComplete="off"
                   />
