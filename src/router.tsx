@@ -13,6 +13,7 @@ import UsersPage from "@/app/(dashboard)/users/page";
 import StoriesPage from "@/app/(dashboard)/stories/page";
 import StoryDetailPage from "@/app/(dashboard)/stories/[id]/page";
 import BannersPage from "@/app/(dashboard)/banners/page";
+import PromocodesPage from "@/app/(dashboard)/promocodes/page";
 import NotificationsPage from "@/app/(dashboard)/notifications/page";
 import NotificationDetailPage from "@/app/(dashboard)/notifications/[id]/page";
 import ShopCategoriesPage from "@/app/(dashboard)/shop-categories/page";
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
       { path: "stories", element: <StoriesPage /> },
       { path: "stories/:id", element: <StoryDetailPage /> },
       { path: "banners", element: <BannersPage /> },
+      { path: "promocodes", element: <PromocodesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "notifications/:id", element: <NotificationDetailPage /> },
       { path: "shop-categories", element: <ShopCategoriesPage /> },
