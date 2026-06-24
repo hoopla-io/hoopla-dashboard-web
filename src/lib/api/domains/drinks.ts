@@ -3,6 +3,7 @@ import type {
   Drink, CreateDrinkRequest,
   PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
   PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest,
+  ModifierGroup, UpdateModifierGroupRequest,
   DrinkCategory, CategoryWithDrinks, CreateCategoryRequest, UpdateCategoryRequest, LinkDrinkRequest,
 } from "@/lib/api/schemas/drinks";
 
@@ -137,6 +138,18 @@ export const drinksApi = {
 
   deleteModifier: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/partner/drink/modifier/delete/${id}`);
+  },
+
+  // --- Modifier Groups (name + min/max selection rules) ---
+  listModifierGroups: async (partnerDrinkId: number): Promise<ModifierGroup[]> => {
+    const response = await httpClient.get<ApiResponse<ModifierGroup[]>>(
+      `/api/v1/partner/drink/modifier/group/list/${partnerDrinkId}`
+    );
+    return response.data.data ?? [];
+  },
+
+  updateModifierGroup: async (partnerDrinkId: number, data: UpdateModifierGroupRequest): Promise<void> => {
+    await httpClient.put(`/api/v1/partner/drink/modifier/group/update/${partnerDrinkId}`, data);
   },
 };
 
