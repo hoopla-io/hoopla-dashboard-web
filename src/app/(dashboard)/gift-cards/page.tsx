@@ -194,7 +194,7 @@ function GiftCardsContent() {
     <div className="space-y-6">
       <PageHeader
         title="Gift Cards"
-        description="Issue prepaid gift cards customers spend down at checkout."
+        description="Issue gift cards customers redeem once to top up their wallet balance."
         action={
           <Button onClick={() => { setFormData(defaultForm); setIsCreateOpen(true); }}>
             <Plus className="size-4" />
@@ -223,7 +223,7 @@ function GiftCardsContent() {
               <TableHead className="w-[64px]">ID</TableHead>
               <TableHead>Code</TableHead>
               <TableHead>Balance</TableHead>
-              <TableHead>Issued</TableHead>
+              <TableHead>Redeemed</TableHead>
               <TableHead>Account</TableHead>
               <TableHead>Active</TableHead>
               <TableHead>Expires</TableHead>
@@ -251,7 +251,14 @@ function GiftCardsContent() {
                       <span className="text-[11px] text-muted-foreground">of {sum(card.initial_balance)} issued</span>
                     </div>
                   </TableCell>
-                  <TableCell className="num-tabular text-xs text-muted-foreground">{sum(card.initial_balance)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {card.is_redeemed ? (
+                      <span className="inline-flex flex-col gap-0.5">
+                        <span className="w-fit rounded bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">Redeemed</span>
+                        {card.redeemed_at && <span className="text-[11px]">{new Date(card.redeemed_at).toLocaleDateString("ru-RU")}{card.redeemed_by_user_id ? ` · #${card.redeemed_by_user_id}` : ""}</span>}
+                      </span>
+                    ) : "—"}
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{card.user_id ? `#${card.user_id}` : "Anyone"}</TableCell>
                   <TableCell>
                     <Switch checked={card.is_active} onCheckedChange={(v) => toggleActiveMutation.mutate({ id: card.id, is_active: v })} />
@@ -261,7 +268,8 @@ function GiftCardsContent() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon-sm" title="Top up" onClick={() => { setTopUpCard(card); setTopUpAmount(0); }}>
+                      <Button variant="ghost" size="icon-sm" title={card.is_redeemed ? "Already redeemed" : "Top up"} disabled={card.is_redeemed}
+                        onClick={() => { setTopUpCard(card); setTopUpAmount(0); }}>
                         <Wallet className="size-4" />
                       </Button>
                       <Button variant="ghost" size="icon-sm" title="History" onClick={() => setHistoryCardId(card.id)}>
@@ -287,7 +295,7 @@ function GiftCardsContent() {
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Issue Gift Card</DialogTitle>
-            <DialogDescription>Create a prepaid card with an opening balance</DialogDescription>
+            <DialogDescription>Create a voucher customers redeem once to top up their wallet balance</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitCreate}>
             <div className="space-y-4 py-4">
@@ -303,7 +311,7 @@ function GiftCardsContent() {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Opening balance (sum)</Label>
+                  <Label>Value (sum)</Label>
                   <Input type="number" value={formData.initial_balance ?? 0}
                     onChange={(e) => setFormData({ ...formData, initial_balance: Number(e.target.value) })} />
                 </div>
