@@ -18,6 +18,10 @@ export const GiftCardSchema = z.object({
   user_id: z.number().nullable().optional(),
   is_active: z.boolean(),
   expires_at: z.string().nullable().optional(),
+  // One-time redemption to a customer's wallet (top-up model).
+  is_redeemed: z.boolean().optional(),
+  redeemed_by_user_id: z.number().nullable().optional(),
+  redeemed_at: z.string().nullable().optional(),
   created_at: z.string(),
   updated_at: z.string().optional(),
 });
