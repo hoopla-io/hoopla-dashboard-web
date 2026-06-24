@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import { formatUZS } from "@/lib/money";
-import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest } from "@/lib/api/schemas/drinks";
+import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest, ModifierGroup, UpdateModifierGroupRequest } from "@/lib/api/schemas/drinks";
 
 const EMPTY_FORM = (partnerDrinkId: number): CreatePartnerDrinkModifierRequest => ({
   partner_drink_id: partnerDrinkId,
@@ -25,6 +25,95 @@ const EMPTY_FORM = (partnerDrinkId: number): CreatePartnerDrinkModifierRequest =
   vendor_addon_price: 0,
   vendor_group_id: "",
 });
+
+function GroupRow({
+  group,
+  onSave,
+  saving,
+}: {
+  group: ModifierGroup;
+  onSave: (d: UpdateModifierGroupRequest) => void;
+  saving: boolean;
+}) {
+  const [name, setName] = useState(group.name);
+  const [min, setMin] = useState<number>(group.min_select);
+  const [max, setMax] = useState<string>(group.max_select == null ? "" : String(group.max_select));
+
+  const maxNorm = group.max_select == null ? "" : String(group.max_select);
+  const dirty = name !== group.name || min !== group.min_select || max !== maxNorm;
+
+  return (
+    <TableRow>
+      <TableCell className="font-mono text-[11px] text-muted-foreground">{group.vendor_group_id}</TableCell>
+      <TableCell><Input value={name} onChange={(e) => setName(e.target.value)} /></TableCell>
+      <TableCell><Input type="number" min={0} className="w-[80px]" value={min} onChange={(e) => setMin(Number(e.target.value))} /></TableCell>
+      <TableCell><Input type="number" min={0} className="w-[80px]" placeholder="∞" value={max} onChange={(e) => setMax(e.target.value)} /></TableCell>
+      <TableCell className="text-xs text-muted-foreground tabular-nums">{group.option_count}</TableCell>
+      <TableCell className="text-right">
+        <Button
+          size="sm"
+          disabled={!dirty || saving}
+          onClick={() => onSave({ vendor_group_id: group.vendor_group_id, name, min_select: min, max_select: max === "" ? null : Number(max) })}
+        >
+          Save
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
+}
+
+function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
+  const queryClient = useQueryClient();
+  const { data: groups = [], isLoading } = useQuery({
+    queryKey: ["modifier_groups", partnerDrinkId],
+    queryFn: () => drinksApi.listModifierGroups(partnerDrinkId),
+  });
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdateModifierGroupRequest) => drinksApi.updateModifierGroup(partnerDrinkId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+      toast.success("Modifier group updated");
+    },
+    onError: (e: unknown) =>
+      toast.error((e as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to update group"),
+  });
+
+  if (!isLoading && groups.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Modifier Groups</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Set each group&apos;s display name and how many options a customer must (Min) and may (Max, blank = unlimited) choose.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Group</TableHead>
+              <TableHead>Display name</TableHead>
+              <TableHead className="w-[90px]">Min</TableHead>
+              <TableHead className="w-[90px]">Max</TableHead>
+              <TableHead className="w-[80px]">Options</TableHead>
+              <TableHead className="text-right">Save</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow><TableCell colSpan={6} className="py-6 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+            ) : (
+              groups.map((g) => (
+                <GroupRow key={g.vendor_group_id} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
 
 function ModifiersContent() {
   const params = useParams();
@@ -200,6 +289,10 @@ function ModifiersContent() {
         onPerPageChange={(v) => { setPerPage(v); setCurrentPage(1); }}
         isLoading={isLoading}
       />
+
+      <div className="mt-6">
+        <ModifierGroupsCard partnerDrinkId={partnerDrinkId} />
+      </div>
 
       {/* Add Addon Modal */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>

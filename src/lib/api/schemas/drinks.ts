@@ -98,3 +98,20 @@ export const UpdatePartnerDrinkModifierSchema = CreatePartnerDrinkModifierSchema
 export type PartnerDrinkModifier = z.infer<typeof PartnerDrinkModifierSchema>;
 export type CreatePartnerDrinkModifierRequest = z.infer<typeof CreatePartnerDrinkModifierSchema>;
 export type UpdatePartnerDrinkModifierRequest = z.infer<typeof UpdatePartnerDrinkModifierSchema>;
+
+// --- Modifier Groups (name + min/max selection rules) ---
+export const ModifierGroupSchema = z.object({
+  vendor_group_id: z.string(),
+  name: z.string(),
+  min_select: z.number(),
+  max_select: z.number().nullable().optional(),
+  option_count: z.number(),
+});
+export type ModifierGroup = z.infer<typeof ModifierGroupSchema>;
+
+export interface UpdateModifierGroupRequest {
+  vendor_group_id: string;
+  name?: string;
+  min_select: number;
+  max_select?: number | null;
+}
