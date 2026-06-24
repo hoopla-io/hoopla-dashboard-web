@@ -15,6 +15,7 @@ import {
   BookOpen,
   Wallet,
   TicketPercent,
+  Gift,
   LogOut,
 } from "lucide-react";
 
@@ -60,6 +61,7 @@ const sections: NavSection[] = [
       { name: "Drinks", href: "/drinks", icon: Coffee },
       { name: "Orders", href: "/orders", icon: ShoppingCart },
       { name: "Promocodes", href: "/promocodes", icon: TicketPercent },
+      { name: "Gift Cards", href: "/gift-cards", icon: Gift },
       { name: "Settlements", href: "/settlements", icon: Wallet },
       { name: "Users", href: "/users", icon: Users },
     ],
