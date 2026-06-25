@@ -250,6 +250,7 @@ function ModifiersContent() {
             <TableHeader>
               <TableRow>
                 <TableHead>Addon Name</TableHead>
+                <TableHead>Group</TableHead>
                 <TableHead>Vendor Addon ID</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead className="w-[100px]"></TableHead>
@@ -257,13 +258,20 @@ function ModifiersContent() {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-4">Loading addons...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-4">Loading addons...</TableCell></TableRow>
               ) : modifiers.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">No addons found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No addons found</TableCell></TableRow>
               ) : (
                 modifiers.map((mod) => (
                   <TableRow key={mod.id}>
                     <TableCell className="font-medium">{mod.vendor_addon_name}</TableCell>
+                    <TableCell>
+                      {mod.vendor_addon_key ? (
+                        <span className="rounded bg-muted px-2 py-0.5 font-mono text-[11px]">{mod.vendor_addon_key}</span>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground">— ungrouped</span>
+                      )}
+                    </TableCell>
                     <TableCell>{mod.vendor_addon_id}</TableCell>
                     <TableCell>{formatUZS(mod.vendor_addon_price)}</TableCell>
                     <TableCell>
