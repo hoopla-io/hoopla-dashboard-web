@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
@@ -143,6 +142,15 @@ function ModifiersContent() {
   const modifiers = useMemo(() => modifiersData?.data || [], [modifiersData]);
   const meta = modifiersData?.meta;
   const totalPages = meta?.totalPages || 1;
+
+  // Suggestions for the (free-text) Vendor Addon Key: a few common defaults plus
+  // every key already used on this drink. The field is NOT limited to these — type
+  // any new key (e.g. "topic") to create a new modifier group on the fly.
+  const addonKeySuggestions = useMemo(() => {
+    const defaults = ["sugar", "size", "syrup", "milk"];
+    const used = modifiers.map((m) => m.vendor_addon_key).filter((k): k is string => !!k);
+    return Array.from(new Set([...defaults, ...used]));
+  }, [modifiers]);
 
   // Convenience default for Vendor Group ID: next integer after the highest
   // existing numeric group id (editable). Vendor Addon ID stays manual.
@@ -337,20 +345,21 @@ function ModifiersContent() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="add_vendor_addon_key">Vendor Addon Key (Optional)</Label>
-                <Select
-                  value={addForm.vendor_addon_key || undefined}
-                  onValueChange={(val) => setAddForm({ ...addForm, vendor_addon_key: val })}
-                >
-                  <SelectTrigger id="add_vendor_addon_key">
-                    <SelectValue placeholder="Select a key" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sugar">sugar</SelectItem>
-                    <SelectItem value="size">size</SelectItem>
-                    <SelectItem value="syrup">syrup</SelectItem>
-                    <SelectItem value="milk">milk</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="add_vendor_addon_key"
+                  list="add-addon-key-suggestions"
+                  value={addForm.vendor_addon_key || ""}
+                  onChange={(e) => setAddForm({ ...addForm, vendor_addon_key: e.target.value })}
+                  placeholder="e.g. topic, sugar, size…"
+                />
+                <datalist id="add-addon-key-suggestions">
+                  {addonKeySuggestions.map((k) => (
+                    <option key={k} value={k} />
+                  ))}
+                </datalist>
+                <p className="text-[11px] text-muted-foreground">
+                  Addons sharing a key form one modifier group. Type a new key to create a new group.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="add_vendor_group_id">Vendor Group ID (Optional)</Label>
@@ -416,20 +425,21 @@ function ModifiersContent() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="edit_vendor_addon_key">Vendor Addon Key (Optional)</Label>
-                <Select
-                  value={editForm.vendor_addon_key || undefined}
-                  onValueChange={(val) => setEditForm({ ...editForm, vendor_addon_key: val })}
-                >
-                  <SelectTrigger id="edit_vendor_addon_key">
-                    <SelectValue placeholder="Select a key" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sugar">sugar</SelectItem>
-                    <SelectItem value="size">size</SelectItem>
-                    <SelectItem value="syrup">syrup</SelectItem>
-                    <SelectItem value="milk">milk</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="edit_vendor_addon_key"
+                  list="edit-addon-key-suggestions"
+                  value={editForm.vendor_addon_key || ""}
+                  onChange={(e) => setEditForm({ ...editForm, vendor_addon_key: e.target.value })}
+                  placeholder="e.g. topic, sugar, size…"
+                />
+                <datalist id="edit-addon-key-suggestions">
+                  {addonKeySuggestions.map((k) => (
+                    <option key={k} value={k} />
+                  ))}
+                </datalist>
+                <p className="text-[11px] text-muted-foreground">
+                  Addons sharing a key form one modifier group. Type a new key to create a new group.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit_vendor_group_id">Vendor Group ID (Optional)</Label>
