@@ -4,7 +4,7 @@ import type {
   PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
   PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest,
   ModifierGroup, UpdateModifierGroupRequest,
-  DrinkCategory, CategoryWithDrinks, CreateCategoryRequest, UpdateCategoryRequest, LinkDrinkRequest,
+  DrinkCategory, CategoryWithDrinks, CreateCategoryRequest, UpdateCategoryRequest, LinkDrinkRequest, ReorderCategoriesRequest,
 } from "@/lib/api/schemas/drinks";
 
 
@@ -184,5 +184,9 @@ export const categoryApi = {
 
   unlinkDrink: async (partnerDrinkId: number, categoryId: number): Promise<void> => {
     await httpClient.delete(`/api/v1/partner/category/unlink/${partnerDrinkId}/${categoryId}`);
+  },
+
+  reorder: async (data: ReorderCategoriesRequest): Promise<void> => {
+    await httpClient.post("/api/v1/partner/category/reorder", data);
   },
 };
