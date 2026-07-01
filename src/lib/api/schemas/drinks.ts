@@ -3,6 +3,7 @@ import { z } from "zod";
 export const DrinkCategorySchema = z.object({
   id: z.number(),
   name: z.string(),
+  sort_order: z.number().optional(),
 });
 
 export const CategoryWithDrinksSchema = DrinkCategorySchema.extend({
@@ -21,6 +22,7 @@ export type CreateCategoryRequest = { partner_id: number; name: string };
 export type UpdateCategoryRequest = { name: string };
 // Multi-select link: link one or more partner drinks to a category at once.
 export type LinkDrinkRequest = { category_id: number; partner_drink_ids: number[] };
+export type ReorderCategoriesRequest = { partner_id: number; category_ids: number[] };
 
 export const DrinkSchema = z.object({
   id: z.number(),
