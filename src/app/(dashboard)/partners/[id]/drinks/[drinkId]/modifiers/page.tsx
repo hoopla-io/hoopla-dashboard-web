@@ -162,6 +162,14 @@ function ModifiersContent() {
     return String(max + 1);
   }, [modifiers]);
 
+  const nextVendorAddonId = useMemo(() => {
+    const nums = modifiers
+      .map((m) => parseInt(m.vendor_addon_id ?? "", 10))
+      .filter((n) => Number.isFinite(n));
+    const max = nums.length ? Math.max(...nums) : 0;
+    return String(max + 1);
+  }, [modifiers]);
+
   const createMutation = useMutation({
     mutationFn: (data: CreatePartnerDrinkModifierRequest) => drinksApi.createModifier(data),
     onSuccess: (_data, variables) => {
@@ -199,6 +207,10 @@ function ModifiersContent() {
       toast.error("Addon Name and Vendor Addon ID are required");
       return;
     }
+    if (modifiers.some((m) => (m.vendor_addon_id ?? "") === addForm.vendor_addon_id)) {
+      toast.error(`Vendor Addon ID "${addForm.vendor_addon_id}" is already used on this drink. Each option needs a unique ID.`);
+      return;
+    }
     createMutation.mutate({ ...addForm, partner_drink_id: partnerDrinkId });
   };
 
@@ -206,6 +218,10 @@ function ModifiersContent() {
     if (!editingModifier) return;
     if (!editForm.vendor_addon_name || !editForm.vendor_addon_id) {
       toast.error("Addon Name and Vendor Addon ID are required");
+      return;
+    }
+    if (modifiers.some((m) => m.id !== editingModifier.id && (m.vendor_addon_id ?? "") === editForm.vendor_addon_id)) {
+      toast.error(`Vendor Addon ID "${editForm.vendor_addon_id}" is already used on this drink. Each option needs a unique ID.`);
       return;
     }
     updateMutation.mutate({ id: editingModifier.id, data: editForm as UpdatePartnerDrinkModifierRequest });
@@ -335,7 +351,7 @@ function ModifiersContent() {
                 id="add_vendor_addon_id"
                 value={addForm.vendor_addon_id}
                 onChange={(e) => setAddForm({ ...addForm, vendor_addon_id: e.target.value })}
-                placeholder="ID in the vendor's system"
+                placeholder={`Unique per drink — e.g. ${nextVendorAddonId}`}
               />
             </div>
             <div className="space-y-2">
