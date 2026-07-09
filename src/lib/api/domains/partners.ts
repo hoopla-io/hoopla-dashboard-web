@@ -4,10 +4,10 @@ import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttr
 
 
 
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 export const partnersApi = {
-  getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Partner>> => {
+  getAll: async (params?: { page?: number; limit?: number; search?: string } & SortParams): Promise<PaginatedResponse<Partner>> => {
     const response = await httpClient.get<ApiResponse<Partner[]>>("/api/v1/partner/list", {
       params,
     });

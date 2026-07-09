@@ -29,9 +29,11 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { CreatePartnerRequest } from "@/lib/api/schemas/partners";
 
@@ -45,6 +47,9 @@ function PartnersContent() {
   const [search, setSearch] = useQueryState(
     "search",
     parseAsString.withOptions({ throttleMs: 500 }).withDefault("")
+  );
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
   );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -64,12 +69,14 @@ function PartnersContent() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: partnersData, isLoading } = useQuery({
-    queryKey: ["partners", currentPage, perPage, search],
+    queryKey: ["partners", currentPage, perPage, search, sortParam, orderParam],
     queryFn: () =>
       partnersApi.getAll({
         page: currentPage,
         limit: perPage,
         search: search || undefined,
+        sort: sortParam,
+        order: orderParam,
       }),
   });
 
@@ -186,15 +193,31 @@ function PartnersContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
               <TableHead className="w-[64px]">Logo</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Vendor</TableHead>
-              <TableHead>TIN</TableHead>
-              <TableHead>Cashback</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Status</TableHead>
+              <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
+                Name
+              </SortableTableHead>
+              <SortableTableHead column="vendor" sort={sort} order={order} onSort={onSort}>
+                Vendor
+              </SortableTableHead>
+              <SortableTableHead column="tin_num" sort={sort} order={order} onSort={onSort}>
+                TIN
+              </SortableTableHead>
+              <SortableTableHead column="cashback_percent" sort={sort} order={order} onSort={onSort}>
+                Cashback
+              </SortableTableHead>
+              <SortableTableHead column="rating" sort={sort} order={order} onSort={onSort}>
+                Rating
+              </SortableTableHead>
+              <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
+                Created
+              </SortableTableHead>
+              <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
+                Status
+              </SortableTableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

@@ -3,6 +3,13 @@ export interface PaginationParams {
   limit?: number;
 }
 
+export type SortOrder = "asc" | "desc";
+
+export interface SortParams {
+  sort?: string;
+  order?: SortOrder;
+}
+
 export interface Meta {
   currentPage: number;
   itemsPerPage: number;
