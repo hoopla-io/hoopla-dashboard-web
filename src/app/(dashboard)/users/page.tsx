@@ -174,9 +174,7 @@ function UsersContent() {
               <SortableTableHead column="gender" sort={sort} order={order} onSort={onSort}>
                 Gender
               </SortableTableHead>
-              <SortableTableHead column="date_of_birth" sort={sort} order={order} onSort={onSort}>
-                Birth date
-              </SortableTableHead>
+              <TableHead>Birth date</TableHead>
               <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
                 Created
               </SortableTableHead>
