@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/page-header";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { shopCategoriesApi } from "@/lib/api/domains/shop-categories";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { ShopCategory, CreateShopCategoryRequest } from "@/lib/api/schemas/shop-categories";
@@ -38,6 +40,9 @@ function ShopCategoriesContent() {
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(20));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editCategory, setEditCategory] = useState<ShopCategory | null>(null);
@@ -49,8 +54,8 @@ function ShopCategoriesContent() {
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
 
   const { data: categoriesData, isLoading } = useQuery({
-    queryKey: ["shop-categories", currentPage, perPage],
-    queryFn: () => shopCategoriesApi.getAll({ page: currentPage, limit: perPage }),
+    queryKey: ["shop-categories", currentPage, perPage, sortParam, orderParam],
+    queryFn: () => shopCategoriesApi.getAll({ page: currentPage, limit: perPage, sort: sortParam, order: orderParam }),
   });
 
   const categories = categoriesData?.data || [];
@@ -249,11 +254,19 @@ function ShopCategoriesContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
               <TableHead className="w-[64px]">Image</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead>Active</TableHead>
+              <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
+                Name
+              </SortableTableHead>
+              <SortableTableHead column="sort_order" sort={sort} order={order} onSort={onSort}>
+                Order
+              </SortableTableHead>
+              <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
+                Active
+              </SortableTableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

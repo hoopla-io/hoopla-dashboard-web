@@ -3,10 +3,10 @@ import type { Shop, CreateShopRequest, ShopAttribute, ShopHours, CreateShopHours
 
 
 
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 export const shopsApi = {
-  getAll: async (params?: { page?: number; limit?: number; search?: string; partner_id?: number }): Promise<PaginatedResponse<Shop>> => {
+  getAll: async (params?: { page?: number; limit?: number; search?: string; partner_id?: number } & SortParams): Promise<PaginatedResponse<Shop>> => {
     const response = await httpClient.get<ApiResponse<Shop[]>>("/api/v1/shop/list", {
       params,
     });

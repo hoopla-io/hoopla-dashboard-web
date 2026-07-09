@@ -23,12 +23,14 @@ import {
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { bannersApi } from "@/lib/api/domains/banners";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
@@ -197,6 +199,9 @@ function BannersContent() {
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [positionFilter, setPositionFilter] = useQueryState("position", parseAsString.withDefault(""));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editBanner, setEditBanner] = useState<Banner | null>(null);
@@ -205,11 +210,13 @@ function BannersContent() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: bannersData, isLoading } = useQuery({
-    queryKey: ["banners", currentPage, perPage, positionFilter],
+    queryKey: ["banners", currentPage, perPage, positionFilter, sortParam, orderParam],
     queryFn: () => bannersApi.getAll({
       page: currentPage,
       limit: perPage,
       position: positionFilter || undefined,
+      sort: sortParam,
+      order: orderParam,
     }),
   });
 
@@ -504,13 +511,23 @@ function BannersContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
               <TableHead className="w-[100px]">Image</TableHead>
-              <TableHead>Title</TableHead>
+              <SortableTableHead column="title" sort={sort} order={order} onSort={onSort}>
+                Title
+              </SortableTableHead>
               <TableHead>Link</TableHead>
-              <TableHead>Position</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead>Active</TableHead>
+              <SortableTableHead column="position" sort={sort} order={order} onSort={onSort}>
+                Position
+              </SortableTableHead>
+              <SortableTableHead column="sort_order" sort={sort} order={order} onSort={onSort}>
+                Order
+              </SortableTableHead>
+              <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
+                Active
+              </SortableTableHead>
               <TableHead>Schedule</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>

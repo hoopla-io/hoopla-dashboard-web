@@ -7,7 +7,7 @@ import type {
   CreateStoryItemRequest,
   UpdateStoryItemRequest,
 } from "@/lib/api/schemas/stories";
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 function buildStoryFormData(data: Partial<CreateStoryRequest>, file?: File): FormData {
   const formData = new FormData();
@@ -34,7 +34,7 @@ function buildStoryItemFormData(data: Partial<CreateStoryItemRequest>, file?: Fi
 }
 
 export const storiesApi = {
-  getAll: async (params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Story>> => {
+  getAll: async (params?: { page?: number; limit?: number } & SortParams): Promise<PaginatedResponse<Story>> => {
     const response = await httpClient.get<ApiResponse<Story[]>>("/api/v1/story/list", { params });
     return response.data;
   },

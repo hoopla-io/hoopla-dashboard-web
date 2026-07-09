@@ -3,9 +3,9 @@ import type { User, EditUserRequest, FilterUserRequest } from "@/lib/api/schemas
 
 
 
-import type { PaginatedResponse, ApiResponse, PaginationParams } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, PaginationParams, SortParams } from "@/lib/api/types";
 
-export interface UsersGetAllParams extends PaginationParams {
+export interface UsersGetAllParams extends PaginationParams, SortParams {
   id?: number;
   name?: string;
   phone_number?: string;

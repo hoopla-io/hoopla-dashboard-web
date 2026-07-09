@@ -34,9 +34,11 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { usersApi } from "@/lib/api/domains/users";
 import type { User, EditUserRequest } from "@/lib/api/schemas/users";
 
@@ -58,12 +60,15 @@ function UsersContent() {
     parseAsString.withOptions({ throttleMs: 500 }).withDefault("")
   );
   const [genderFilter, setGenderFilter] = useQueryState("gender", parseAsString.withDefault("all"));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [editUser, setEditUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<EditUserRequest>({});
 
   const { data: usersData, isLoading } = useQuery({
-    queryKey: ["users", currentPage, perPage, nameFilter, phoneFilter, genderFilter],
+    queryKey: ["users", currentPage, perPage, nameFilter, phoneFilter, genderFilter, sortParam, orderParam],
     queryFn: () =>
       usersApi.getAll({
         page: currentPage,
@@ -71,6 +76,8 @@ function UsersContent() {
         name: nameFilter || undefined,
         phone_number: phoneFilter || undefined,
         gender: genderFilter !== "all" ? genderFilter : undefined,
+        sort: sortParam,
+        order: orderParam,
       }),
   });
 
@@ -155,12 +162,24 @@ function UsersContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Gender</TableHead>
-              <TableHead>Birth date</TableHead>
-              <TableHead>Created</TableHead>
+              <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
+                Name
+              </SortableTableHead>
+              <SortableTableHead column="phone_number" sort={sort} order={order} onSort={onSort}>
+                Phone
+              </SortableTableHead>
+              <SortableTableHead column="mobile_provider" sort={sort} order={order} onSort={onSort}>
+                Provider
+              </SortableTableHead>
+              <SortableTableHead column="gender" sort={sort} order={order} onSort={onSort}>
+                Gender
+              </SortableTableHead>
+              <SortableTableHead column="date_of_birth" sort={sort} order={order} onSort={onSort}>
+                Birth date
+              </SortableTableHead>
+              <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
+                Created
+              </SortableTableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

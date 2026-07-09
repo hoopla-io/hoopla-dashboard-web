@@ -29,8 +29,10 @@ import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
 
@@ -45,6 +47,9 @@ function DrinksContent() {
     parseAsString.withOptions({ throttleMs: 500 }).withDefault("")
   );
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -63,12 +68,14 @@ function DrinksContent() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: drinksData, isLoading } = useQuery({
-    queryKey: ["drinks", currentPage, search, perPage],
+    queryKey: ["drinks", currentPage, search, perPage, sortParam, orderParam],
     queryFn: () =>
       drinksApi.getAll({
         page: currentPage,
         limit: perPage,
         search: search || undefined,
+        sort: sortParam,
+        order: orderParam,
       }),
   });
 
@@ -148,9 +155,13 @@ function DrinksContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
               <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead>Name</TableHead>
+              <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
+                Name
+              </SortableTableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

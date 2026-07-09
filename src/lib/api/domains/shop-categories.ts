@@ -6,7 +6,7 @@ import type {
   UpdateShopCategoryRequest,
   LinkPartnerRequest,
 } from "@/lib/api/schemas/shop-categories";
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 function buildFormData(data: Partial<CreateShopCategoryRequest>, file?: File): FormData {
   const formData = new FormData();
@@ -18,7 +18,7 @@ function buildFormData(data: Partial<CreateShopCategoryRequest>, file?: File): F
 }
 
 export const shopCategoriesApi = {
-  getAll: async (params?: { page?: number; limit?: number }): Promise<PaginatedResponse<ShopCategory>> => {
+  getAll: async (params?: { page?: number; limit?: number } & SortParams): Promise<PaginatedResponse<ShopCategory>> => {
     const response = await httpClient.get<ApiResponse<ShopCategory[]>>("/api/v1/shop-category/list", { params });
     return response.data;
   },

@@ -26,9 +26,11 @@ import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
@@ -78,9 +80,12 @@ function OrdersContent() {
   );
   const [dateFilter, setDateFilter] = useQueryState("date", parseAsString.withDefault(""));
   const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const { data: ordersData, isLoading } = useQuery({
-    queryKey: ["orders", currentPage, perPage, statusFilter, drinkFilter, dateFilter, phoneFilter, shopFilter],
+    queryKey: ["orders", currentPage, perPage, statusFilter, drinkFilter, dateFilter, phoneFilter, shopFilter, sortParam, orderParam],
     queryFn: () =>
       ordersApi.getAll({
         page: currentPage,
@@ -90,6 +95,8 @@ function OrdersContent() {
         time: dateFilter || undefined,
         shop: shopFilter || undefined,
         search: phoneFilter || undefined,
+        sort: sortParam,
+        order: orderParam,
       }),
   });
 
@@ -194,16 +201,26 @@ function OrdersContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Order</TableHead>
+              <SortableTableHead column="id" sort={sort} order={order} onSort={onSort}>
+                Order
+              </SortableTableHead>
               <TableHead>User</TableHead>
               <TableHead>Drink</TableHead>
-              <TableHead>Price</TableHead>
+              <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
+                Price
+              </SortableTableHead>
               <TableHead>Shop</TableHead>
-              <TableHead>Time</TableHead>
-              <TableHead>Updated</TableHead>
+              <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
+                Time
+              </SortableTableHead>
+              <SortableTableHead column="updated_at" sort={sort} order={order} onSort={onSort}>
+                Updated
+              </SortableTableHead>
               <TableHead>Fiscal</TableHead>
               <TableHead>Feedback</TableHead>
-              <TableHead>Status</TableHead>
+              <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
+                Status
+              </SortableTableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>

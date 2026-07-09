@@ -7,10 +7,10 @@ import type {
   CreateTranslationRequest,
   UpdateTranslationRequest,
 } from "@/lib/api/schemas/notifications";
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 export const notificationsApi = {
-  getAll: async (params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Notification>> => {
+  getAll: async (params?: { page?: number; limit?: number } & SortParams): Promise<PaginatedResponse<Notification>> => {
     const response = await httpClient.get<ApiResponse<Notification[]>>("/api/v1/notification/list", { params });
     return response.data;
   },

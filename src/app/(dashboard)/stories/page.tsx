@@ -23,8 +23,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { PageHeader } from "@/components/layout/page-header";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { format } from "date-fns";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { storiesApi } from "@/lib/api/domains/stories";
 import type { Story, StoryWithItems, CreateStoryRequest } from "@/lib/api/schemas/stories";
 
@@ -310,6 +312,9 @@ function StoriesContent() {
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editStory, setEditStory] = useState<Story | null>(null);
@@ -319,8 +324,8 @@ function StoriesContent() {
   const [previewStoryId, setPreviewStoryId] = useState<number | null>(null);
 
   const { data: storiesData, isLoading } = useQuery({
-    queryKey: ["stories", currentPage, perPage],
-    queryFn: () => storiesApi.getAll({ page: currentPage, limit: perPage }),
+    queryKey: ["stories", currentPage, perPage, sortParam, orderParam],
+    queryFn: () => storiesApi.getAll({ page: currentPage, limit: perPage, sort: sortParam, order: orderParam }),
   });
 
   const stories = storiesData?.data || [];
@@ -513,12 +518,20 @@ function StoriesContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
               <TableHead className="w-[64px]">Cover</TableHead>
-              <TableHead>Title</TableHead>
+              <SortableTableHead column="title" sort={sort} order={order} onSort={onSort}>
+                Title
+              </SortableTableHead>
               <TableHead>Slides</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead>Active</TableHead>
+              <SortableTableHead column="sort_order" sort={sort} order={order} onSort={onSort}>
+                Order
+              </SortableTableHead>
+              <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
+                Active
+              </SortableTableHead>
               <TableHead>Schedule</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>

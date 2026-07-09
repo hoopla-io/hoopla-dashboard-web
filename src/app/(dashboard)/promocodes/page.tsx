@@ -25,8 +25,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { promocodesApi } from "@/lib/api/domains/promocodes";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { usersApi } from "@/lib/api/domains/users";
@@ -215,6 +217,9 @@ function PromocodesContent() {
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [codeFilter, setCodeFilter] = useQueryState("code", parseAsString.withDefault(""));
   const [activeFilter, setActiveFilter] = useQueryState("active", parseAsString.withDefault(""));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
@@ -226,12 +231,14 @@ function PromocodesContent() {
   const [formData, setFormData] = useState<CreatePromocodeRequest>(defaultForm);
 
   const { data: promocodesData, isLoading } = useQuery({
-    queryKey: ["promocodes", currentPage, perPage, codeFilter, activeFilter],
+    queryKey: ["promocodes", currentPage, perPage, codeFilter, activeFilter, sortParam, orderParam],
     queryFn: () => promocodesApi.getAll({
       page: currentPage,
       limit: perPage,
       code: codeFilter || undefined,
       is_active: activeFilter === "" ? undefined : activeFilter === "true",
+      sort: sortParam,
+      order: orderParam,
     }),
   });
 
@@ -581,13 +588,23 @@ function PromocodesContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
-              <TableHead>Code</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
+              <SortableTableHead column="code" sort={sort} order={order} onSort={onSort}>
+                Code
+              </SortableTableHead>
               <TableHead>Discount</TableHead>
               <TableHead>Caps</TableHead>
-              <TableHead>Min order</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead>Active</TableHead>
+              <SortableTableHead column="min_order_amount" sort={sort} order={order} onSort={onSort}>
+                Min order
+              </SortableTableHead>
+              <SortableTableHead column="used_count" sort={sort} order={order} onSort={onSort}>
+                Usage
+              </SortableTableHead>
+              <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
+                Active
+              </SortableTableHead>
               <TableHead>Schedule</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>

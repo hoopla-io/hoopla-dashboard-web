@@ -1,6 +1,6 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { Banner, CreateBannerRequest, UpdateBannerRequest } from "@/lib/api/schemas/banners";
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 function buildFormData(data: Partial<CreateBannerRequest>, file?: File): FormData {
   const formData = new FormData();
@@ -18,7 +18,7 @@ function buildFormData(data: Partial<CreateBannerRequest>, file?: File): FormDat
 }
 
 export const bannersApi = {
-  getAll: async (params?: { page?: number; limit?: number; position?: string }): Promise<PaginatedResponse<Banner>> => {
+  getAll: async (params?: { page?: number; limit?: number; position?: string } & SortParams): Promise<PaginatedResponse<Banner>> => {
     const response = await httpClient.get<ApiResponse<Banner[]>>("/api/v1/banner/list", { params });
     return response.data;
   },

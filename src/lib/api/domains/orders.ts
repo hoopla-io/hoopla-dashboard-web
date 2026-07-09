@@ -3,9 +3,9 @@ import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
 
 
-import type { PaginatedResponse, ApiResponse, PaginationParams } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, PaginationParams, SortParams } from "@/lib/api/types";
 
-export interface OrdersGetAllParams extends PaginationParams {
+export interface OrdersGetAllParams extends PaginationParams, SortParams {
   status?: string;
   drink?: string;
   time?: string;

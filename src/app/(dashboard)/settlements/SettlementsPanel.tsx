@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,26 @@ import { settlementsApi } from "@/lib/api/domains/settlements";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { formatSomUZS } from "@/lib/money";
 import type { Settlement, SettlementPayment, SettlementStatus } from "@/lib/api/schemas/settlements";
+import type { SortOrder } from "@/lib/api/types";
+
+function useLocalSort(onChange: () => void) {
+  const [sort, setSort] = useState("");
+  const [order, setOrder] = useState<SortOrder>("asc");
+
+  const onSort = (column: string) => {
+    if (sort !== column) {
+      setSort(column);
+      setOrder("asc");
+    } else if (order === "asc") {
+      setOrder("desc");
+    } else {
+      setSort("");
+    }
+    onChange();
+  };
+
+  return { sort, order, onSort, sortParam: sort || undefined, orderParam: sort ? order : undefined };
+}
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const fmtLocal = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -72,6 +93,8 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
   const [ordersLimit, setOrdersLimit] = useState(10);
   const [batchesPage, setBatchesPage] = useState(1);
   const [batchesLimit, setBatchesLimit] = useState(10);
+  const ordersSort = useLocalSort(() => setOrdersPage(1));
+  const batchesSort = useLocalSort(() => setBatchesPage(1));
 
   const [createOpen, setCreateOpen] = useState(false);
   const [viewBatch, setViewBatch] = useState<Settlement | null>(null);
@@ -90,7 +113,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
   });
 
   const ordersQuery = useQuery({
-    queryKey: ["settlement_orders", partnerId, shopId ?? "all", periodStart, periodEnd, payment, ordersPage, ordersLimit],
+    queryKey: ["settlement_orders", partnerId, shopId ?? "all", periodStart, periodEnd, payment, ordersPage, ordersLimit, ordersSort.sortParam, ordersSort.orderParam],
     queryFn: () =>
       settlementsApi.orders({
         partner_id: partnerId,
@@ -100,12 +123,14 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
         payment,
         page: ordersPage,
         limit: ordersLimit,
+        sort: ordersSort.sortParam,
+        order: ordersSort.orderParam,
       }),
     enabled: !!partnerId && rangeValid,
   });
 
   const batchesQuery = useQuery({
-    queryKey: ["settlement_batches", partnerId, shopId ?? "all", batchStatus, batchesPage, batchesLimit],
+    queryKey: ["settlement_batches", partnerId, shopId ?? "all", batchStatus, batchesPage, batchesLimit, batchesSort.sortParam, batchesSort.orderParam],
     queryFn: () =>
       settlementsApi.list({
         partner_id: partnerId,
@@ -113,6 +138,8 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
         status: batchStatus === "all" ? undefined : batchStatus,
         page: batchesPage,
         limit: batchesLimit,
+        sort: batchesSort.sortParam,
+        order: batchesSort.orderParam,
       }),
     enabled: !!partnerId,
   });
@@ -257,12 +284,18 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order</TableHead>
+                    <SortableTableHead column="id" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
+                      Order
+                    </SortableTableHead>
                     <TableHead>Drink</TableHead>
                     <TableHead>Shop</TableHead>
-                    <TableHead>Price</TableHead>
+                    <SortableTableHead column="price" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
+                      Price
+                    </SortableTableHead>
                     <TableHead>Payout</TableHead>
-                    <TableHead>Date</TableHead>
+                    <SortableTableHead column="created_at" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
+                      Date
+                    </SortableTableHead>
                     <TableHead>Hoopla paid</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -323,12 +356,22 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Period</TableHead>
+                    <SortableTableHead column="period_start" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
+                      Period
+                    </SortableTableHead>
                     <TableHead>Shop</TableHead>
-                    <TableHead>Orders</TableHead>
-                    <TableHead>Payout</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Paid at</TableHead>
+                    <SortableTableHead column="orders_count" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
+                      Orders
+                    </SortableTableHead>
+                    <SortableTableHead column="total_amount" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
+                      Payout
+                    </SortableTableHead>
+                    <SortableTableHead column="status" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
+                      Status
+                    </SortableTableHead>
+                    <SortableTableHead column="paid_at" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
+                      Paid at
+                    </SortableTableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
