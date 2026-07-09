@@ -25,8 +25,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { giftCardsApi } from "@/lib/api/domains/gift-cards";
 import { usersApi } from "@/lib/api/domains/users";
 import type { GiftCard, CreateGiftCardRequest } from "@/lib/api/schemas/gift-cards";
@@ -131,6 +133,9 @@ function GiftCardsContent() {
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [codeFilter, setCodeFilter] = useQueryState("code", parseAsString.withDefault(""));
   const [activeFilter, setActiveFilter] = useQueryState("active", parseAsString.withDefault(""));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [formData, setFormData] = useState<CreateGiftCardRequest>(defaultForm);
@@ -139,12 +144,14 @@ function GiftCardsContent() {
   const [historyCardId, setHistoryCardId] = useState<number | null>(null);
 
   const { data: cardsData, isLoading } = useQuery({
-    queryKey: ["gift-cards", currentPage, perPage, codeFilter, activeFilter],
+    queryKey: ["gift-cards", currentPage, perPage, codeFilter, activeFilter, sortParam, orderParam],
     queryFn: () => giftCardsApi.getAll({
       page: currentPage,
       limit: perPage,
       code: codeFilter || undefined,
       is_active: activeFilter === "" ? undefined : activeFilter === "true",
+      sort: sortParam,
+      order: orderParam,
     }),
   });
   const cards = cardsData?.data || [];
@@ -220,13 +227,23 @@ function GiftCardsContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Balance</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
+              <SortableTableHead column="code" sort={sort} order={order} onSort={onSort}>
+                Code
+              </SortableTableHead>
+              <SortableTableHead column="balance" sort={sort} order={order} onSort={onSort}>
+                Balance
+              </SortableTableHead>
               <TableHead>Redeemed</TableHead>
               <TableHead>Account</TableHead>
-              <TableHead>Active</TableHead>
-              <TableHead>Expires</TableHead>
+              <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
+                Active
+              </SortableTableHead>
+              <SortableTableHead column="expires_at" sort={sort} order={order} onSort={onSort}>
+                Expires
+              </SortableTableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

@@ -4,7 +4,7 @@ import type {
   CreatePromocodeRequest,
   UpdatePromocodeRequest,
 } from "@/lib/api/schemas/promocodes";
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 export const promocodesApi = {
   getAll: async (params?: {
@@ -12,7 +12,7 @@ export const promocodesApi = {
     limit?: number;
     code?: string;
     is_active?: boolean;
-  }): Promise<PaginatedResponse<Promocode>> => {
+  } & SortParams): Promise<PaginatedResponse<Promocode>> => {
     const response = await httpClient.get<ApiResponse<Promocode[]>>(
       "/api/v1/promocode/list",
       { params }

@@ -9,7 +9,7 @@ import type {
 
 
 
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 // appendCategoryIds tells the backend to sync this drink's category links to
 // exactly `ids` (sync_categories=true). When ids is undefined the category links
@@ -21,7 +21,7 @@ function appendCategoryIds(formData: FormData, ids?: number[]) {
 }
 
 export const drinksApi = {
-  getAll: async (params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Drink>> => {
+  getAll: async (params?: { page?: number; limit?: number; search?: string } & SortParams): Promise<PaginatedResponse<Drink>> => {
     const response = await httpClient.get<ApiResponse<Drink[]>>("/api/v1/drink/list", { params });
     return response.data;
   },

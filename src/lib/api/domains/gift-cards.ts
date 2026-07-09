@@ -4,7 +4,7 @@ import type {
   GiftCardDetail,
   CreateGiftCardRequest,
 } from "@/lib/api/schemas/gift-cards";
-import type { PaginatedResponse, ApiResponse } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
 export const giftCardsApi = {
   getAll: async (params?: {
@@ -12,7 +12,7 @@ export const giftCardsApi = {
     limit?: number;
     code?: string;
     is_active?: boolean;
-  }): Promise<PaginatedResponse<GiftCard>> => {
+  } & SortParams): Promise<PaginatedResponse<GiftCard>> => {
     const response = await httpClient.get<ApiResponse<GiftCard[]>>(
       "/api/v1/gift-card/list",
       { params }

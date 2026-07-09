@@ -2,10 +2,22 @@ import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 
 import type { SortOrder } from "@/lib/api/types";
 
-export function useTableSort(onChange?: () => void) {
-  const [sort, setSort] = useQueryState("sort", parseAsString.withDefault(""));
+interface UseTableSortOptions {
+  sortKey?: string;
+  orderKey?: string;
+  onChange?: () => void;
+}
+
+export function useTableSort(onChangeOrOptions?: (() => void) | UseTableSortOptions) {
+  const options =
+    typeof onChangeOrOptions === "function"
+      ? { onChange: onChangeOrOptions }
+      : onChangeOrOptions || {};
+  const { sortKey = "sort", orderKey = "order", onChange } = options;
+
+  const [sort, setSort] = useQueryState(sortKey, parseAsString.withDefault(""));
   const [order, setOrder] = useQueryState(
-    "order",
+    orderKey,
     parseAsStringEnum<SortOrder>(["asc", "desc"]).withDefault("asc")
   );
 

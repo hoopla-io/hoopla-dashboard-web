@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { ApiResponse, PaginatedResponse, PaginationParams } from "@/lib/api/types";
+import type { ApiResponse, PaginatedResponse, PaginationParams, SortParams } from "@/lib/api/types";
 import type {
   Settlement,
   SettlementShow,
@@ -25,7 +25,7 @@ export interface CreateSettlementResult {
 
 export const settlementsApi = {
   list: async (
-    params: PaginationParams & { partner_id?: number; shop_id?: number; status?: string }
+    params: PaginationParams & { partner_id?: number; shop_id?: number; status?: string } & SortParams
   ): Promise<PaginatedResponse<Settlement>> => {
     const res = await httpClient.get<ApiResponse<Settlement[]>>("/api/v1/settlement/list", { params });
     return res.data;
@@ -39,7 +39,7 @@ export const settlementsApi = {
     payment?: string;
     page?: number;
     limit?: number;
-  }): Promise<{ data: SettlementOrder[]; meta: SettlementOrdersMeta | null }> => {
+  } & SortParams): Promise<{ data: SettlementOrder[]; meta: SettlementOrdersMeta | null }> => {
     const res = await httpClient.get<{ data: SettlementOrder[]; meta: SettlementOrdersMeta | null }>(
       "/api/v1/settlement/orders",
       { params }

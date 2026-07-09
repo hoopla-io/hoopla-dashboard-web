@@ -19,8 +19,10 @@ import {
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { notificationsApi } from "@/lib/api/domains/notifications";
 import type { Notification, CreateNotificationRequest } from "@/lib/api/schemas/notifications";
 
@@ -31,6 +33,9 @@ function NotificationsContent() {
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [search, setSearch] = useQueryState("search", parseAsString.withOptions({ throttleMs: 500 }).withDefault(""));
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
+  );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editNotification, setEditNotification] = useState<Notification | null>(null);
@@ -39,10 +44,12 @@ function NotificationsContent() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: notificationsData, isLoading } = useQuery({
-    queryKey: ["notifications", currentPage, search, perPage],
+    queryKey: ["notifications", currentPage, search, perPage, sortParam, orderParam],
     queryFn: () => notificationsApi.getAll({
       page: currentPage,
       limit: perPage,
+      sort: sortParam,
+      order: orderParam,
     }),
   });
 
@@ -116,11 +123,17 @@ function NotificationsContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
               <TableHead className="w-[64px]">Image</TableHead>
-              <TableHead>Title</TableHead>
+              <SortableTableHead column="title" sort={sort} order={order} onSort={onSort}>
+                Title
+              </SortableTableHead>
               <TableHead>Text</TableHead>
-              <TableHead>Created</TableHead>
+              <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
+                Created
+              </SortableTableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

@@ -42,9 +42,11 @@ import {
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { useTableSort } from "@/hooks/use-table-sort";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { Shop, CreateShopRequest } from "@/lib/api/schemas/shops";
@@ -59,6 +61,9 @@ function ShopsContent() {
   const [search, setSearch] = useQueryState(
     "search",
     parseAsString.withOptions({ throttleMs: 500 }).withDefault("")
+  );
+  const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
+    setCurrentPage(1)
   );
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -87,12 +92,14 @@ function ShopsContent() {
   });
 
   const { data: shopsData, isLoading } = useQuery({
-    queryKey: ["shops", currentPage, perPage, search],
+    queryKey: ["shops", currentPage, perPage, search, sortParam, orderParam],
     queryFn: () =>
       shopsApi.getAll({
         page: currentPage,
         limit: perPage,
         search: search || undefined,
+        sort: sortParam,
+        order: orderParam,
       }),
   });
 
@@ -232,12 +239,18 @@ function ShopsContent() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[64px]">ID</TableHead>
+              <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
+                ID
+              </SortableTableHead>
               <TableHead className="w-[64px]">Image</TableHead>
-              <TableHead>Name</TableHead>
+              <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
+                Name
+              </SortableTableHead>
               <TableHead>Partner</TableHead>
               <TableHead>Location</TableHead>
-              <TableHead>Status</TableHead>
+              <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
+                Status
+              </SortableTableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
