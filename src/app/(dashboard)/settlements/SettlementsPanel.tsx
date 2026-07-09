@@ -36,6 +36,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { settlementsApi } from "@/lib/api/domains/settlements";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { formatSomUZS } from "@/lib/money";
+import { nextSortState } from "@/hooks/use-table-sort";
 import type { Settlement, SettlementPayment, SettlementStatus } from "@/lib/api/schemas/settlements";
 import type { SortOrder } from "@/lib/api/types";
 
@@ -44,14 +45,9 @@ function useLocalSort(onChange: () => void) {
   const [order, setOrder] = useState<SortOrder>("asc");
 
   const onSort = (column: string) => {
-    if (sort !== column) {
-      setSort(column);
-      setOrder("asc");
-    } else if (order === "asc") {
-      setOrder("desc");
-    } else {
-      setSort("");
-    }
+    const next = nextSortState(sort, order, column);
+    setSort(next.sort ?? "");
+    setOrder(next.order ?? "asc");
     onChange();
   };
 
