@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import DashboardPage from "@/app/(dashboard)/page";
 import PartnersPage from "@/app/(dashboard)/partners/page";
+import PartnerOnboardingPage from "@/app/(dashboard)/partners/onboarding/page";
 import PartnerDetailPage from "@/app/(dashboard)/partners/[id]/page";
 import PartnerDrinkModifiersPage from "@/app/(dashboard)/partners/[id]/drinks/[drinkId]/modifiers/page";
 import ShopsPage from "@/app/(dashboard)/shops/page";
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: "partners", element: <PartnersPage /> },
+      { path: "partners/onboarding", element: <PartnerOnboardingPage /> },
       { path: "partners/:id", element: <PartnerDetailPage /> },
       {
         path: "partners/:id/drinks/:drinkId/modifiers",

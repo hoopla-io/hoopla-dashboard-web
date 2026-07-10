@@ -1,5 +1,6 @@
 
 import { Suspense } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { toast } from "sonner";
@@ -261,7 +262,18 @@ function OrdersContent() {
                     {formatPrice(order.price)}{" "}
                     <span className="text-xs text-muted-foreground">UZS</span>
                   </TableCell>
-                  <TableCell className="text-sm">{order.shop?.name || "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    {order.shop ? (
+                      <Link
+                        to={`/shops/${order.shop.id}`}
+                        className="text-foreground underline-offset-2 hover:underline"
+                      >
+                        {order.shop.name}
+                      </Link>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(order.time)}
                   </TableCell>

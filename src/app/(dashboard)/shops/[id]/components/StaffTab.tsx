@@ -15,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -61,7 +63,7 @@ const ROLE_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
   CASHIER: "outline",
 };
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 500;
 
 export function StaffTab({ shopId }: StaffTabProps) {
   const queryClient = useQueryClient();
@@ -234,59 +236,64 @@ export function StaffTab({ shopId }: StaffTabProps) {
           <CardTitle>Staff</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+          <DataTableShell>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
-                    Loading staff...
-                  </TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="w-[100px] text-right">Actions</TableHead>
                 </TableRow>
-              ) : error ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6 text-destructive">
-                    Failed to load staff
-                  </TableCell>
-                </TableRow>
-              ) : filteredStaff.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-6 text-muted-foreground">
-                    No staff members
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredStaff.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => handleDelete(user)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
+                      Loading staff...
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center py-6 text-destructive">
+                      Failed to load staff
+                    </TableCell>
+                  </TableRow>
+                ) : filteredStaff.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="p-0">
+                      <EmptyState
+                        title="No staff members"
+                        description="Staff added for this shop will appear here."
+                      />
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredStaff.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => handleDelete(user)}
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </DataTableShell>
         </CardContent>
       </Card>
 

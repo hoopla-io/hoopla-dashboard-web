@@ -31,12 +31,14 @@ export const drinksApi = {
     return response.data.data ?? response.data;
   },
 
-  create: async (data: CreateDrinkRequest, file?: File): Promise<Drink> => {
+  // Note: the backend's store response is a narrow { drinkId } DTO, not a
+  // full Drink — fetch via getById if the complete record is needed after create.
+  create: async (data: CreateDrinkRequest, file?: File): Promise<{ drinkId: number }> => {
     const formData = new FormData();
     formData.append("name", data.name);
     if (file) formData.append("file", file);
 
-    const response = await httpClient.post<ApiResponse<Drink>>("/api/v1/drink/store", formData, {
+    const response = await httpClient.post<ApiResponse<{ drinkId: number }>>("/api/v1/drink/store", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data.data ?? response.data;
@@ -62,7 +64,9 @@ export const drinksApi = {
     return Array.isArray(response.data.data) ? response.data.data : [];
   },
 
-  assignToPartner: async (data: CreatePartnerDrinkRequest, file?: File): Promise<PartnerDrink> => {
+  // Note: the backend's store response is a narrow { id, message } DTO, not a
+  // full PartnerDrink — fetch via getPartnerDrinkById if the complete record is needed after create.
+  assignToPartner: async (data: CreatePartnerDrinkRequest, file?: File): Promise<{ id: number; message?: string }> => {
     const formData = new FormData();
     formData.append("partner_id", String(data.partner_id));
     formData.append("drink_id", String(data.drink_id));
@@ -74,7 +78,7 @@ export const drinksApi = {
     appendCategoryIds(formData, data.category_ids);
     if (file) formData.append("file", file);
 
-    const response = await httpClient.post<ApiResponse<PartnerDrink>>("/api/v1/partner/drink/store", formData, {
+    const response = await httpClient.post<ApiResponse<{ id: number; message?: string }>>("/api/v1/partner/drink/store", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data.data ?? response.data;

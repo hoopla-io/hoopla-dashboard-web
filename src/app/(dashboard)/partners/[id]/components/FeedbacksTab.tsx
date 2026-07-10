@@ -1,7 +1,11 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { partnersApi } from "@/lib/api/domains/partners";
 
 interface FeedbacksTabProps {
@@ -23,13 +27,28 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export function FeedbacksTab({ partnerId }: FeedbacksTabProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+
   const { data: feedbacksData, isLoading } = useQuery({
     queryKey: ["partner_feedbacks", partnerId],
     queryFn: () => partnersApi.getFeedbacks(partnerId),
     enabled: !!partnerId,
   });
 
-  const feedbacks = Array.isArray(feedbacksData) ? feedbacksData : [];
+  const feedbacks = useMemo(
+    () => (Array.isArray(feedbacksData) ? feedbacksData : []),
+    [feedbacksData]
+  );
+
+  // No pagination params on the feedbacks endpoint today, so paginate the
+  // fetched array client-side.
+  const totalPages = Math.max(1, Math.ceil(feedbacks.length / perPage));
+
+  const paginatedFeedbacks = useMemo(() => {
+    const start = (currentPage - 1) * perPage;
+    return feedbacks.slice(start, start + perPage);
+  }, [feedbacks, currentPage, perPage]);
 
   const averageRating =
     feedbacks.length > 0
@@ -51,48 +70,66 @@ export function FeedbacksTab({ partnerId }: FeedbacksTabProps) {
           <CardTitle>Customer Feedbacks</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Comment</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+          <DataTableShell>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4">Loading feedbacks...</TableCell>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Order</TableHead>
+                  <TableHead>Rating</TableHead>
+                  <TableHead>Comment</TableHead>
+                  <TableHead>Date</TableHead>
                 </TableRow>
-              ) : feedbacks.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No feedbacks yet</TableCell>
-                </TableRow>
-              ) : (
-                feedbacks.map((feedback) => (
-                  <TableRow key={feedback.id}>
-                    <TableCell className="font-medium">#{feedback.id}</TableCell>
-                    <TableCell>#{feedback.order_id}</TableCell>
-                    <TableCell>
-                      <StarRating rating={feedback.rating} />
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      {feedback.comment ? (
-                        <span className="text-sm">{feedback.comment}</span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {feedback.created_at ? new Date(feedback.created_at).toLocaleString() : "-"}
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-4">Loading feedbacks...</TableCell>
+                  </TableRow>
+                ) : paginatedFeedbacks.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="p-0">
+                      <EmptyState
+                        title="No feedbacks yet"
+                        description="Customer feedback for this partner's orders will appear here."
+                      />
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  paginatedFeedbacks.map((feedback) => (
+                    <TableRow key={feedback.id}>
+                      <TableCell className="font-medium">#{feedback.id}</TableCell>
+                      <TableCell>#{feedback.order_id}</TableCell>
+                      <TableCell>
+                        <StarRating rating={feedback.rating} />
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        {feedback.comment ? (
+                          <span className="text-sm">{feedback.comment}</span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {feedback.created_at ? new Date(feedback.created_at).toLocaleString() : "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              perPage={perPage}
+              onPerPageChange={(n) => {
+                setPerPage(n);
+                setCurrentPage(1);
+              }}
+              isLoading={isLoading}
+            />
+          </DataTableShell>
         </CardContent>
       </Card>
     </div>

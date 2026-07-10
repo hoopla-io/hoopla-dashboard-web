@@ -30,6 +30,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import { shopsApi } from "@/lib/api/domains/shops";
 import type { CreateShopHoursRequest } from "@/lib/api/schemas/shops";
 
@@ -169,7 +171,7 @@ export function HoursTab({ shopId }: HoursTabProps) {
           </Dialog>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <DataTableShell>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -182,14 +184,17 @@ export function HoursTab({ shopId }: HoursTabProps) {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
-                      Loading...
+                    <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
+                      Loading…
                     </TableCell>
                   </TableRow>
                 ) : !hours || hours.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                      No working hours defined
+                    <TableCell colSpan={4} className="p-0">
+                      <EmptyState
+                        title="No working hours defined"
+                        description="Add opening and closing times for each day of the week."
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -214,7 +219,7 @@ export function HoursTab({ shopId }: HoursTabProps) {
                 )}
               </TableBody>
             </Table>
-          </div>
+          </DataTableShell>
         </CardContent>
       </Card>
     </div>

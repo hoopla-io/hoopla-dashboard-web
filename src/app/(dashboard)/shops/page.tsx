@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MapPin, MoreVertical, Eye, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, MapPin, MoreVertical } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
@@ -21,18 +21,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +38,7 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { ShopForm } from "@/components/forms/shop-form";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { Shop, CreateShopRequest } from "@/lib/api/schemas/shops";
@@ -68,8 +60,7 @@ function ShopsContent() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
-  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
-  const [showVendorPassword, setShowVendorPassword] = useState(false);
+  const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -79,17 +70,6 @@ function ShopsContent() {
       navigate(`/shops?${params.toString()}`, { replace: true });
     }
   }, [searchParams, navigate]);
-
-  const [formData, setFormData] = useState<Partial<CreateShopRequest> & { id?: number }>({
-    partner_id: 0,
-    name: "",
-    location_lat: 0,
-    location_long: 0,
-    vendor_terminal_id: "",
-    vendor_login: "",
-    vendor_password: "",
-    vendor_organization_id: "",
-  });
 
   const { data: shopsData, isLoading } = useQuery({
     queryKey: ["shops", currentPage, perPage, search, sortParam, orderParam],
@@ -120,18 +100,6 @@ function ShopsContent() {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       toast.success("Shop created");
       setIsCreateOpen(false);
-      setFormData({
-        partner_id: 0,
-        name: "",
-        location_lat: 0,
-        location_long: 0,
-        vendor_terminal_id: "",
-        vendor_login: "",
-        vendor_password: "",
-        vendor_organization_id: "",
-      });
-      setSelectedFile(undefined);
-      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to create shop"),
   });
@@ -150,18 +118,6 @@ function ShopsContent() {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       toast.success("Shop updated");
       setIsCreateOpen(false);
-      setFormData({
-        partner_id: 0,
-        name: "",
-        location_lat: 0,
-        location_long: 0,
-        vendor_terminal_id: "",
-        vendor_login: "",
-        vendor_password: "",
-        vendor_organization_id: "",
-      });
-      setSelectedFile(undefined);
-      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to update shop"),
   });
@@ -176,34 +132,12 @@ function ShopsContent() {
   });
 
   const handleEdit = (shop: Shop) => {
-    setFormData({
-      id: shop.id,
-      partner_id: shop.partner?.id || shop.partnerId || 0,
-      name: shop.name,
-      location_lat: shop.location?.lat ?? shop.location_lat ?? 0,
-      location_long: shop.location?.lng ?? shop.location_long ?? 0,
-      vendor_terminal_id: shop.vendor_terminal_id || "",
-      vendor_login: shop.vendor_login || "",
-      vendor_password: "",
-      vendor_organization_id: shop.vendor_organization_id || "",
-    });
-    setShowVendorPassword(false);
+    setEditingShop(shop);
     setIsCreateOpen(true);
   };
 
   const handleCreateOpen = () => {
-    setFormData({
-      partner_id: 0,
-      name: "",
-      location_lat: 0,
-      location_long: 0,
-      vendor_terminal_id: "",
-      vendor_login: "",
-      vendor_password: "",
-      vendor_organization_id: "",
-    });
-    setSelectedFile(undefined);
-    setShowVendorPassword(false);
+    setEditingShop(null);
     setIsCreateOpen(true);
   };
 
@@ -385,181 +319,38 @@ function ShopsContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{formData.id ? "Edit shop" : "Create shop"}</DialogTitle>
+            <DialogTitle>{editingShop ? "Edit shop" : "Create shop"}</DialogTitle>
             <DialogDescription>
-              {formData.id ? "Update shop details." : "Add a new shop location."}
+              {editingShop ? "Update shop details." : "Add a new shop location."}
             </DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (formData.id) {
-                updateMutation.mutate({ id: formData.id, data: formData, file: selectedFile });
+          <ShopForm
+            key={editingShop?.id ?? "create"}
+            partnerOptions={partners}
+            initialValues={
+              editingShop
+                ? {
+                    partner_id: editingShop.partner?.id || editingShop.partnerId || 0,
+                    name: editingShop.name,
+                    vendor_terminal_id: editingShop.vendor_terminal_id || "",
+                    vendor_login: editingShop.vendor_login || "",
+                    vendor_organization_id: editingShop.vendor_organization_id || "",
+                    location_lat: editingShop.location?.lat ?? editingShop.location_lat ?? 0,
+                    location_long: editingShop.location?.lng ?? editingShop.location_long ?? 0,
+                  }
+                : undefined
+            }
+            isEditing={!!editingShop}
+            isSubmitting={createMutation.isPending || updateMutation.isPending}
+            onSubmit={(data, file) => {
+              if (editingShop) {
+                updateMutation.mutate({ id: editingShop.id, data, file });
               } else {
-                createMutation.mutate({
-                  data: formData as CreateShopRequest,
-                  file: selectedFile,
-                });
+                createMutation.mutate({ data, file });
               }
             }}
-          >
-            <div className="space-y-4 py-4">
-              <div className="space-y-1.5">
-                <Label>Partner</Label>
-                <Select
-                  value={String(formData.partner_id)}
-                  onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select partner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {partners.map((p) => (
-                      <SelectItem key={p.id} value={String(p.id)}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Name</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Shop name"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Vendor terminal ID</Label>
-                <Input
-                  value={formData.vendor_terminal_id || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, vendor_terminal_id: e.target.value })
-                  }
-                  placeholder="Terminal ID"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Vendor login</Label>
-                <Input
-                  value={formData.vendor_login || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, vendor_login: e.target.value })
-                  }
-                  placeholder="Cassa login"
-                  maxLength={255}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>
-                  {formData.id ? "Vendor password (leave blank to keep)" : "Vendor password"}
-                </Label>
-                <div className="relative">
-                  <Input
-                    type={showVendorPassword ? "text" : "password"}
-                    value={formData.vendor_password || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, vendor_password: e.target.value })
-                    }
-                    placeholder={formData.id ? "••••••••" : "Cassa password"}
-                    minLength={4}
-                    maxLength={255}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowVendorPassword((v) => !v)}
-                  >
-                    {showVendorPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Vendor organization ID</Label>
-                <Input
-                  value={formData.vendor_organization_id || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, vendor_organization_id: e.target.value })
-                  }
-                  placeholder="Organization ID"
-                  maxLength={255}
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label>Latitude</Label>
-                  <Input
-                    type="number"
-                    step="any"
-                    value={formData.location_lat === 0 ? "" : formData.location_lat}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location_lat: Number(e.target.value) })
-                    }
-                    placeholder="Latitude"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Longitude</Label>
-                  <Input
-                    type="number"
-                    step="any"
-                    value={formData.location_long === 0 ? "" : formData.location_long}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location_long: Number(e.target.value) })
-                    }
-                    placeholder="Longitude"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="shop-file">Image</Label>
-                <Input
-                  id="shop-file"
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
-                  }}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsCreateOpen(false);
-                  setFormData({
-                    partner_id: 0,
-                    name: "",
-                    location_lat: 0,
-                    location_long: 0,
-                    vendor_terminal_id: "",
-                    vendor_login: "",
-                    vendor_password: "",
-                    vendor_organization_id: "",
-                  });
-                  setSelectedFile(undefined);
-                  setShowVendorPassword(false);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
-              >
-                {createMutation.isPending || updateMutation.isPending
-                  ? "Saving…"
-                  : formData.id
-                    ? "Save changes"
-                    : "Create"}
-              </Button>
-            </DialogFooter>
-          </form>
+            onCancel={() => setIsCreateOpen(false)}
+          />
         </DialogContent>
       </Dialog>
 

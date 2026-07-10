@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import { formatUZS } from "@/lib/money";
 import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest, ModifierGroup, UpdateModifierGroupRequest } from "@/lib/api/schemas/drinks";
@@ -88,27 +90,29 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
         </p>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Group</TableHead>
-              <TableHead>Display name</TableHead>
-              <TableHead className="w-[90px]">Min</TableHead>
-              <TableHead className="w-[90px]">Max</TableHead>
-              <TableHead className="w-[80px]">Options</TableHead>
-              <TableHead className="text-right">Save</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="py-6 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
-            ) : (
-              groups.map((g) => (
-                <GroupRow key={g.key} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <DataTableShell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Group</TableHead>
+                <TableHead>Display name</TableHead>
+                <TableHead className="w-[90px]">Min</TableHead>
+                <TableHead className="w-[90px]">Max</TableHead>
+                <TableHead className="w-[80px]">Options</TableHead>
+                <TableHead className="text-right">Save</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+              ) : (
+                groups.map((g) => (
+                  <GroupRow key={g.key} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </DataTableShell>
       </CardContent>
     </Card>
   );
@@ -262,65 +266,71 @@ function ModifiersContent() {
           <CardTitle>Addons</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Addon Name</TableHead>
-                <TableHead>Group</TableHead>
-                <TableHead>Vendor Addon ID</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead className="w-[100px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-4">Loading addons...</TableCell></TableRow>
-              ) : modifiers.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No addons found</TableCell></TableRow>
-              ) : (
-                modifiers.map((mod) => (
-                  <TableRow key={mod.id}>
-                    <TableCell className="font-medium">{mod.vendor_addon_name}</TableCell>
-                    <TableCell>
-                      {mod.vendor_addon_key ? (
-                        <span className="rounded bg-muted px-2 py-0.5 font-mono text-[11px]">{mod.vendor_addon_key}</span>
-                      ) : (
-                        <span className="text-[11px] text-muted-foreground">— ungrouped</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{mod.vendor_addon_id}</TableCell>
-                    <TableCell>{formatUZS(mod.vendor_addon_price)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEditModal(mod)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => deleteMutation.mutate(mod.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <DataTableShell>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Addon Name</TableHead>
+                  <TableHead>Group</TableHead>
+                  <TableHead>Vendor Addon ID</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead className="w-[100px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                ) : modifiers.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="p-0">
+                    <EmptyState
+                      title="No addons found"
+                      description="Add an addon to get started."
+                    />
+                  </TableCell></TableRow>
+                ) : (
+                  modifiers.map((mod) => (
+                    <TableRow key={mod.id}>
+                      <TableCell className="font-medium">{mod.vendor_addon_name}</TableCell>
+                      <TableCell>
+                        {mod.vendor_addon_key ? (
+                          <span className="rounded bg-muted px-2 py-0.5 font-mono text-[11px]">{mod.vendor_addon_key}</span>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">— ungrouped</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{mod.vendor_addon_id}</TableCell>
+                      <TableCell>{formatUZS(mod.vendor_addon_price)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => openEditModal(mod)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => deleteMutation.mutate(mod.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              perPage={perPage}
+              onPerPageChange={(v) => { setPerPage(v); setCurrentPage(1); }}
+              isLoading={isLoading}
+            />
+          </DataTableShell>
         </CardContent>
       </Card>
-
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        perPage={perPage}
-        onPerPageChange={(v) => { setPerPage(v); setCurrentPage(1); }}
-        isLoading={isLoading}
-      />
 
       <div className="mt-6">
         <ModifierGroupsCard partnerDrinkId={partnerDrinkId} />

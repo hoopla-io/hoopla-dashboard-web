@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Eye, BookOpen, X, CalendarIcon, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, BookOpen, X, CalendarIcon, ChevronLeft, ChevronRight, Pause, Play, Search } from "lucide-react";
 import Image from "@/components/ui/image";
-import { useQueryState, parseAsInteger } from "nuqs";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
@@ -311,6 +312,10 @@ function StoriesContent() {
   const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState(
+    "search",
+    parseAsString.withOptions({ throttleMs: 500 }).withDefault("")
+  );
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
     setCurrentPage(1)
@@ -323,13 +328,31 @@ function StoriesContent() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewStoryId, setPreviewStoryId] = useState<number | null>(null);
 
+  // storiesApi has no server-side search param — when searching, fetch a much
+  // larger page so the client-side filter isn't limited to whatever page
+  // happened to be loaded, then re-paginate the filtered set client-side too.
+  const isSearching = search.trim().length > 0;
   const { data: storiesData, isLoading } = useQuery({
-    queryKey: ["stories", currentPage, perPage, sortParam, orderParam],
-    queryFn: () => storiesApi.getAll({ page: currentPage, limit: perPage, sort: sortParam, order: orderParam }),
+    queryKey: ["stories", currentPage, perPage, sortParam, orderParam, isSearching],
+    queryFn: () =>
+      storiesApi.getAll({
+        page: isSearching ? 1 : currentPage,
+        limit: isSearching ? 1000 : perPage,
+        sort: sortParam,
+        order: orderParam,
+      }),
   });
 
-  const stories = storiesData?.data || [];
-  const totalPages = storiesData?.meta?.totalPages || 1;
+  const allStories = storiesData?.data || [];
+  const filteredStories = isSearching
+    ? allStories.filter((s) => s.title.toLowerCase().includes(search.toLowerCase()))
+    : allStories;
+  const stories = isSearching
+    ? filteredStories.slice((currentPage - 1) * perPage, currentPage * perPage)
+    : filteredStories;
+  const totalPages = isSearching
+    ? Math.max(1, Math.ceil(filteredStories.length / perPage))
+    : storiesData?.meta?.totalPages || 1;
 
   const { data: previewStory } = useQuery({
     queryKey: ["stories", previewStoryId],
@@ -514,6 +537,21 @@ function StoriesContent() {
         }
       />
 
+      <PageToolbar>
+        <div className="relative w-full max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search stories"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value || null);
+              setCurrentPage(1);
+            }}
+            className="pl-9"
+          />
+        </div>
+      </PageToolbar>
+
       <DataTableShell>
         <Table>
           <TableHeader>
@@ -547,21 +585,27 @@ function StoriesContent() {
               <TableRow>
                 <TableCell colSpan={8} className="p-0">
                   <EmptyState
-                    title="No stories yet"
-                    description="Publish your first story to engage users in the mobile app."
+                    title="No stories found"
+                    description={
+                      search
+                        ? "Try a different search term."
+                        : "Publish your first story to engage users in the mobile app."
+                    }
                     action={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setFormData(defaultForm);
-                          setSelectedFile(null);
-                          setIsCreateOpen(true);
-                        }}
-                      >
-                        <Plus className="size-4" />
-                        Add story
-                      </Button>
+                      !search ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setFormData(defaultForm);
+                            setSelectedFile(null);
+                            setIsCreateOpen(true);
+                          }}
+                        >
+                          <Plus className="size-4" />
+                          Add story
+                        </Button>
+                      ) : null
                     }
                   />
                 </TableCell>

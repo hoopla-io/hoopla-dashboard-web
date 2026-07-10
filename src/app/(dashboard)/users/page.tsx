@@ -1,9 +1,10 @@
 
 import { Suspense, useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { toast } from "sonner";
-import { Trash2, Pencil } from "lucide-react";
+import { Trash2, Pencil, ShoppingCart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -224,6 +225,17 @@ function UsersContent() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      {user.phone_number && (
+                        <Button variant="ghost" size="icon-sm" asChild>
+                          <Link
+                            to={`/orders?search=${encodeURIComponent(user.phone_number)}`}
+                            aria-label="View orders"
+                            title="View orders"
+                          >
+                            <ShoppingCart className="size-4" />
+                          </Link>
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon-sm"
