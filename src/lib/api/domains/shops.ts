@@ -23,7 +23,9 @@ export const shopsApi = {
     return response.data.data ?? response.data;
   },
 
-  create: async (data: CreateShopRequest, file?: File): Promise<Shop> => {
+  // Note: the backend's store response is a narrow { id, message, image_url? }
+  // DTO, not a full Shop — fetch via getById if the complete record is needed after create.
+  create: async (data: CreateShopRequest, file?: File): Promise<{ id: number; message?: string; image_url?: string }> => {
     const formData = new FormData();
     formData.append("partner_id", String(data.partner_id));
     formData.append("name", data.name);
@@ -35,7 +37,7 @@ export const shopsApi = {
     if (data.vendor_organization_id) formData.append("vendor_organization_id", data.vendor_organization_id);
     if (file) formData.append("file", file);
 
-    const response = await httpClient.post<ApiResponse<Shop>>("/api/v1/shop/store", formData, {
+    const response = await httpClient.post<ApiResponse<{ id: number; message?: string; image_url?: string }>>("/api/v1/shop/store", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data.data ?? response.data;

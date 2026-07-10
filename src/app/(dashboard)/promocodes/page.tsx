@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, CalendarIcon, X, Check, ChevronsUpDown, Layers, Download } from "lucide-react";
+import { Plus, Pencil, Trash2, CalendarIcon, X, Layers, Download } from "lucide-react";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { format } from "date-fns";
 
@@ -20,7 +20,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
@@ -29,9 +28,10 @@ import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { SearchableSelect } from "@/components/pickers/searchable-select";
+import { AccountPicker } from "@/components/pickers/account-picker";
 import { promocodesApi } from "@/lib/api/domains/promocodes";
 import { partnersApi } from "@/lib/api/domains/partners";
-import { usersApi } from "@/lib/api/domains/users";
 import type { Promocode, CreatePromocodeRequest } from "@/lib/api/schemas/promocodes";
 
 function dateToIso(dateStr: string | null | undefined): string {
@@ -150,63 +150,6 @@ function DateTimePicker({
         />
       )}
     </div>
-  );
-}
-
-// Reserve a promocode for a single account: search users by phone.
-function AccountPicker({
-  value,
-  onChange,
-}: {
-  value: number | undefined;
-  onChange: (id: number | undefined) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-
-  const { data } = useQuery({
-    queryKey: ["promocode-users-search", search],
-    queryFn: () => usersApi.getAll({ phone_number: search || undefined, limit: 10 }),
-    enabled: open,
-  });
-  const users = data?.data || [];
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-          {value ? `Account #${value}` : "Anyone"}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <Command shouldFilter={false}>
-          <CommandInput placeholder="Search by phone…" value={search} onValueChange={setSearch} />
-          <CommandList>
-            <CommandEmpty>No accounts found.</CommandEmpty>
-            <CommandGroup>
-              <CommandItem value="anyone" onSelect={() => { onChange(undefined); setOpen(false); }}>
-                <Check className={cn("mr-2 h-4 w-4", value === undefined ? "opacity-100" : "opacity-0")} />
-                Anyone
-              </CommandItem>
-              {users.map((u) => (
-                <CommandItem
-                  key={u.id}
-                  value={String(u.id)}
-                  onSelect={() => { onChange(u.id); setOpen(false); }}
-                >
-                  <Check className={cn("mr-2 h-4 w-4", value === u.id ? "opacity-100" : "opacity-0")} />
-                  <span className="flex flex-col">
-                    <span className="text-sm">{u.phone_number || `#${u.id}`}</span>
-                    {u.name && <span className="text-xs text-muted-foreground">{u.name}</span>}
-                  </span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
   );
 }
 
@@ -479,18 +422,16 @@ function PromocodesContent() {
 
       <div className="space-y-2">
         <Label>Partner (Optional — scope to one partner)</Label>
-        <Select
+        <SearchableSelect
           value={formData.partner_id ? String(formData.partner_id) : "all"}
           onValueChange={(v) => setFormData({ ...formData, partner_id: v === "all" ? undefined : Number(v) })}
-        >
-          <SelectTrigger className="w-full"><SelectValue placeholder="All partners" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All partners</SelectItem>
-            {partners.map((p) => (
-              <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="All partners"
+          searchPlaceholder="Search partners…"
+          items={[
+            { value: "all", label: "All partners" },
+            ...partners.map((p) => ({ value: String(p.id), label: p.name })),
+          ]}
+        />
       </div>
 
       <div className="space-y-2">

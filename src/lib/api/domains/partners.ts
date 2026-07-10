@@ -19,7 +19,9 @@ export const partnersApi = {
     return response.data.data ?? response.data;
   },
 
-  create: async (data: CreatePartnerRequest, file?: File): Promise<Partner> => {
+  // Note: the backend's store response is a narrow { partner_id } DTO, not a
+  // full Partner — fetch via getById if the complete record is needed after create.
+  create: async (data: CreatePartnerRequest, file?: File): Promise<{ partner_id: number }> => {
     const formData = new FormData();
     formData.append("name", data.name);
     if (data.description) formData.append("description", data.description);
@@ -33,7 +35,7 @@ export const partnersApi = {
     if (data.status !== undefined) formData.append("status", data.status ? "1" : "0");
     if (file) formData.append("file", file);
 
-    const response = await httpClient.post<ApiResponse<Partner>>("/api/v1/partner/store", formData, {
+    const response = await httpClient.post<ApiResponse<{ partner_id: number }>>("/api/v1/partner/store", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return response.data.data ?? response.data;

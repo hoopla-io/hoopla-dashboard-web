@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Check, ChevronsUpDown, X, CalendarIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, X, CalendarIcon } from "lucide-react";
 import Image from "@/components/ui/image";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
@@ -27,10 +27,10 @@ import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { SearchableSelect } from "@/components/pickers/searchable-select";
 import { bannersApi } from "@/lib/api/domains/banners";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
@@ -139,57 +139,6 @@ function DateTimePicker({
         />
       )}
     </div>
-  );
-}
-
-function SearchableSelect({
-  value,
-  onValueChange,
-  placeholder,
-  searchPlaceholder,
-  items,
-}: {
-  value: string;
-  onValueChange: (value: string) => void;
-  placeholder: string;
-  searchPlaceholder: string;
-  items: { value: string; label: string }[];
-}) {
-  const [open, setOpen] = useState(false);
-  const selected = items.find((i) => i.value === value);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
-          {selected ? selected.label : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
-          <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup>
-              {items.map((item) => (
-                <CommandItem
-                  key={item.value}
-                  value={item.label}
-                  onSelect={() => {
-                    onValueChange(item.value);
-                    setOpen(false);
-                  }}
-                >
-                  <Check className={cn("mr-2 h-4 w-4", value === item.value ? "opacity-100" : "opacity-0")} />
-                  {item.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
   );
 }
 

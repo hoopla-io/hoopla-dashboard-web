@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, Pencil } from "lucide-react";
+import { Plus, Trash2, Search, Pencil, Sparkles } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
@@ -160,17 +160,23 @@ function PartnersContent() {
         title="Partners"
         description="Manage partner organizations and their cashback settings."
         action={
-          <Button
-            onClick={() => {
-              setEditingId(null);
-              setFormData({ name: "", description: "" });
-              setSelectedFile(undefined);
-              setIsCreateOpen(true);
-            }}
-          >
-            <Plus className="size-4" />
-            Add partner
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate("/partners/onboarding")}>
+              <Sparkles className="size-4" />
+              Onboard new partner
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingId(null);
+                setFormData({ name: "", description: "" });
+                setSelectedFile(undefined);
+                setIsCreateOpen(true);
+              }}
+            >
+              <Plus className="size-4" />
+              Add partner
+            </Button>
+          </div>
         }
       />
 

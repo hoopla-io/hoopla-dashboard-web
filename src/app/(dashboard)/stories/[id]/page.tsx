@@ -3,10 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ArrowLeft, BookOpen, X, Check, ChevronsUpDown } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, BookOpen, X } from "lucide-react";
 import Image from "@/components/ui/image";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,71 +14,21 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { SearchableSelect } from "@/components/pickers/searchable-select";
 import { storiesApi, storyItemsApi } from "@/lib/api/domains/stories";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { StoryItem, CreateStoryItemRequest } from "@/lib/api/schemas/stories";
 
 const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Drink", url: "URL" };
-
-function SearchableSelect({
-  value,
-  onValueChange,
-  placeholder,
-  searchPlaceholder,
-  items,
-}: {
-  value: string;
-  onValueChange: (value: string) => void;
-  placeholder: string;
-  searchPlaceholder: string;
-  items: { value: string; label: string }[];
-}) {
-  const [open, setOpen] = useState(false);
-  const selected = items.find((i) => i.value === value);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
-          {selected ? selected.label : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <Command>
-          <CommandInput placeholder={searchPlaceholder} />
-          <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup>
-              {items.map((item) => (
-                <CommandItem
-                  key={item.value}
-                  value={item.label}
-                  onSelect={() => {
-                    onValueChange(item.value);
-                    setOpen(false);
-                  }}
-                >
-                  <Check className={cn("mr-2 h-4 w-4", value === item.value ? "opacity-100" : "opacity-0")} />
-                  {item.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 const defaultItemForm: Omit<CreateStoryItemRequest, "story_id"> = {
   title: "",
@@ -360,7 +309,7 @@ function StoryDetailContent() {
         </Button>
       </div>
 
-      <div className="rounded-lg border">
+      <DataTableShell>
         <Table>
           <TableHeader>
             <TableRow>
@@ -376,8 +325,11 @@ function StoryDetailContent() {
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  No slides yet. Add one to get started.
+                <TableCell colSpan={7} className="p-0">
+                  <EmptyState
+                    title="No slides yet"
+                    description="Add a slide to get started."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -441,7 +393,7 @@ function StoryDetailContent() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </DataTableShell>
 
       {/* Create Item Dialog */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

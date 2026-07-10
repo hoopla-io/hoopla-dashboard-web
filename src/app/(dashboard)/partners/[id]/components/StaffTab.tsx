@@ -15,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +68,7 @@ const ROLE_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
   MANAGER: "outline",
 };
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 500;
 const isPortalRole = (role: string): role is PortalUserRole =>
   (PORTAL_ROLES as readonly string[]).includes(role);
 
@@ -254,72 +256,77 @@ export function StaffTab({ partnerId }: StaffTabProps) {
           <CardTitle>Merchant users</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Shop</TableHead>
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+          <DataTableShell>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                    Loading users...
-                  </TableCell>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Shop</TableHead>
+                  <TableHead className="w-[100px] text-right">Actions</TableHead>
                 </TableRow>
-              ) : error ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-destructive">
-                    Failed to load users
-                  </TableCell>
-                </TableRow>
-              ) : filteredStaff.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                    No merchant users
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredStaff.map((user) => {
-                  const shopId = user.shop_id ?? user.shop?.id ?? null;
-                  return (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {user.phone_number ?? "-"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {user.role === "MANAGER" && shopId
-                          ? user.shop?.name ?? shopById.get(shopId) ?? `#${shopId}`
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() => handleDelete(user)}
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                      Loading users...
+                    </TableCell>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-6 text-destructive">
+                      Failed to load users
+                    </TableCell>
+                  </TableRow>
+                ) : filteredStaff.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="p-0">
+                      <EmptyState
+                        title="No merchant users"
+                        description="Merchant-portal users added for this partner will appear here."
+                      />
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredStaff.map((user) => {
+                    const shopId = user.shop_id ?? user.shop?.id ?? null;
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {user.phone_number ?? "-"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {user.role === "MANAGER" && shopId
+                            ? user.shop?.name ?? shopById.get(shopId) ?? `#${shopId}`
+                            : "-"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => handleDelete(user)}
+                            disabled={deleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </DataTableShell>
         </CardContent>
       </Card>
 

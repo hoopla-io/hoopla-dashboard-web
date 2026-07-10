@@ -2,15 +2,16 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
+import { ShopForm } from "@/components/forms/shop-form";
 import { shopsApi } from "@/lib/api/domains/shops";
-import type { CreateShopRequest } from "@/lib/api/schemas/shops";
+import type { CreateShopRequest, Shop } from "@/lib/api/schemas/shops";
 
 interface ShopsTabProps {
   partnerId: number;
@@ -20,20 +21,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isCreateShopOpen, setIsCreateShopOpen] = useState(false);
-  const [shopFormData, setShopFormData] = useState<CreateShopRequest>({
-    partner_id: partnerId,
-    name: "",
-    location_lat: 0,
-    location_long: 0,
-    vendor_terminal_id: "",
-    vendor_login: "",
-    vendor_password: "",
-    vendor_organization_id: "",
-  });
-  const [shopFile, setShopFile] = useState<File | undefined>(undefined);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [editingShop, setEditingShop] = useState<any | null>(null);
-  const [showVendorPassword, setShowVendorPassword] = useState(false);
+  const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
   const { data: shopsData, isLoading: isLoadingShops } = useQuery({
     queryKey: ["shops", partnerId],
@@ -49,18 +37,6 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       queryClient.invalidateQueries({ queryKey: ["shops", partnerId] });
       toast.success("Shop created successfully");
       setIsCreateShopOpen(false);
-      setShopFormData({
-        partner_id: partnerId,
-        name: "",
-        location_lat: 0,
-        location_long: 0,
-        vendor_terminal_id: "",
-        vendor_login: "",
-        vendor_password: "",
-        vendor_organization_id: "",
-      });
-      setShopFile(undefined);
-      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to create shop"),
   });
@@ -72,19 +48,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       queryClient.invalidateQueries({ queryKey: ["shops", partnerId] });
       toast.success("Shop updated successfully");
       setIsCreateShopOpen(false);
-      setShopFormData({
-        partner_id: partnerId,
-        name: "",
-        location_lat: 0,
-        location_long: 0,
-        vendor_terminal_id: "",
-        vendor_login: "",
-        vendor_password: "",
-        vendor_organization_id: "",
-      });
-      setShopFile(undefined);
       setEditingShop(null);
-      setShowVendorPassword(false);
     },
     onError: () => toast.error("Failed to update shop"),
   });
@@ -98,57 +62,13 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     onError: () => toast.error("Failed to delete shop"),
   });
 
-  const handleCreateShop = () => {
-    if (!shopFormData.name) {
-      toast.error("Shop name is required");
-      return;
-    }
-    if (editingShop) {
-      updateShopMutation.mutate({
-        id: editingShop.id,
-        data: { ...shopFormData, partner_id: partnerId },
-        file: shopFile
-      });
-    } else {
-      createShopMutation.mutate({
-        data: { ...shopFormData, partner_id: partnerId },
-        file: shopFile
-      });
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEditClick = (shop: any) => {
+  const handleEditClick = (shop: Shop) => {
     setEditingShop(shop);
-    setShopFormData({
-      partner_id: partnerId,
-      name: shop.name,
-      location_lat: shop.location?.lat ?? shop.location_lat ?? 0,
-      location_long: shop.location?.lng ?? shop.location_long ?? 0,
-      vendor_terminal_id: shop.vendor_terminal_id || "",
-      vendor_login: shop.vendor_login || "",
-      vendor_password: "",
-      vendor_organization_id: shop.vendor_organization_id || "",
-    });
-    setShopFile(undefined);
-    setShowVendorPassword(false);
     setIsCreateShopOpen(true);
   };
 
   const handleAddClick = () => {
     setEditingShop(null);
-    setShopFormData({
-      partner_id: partnerId,
-      name: "",
-      location_lat: 0,
-      location_long: 0,
-      vendor_terminal_id: "",
-      vendor_login: "",
-      vendor_password: "",
-      vendor_organization_id: "",
-    });
-    setShowVendorPassword(false);
-    setShopFile(undefined);
     setIsCreateShopOpen(true);
   };
 
@@ -166,7 +86,8 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
           <CardTitle>Shops</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
+          <DataTableShell>
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
@@ -179,9 +100,15 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
             </TableHeader>
             <TableBody>
               {isLoadingShops ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-4">Loading shops...</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell>
+                </TableRow>
               ) : shops.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-4 text-muted-foreground">No shops found</TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState title="No shops found" description="Add the first shop for this partner." />
+                  </TableCell>
+                </TableRow>
               ) : (
                 shops.map(shop => (
                   <TableRow 
@@ -247,7 +174,8 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                 ))
               )}
             </TableBody>
-          </Table>
+            </Table>
+          </DataTableShell>
         </CardContent>
       </Card>
 
@@ -257,112 +185,32 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
             <DialogTitle>{editingShop ? "Edit Shop" : "Add New Shop"}</DialogTitle>
             <DialogDescription>{editingShop ? "Update shop details" : "Create a new shop for this partner"}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); handleCreateShop(); }}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="shop-name">Name</Label>
-                <Input
-                  id="shop-name"
-                  value={shopFormData.name}
-                  onChange={(e) => setShopFormData({ ...shopFormData, name: e.target.value })}
-                  placeholder="Shop Name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="shop-terminal">Vendor Terminal ID</Label>
-                <Input
-                  id="shop-terminal"
-                  value={shopFormData.vendor_terminal_id || ""}
-                  onChange={(e) => setShopFormData({ ...shopFormData, vendor_terminal_id: e.target.value })}
-                  placeholder="Terminal ID"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="shop-vendor-login">Vendor Login</Label>
-                <Input
-                  id="shop-vendor-login"
-                  value={shopFormData.vendor_login || ""}
-                  onChange={(e) => setShopFormData({ ...shopFormData, vendor_login: e.target.value })}
-                  placeholder="Cassa login"
-                  maxLength={255}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="shop-vendor-password">
-                  {editingShop ? "Vendor Password (leave blank to keep)" : "Vendor Password"}
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="shop-vendor-password"
-                    type={showVendorPassword ? "text" : "password"}
-                    value={shopFormData.vendor_password || ""}
-                    onChange={(e) => setShopFormData({ ...shopFormData, vendor_password: e.target.value })}
-                    placeholder={editingShop ? "••••••••" : "Cassa password"}
-                    minLength={4}
-                    maxLength={255}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowVendorPassword((v) => !v)}
-                  >
-                    {showVendorPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="shop-vendor-org-id">Vendor Organization ID</Label>
-                <Input
-                  id="shop-vendor-org-id"
-                  value={shopFormData.vendor_organization_id || ""}
-                  onChange={(e) => setShopFormData({ ...shopFormData, vendor_organization_id: e.target.value })}
-                  placeholder="Organization ID"
-                  maxLength={255}
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="shop-lat">Latitude</Label>
-                  <Input
-                    id="shop-lat"
-                    type="number"
-                    step="any"
-                    value={shopFormData.location_lat}
-                    onChange={(e) => setShopFormData({ ...shopFormData, location_lat: parseFloat(e.target.value) })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="shop-long">Longitude</Label>
-                  <Input
-                    id="shop-long"
-                    type="number"
-                    step="any"
-                    value={shopFormData.location_long}
-                    onChange={(e) => setShopFormData({ ...shopFormData, location_long: parseFloat(e.target.value) })}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="shop-file">Image</Label>
-                <Input
-                  id="shop-file"
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) setShopFile(e.target.files[0]);
-                  }}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateShopOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createShopMutation.isPending || updateShopMutation.isPending}>
-                {createShopMutation.isPending || updateShopMutation.isPending ? "Saving..." : (editingShop ? "Update Shop" : "Create Shop")}
-              </Button>
-            </DialogFooter>
-          </form>
+          <ShopForm
+            key={editingShop?.id ?? "create"}
+            partnerId={partnerId}
+            initialValues={
+              editingShop
+                ? {
+                    name: editingShop.name,
+                    vendor_terminal_id: editingShop.vendor_terminal_id || "",
+                    vendor_login: editingShop.vendor_login || "",
+                    vendor_organization_id: editingShop.vendor_organization_id || "",
+                    location_lat: editingShop.location?.lat ?? editingShop.location_lat ?? 0,
+                    location_long: editingShop.location?.lng ?? editingShop.location_long ?? 0,
+                  }
+                : undefined
+            }
+            isEditing={!!editingShop}
+            isSubmitting={createShopMutation.isPending || updateShopMutation.isPending}
+            onSubmit={(data, file) => {
+              if (editingShop) {
+                updateShopMutation.mutate({ id: editingShop.id, data, file });
+              } else {
+                createShopMutation.mutate({ data, file });
+              }
+            }}
+            onCancel={() => setIsCreateShopOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </div>

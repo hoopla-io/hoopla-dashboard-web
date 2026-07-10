@@ -1,6 +1,6 @@
 
-import { useState, Suspense } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Suspense } from "react";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -13,12 +13,22 @@ import { OrdersTab } from "./components/OrdersTab";
 import { StaffTab } from "./components/StaffTab";
 import { ErrorBoundary } from "@/components/error-boundary";
 
+const VALID_TABS = ["general", "pictures", "hours", "orders", "staff"];
+
 function ShopDetailContent() {
   const params = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const shopId = Number(params.id);
 
-  const [activeTab, setActiveTab] = useState("general");
+  const rawTab = searchParams.get("tab") ?? "general";
+  const activeTab = VALID_TABS.includes(rawTab) ? rawTab : "general";
+
+  function handleTabChange(tab: string) {
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set("tab", tab);
+    navigate(`?${newParams.toString()}`, { replace: true, preventScrollReset: true });
+  }
 
   const { data: shop, isLoading: isLoadingShop } = useQuery({
     queryKey: ["shop", shopId],
@@ -51,7 +61,16 @@ function ShopDetailContent() {
           <div>
             <h1 className="text-2xl font-bold">{shop.name}</h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{shop.partner?.name || "No Partner"}</span>
+              {shop.partner ? (
+                <Link
+                  to={`/partners/${shop.partner.id}`}
+                  className="text-foreground underline-offset-2 hover:underline"
+                >
+                  {shop.partner.name}
+                </Link>
+              ) : (
+                <span>No Partner</span>
+              )}
               {shop.location_lat && shop.location_long && (
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
@@ -63,7 +82,7 @@ function ShopDetailContent() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="pictures">Pictures</TabsTrigger>

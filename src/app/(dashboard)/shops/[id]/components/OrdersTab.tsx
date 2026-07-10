@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatSomUZS } from "@/lib/money";
@@ -22,6 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ordersApi } from "@/lib/api/domains/orders";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
@@ -43,14 +44,15 @@ const ITEMS_PER_PAGE = 10;
 export function OrdersTab({ shopId }: OrdersTabProps) {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(ITEMS_PER_PAGE);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: ordersData, isLoading } = useQuery({
-    queryKey: ["shop-orders", shopId, page, statusFilter, searchTerm],
+    queryKey: ["shop-orders", shopId, page, perPage, statusFilter, searchTerm],
     queryFn: () => ordersApi.getByShop(shopId, {
       page,
-      limit: ITEMS_PER_PAGE,
+      limit: perPage,
       status: statusFilter !== "all" ? statusFilter : undefined,
       search: searchTerm || undefined,
     }),
@@ -60,7 +62,6 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   const orders = ordersData?.data || [];
   const meta = ordersData?.meta;
   const totalPages = meta?.totalPages || 1;
-  const totalItems = meta?.totalItems || 0;
 
   const statusMutation = useMutation({
     mutationFn: (data: ChangeOrderStatusRequest) => ordersApi.changeStatus(data),
@@ -111,7 +112,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
           </Select>
         </div>
 
-        <div className="rounded-md border">
+        <DataTableShell>
           <Table>
             <TableHeader>
               <TableRow>
@@ -131,8 +132,15 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                 </TableRow>
               ) : orders.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No orders found
+                  <TableCell colSpan={7} className="p-0">
+                    <EmptyState
+                      title="No orders found"
+                      description={
+                        searchTerm || statusFilter !== "all"
+                          ? "Try adjusting or clearing your filters."
+                          : "Orders placed at this shop will appear here."
+                      }
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -177,36 +185,18 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
               )}
             </TableBody>
           </Table>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Showing {((page - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(page * ITEMS_PER_PAGE, totalItems)} of {totalItems} orders
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <div className="text-sm font-medium">
-              Page {page} of {totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+          <PaginationControls
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            perPage={perPage}
+            onPerPageChange={(n) => {
+              setPerPage(n);
+              setPage(1);
+            }}
+            isLoading={isLoading}
+          />
+        </DataTableShell>
       </CardContent>
     </Card>
   );

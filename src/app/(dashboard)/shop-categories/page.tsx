@@ -2,9 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
 import Image from "@/components/ui/image";
-import { useQueryState, parseAsInteger } from "nuqs";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,15 +16,14 @@ import {
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/page-header";
+import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { SearchableSelect } from "@/components/pickers/searchable-select";
 import { shopCategoriesApi } from "@/lib/api/domains/shop-categories";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { ShopCategory, CreateShopCategoryRequest } from "@/lib/api/schemas/shop-categories";
@@ -39,6 +38,10 @@ function ShopCategoriesContent() {
   const queryClient = useQueryClient();
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState(
+    "search",
+    parseAsString.withOptions({ throttleMs: 500 }).withDefault("")
+  );
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(20));
   const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
     setCurrentPage(1)
@@ -53,13 +56,31 @@ function ShopCategoriesContent() {
   const [viewCategory, setViewCategory] = useState<ShopCategory | null>(null);
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
 
+  // shopCategoriesApi has no server-side search param — when searching, fetch a
+  // much larger page so the client-side filter isn't limited to whatever page
+  // happened to be loaded, then re-paginate the filtered set client-side too.
+  const isSearching = search.trim().length > 0;
   const { data: categoriesData, isLoading } = useQuery({
-    queryKey: ["shop-categories", currentPage, perPage, sortParam, orderParam],
-    queryFn: () => shopCategoriesApi.getAll({ page: currentPage, limit: perPage, sort: sortParam, order: orderParam }),
+    queryKey: ["shop-categories", currentPage, perPage, sortParam, orderParam, isSearching],
+    queryFn: () =>
+      shopCategoriesApi.getAll({
+        page: isSearching ? 1 : currentPage,
+        limit: isSearching ? 1000 : perPage,
+        sort: sortParam,
+        order: orderParam,
+      }),
   });
 
-  const categories = categoriesData?.data || [];
-  const totalPages = categoriesData?.meta?.totalPages || 1;
+  const allCategories = categoriesData?.data || [];
+  const filteredCategories = isSearching
+    ? allCategories.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
+    : allCategories;
+  const categories = isSearching
+    ? filteredCategories.slice((currentPage - 1) * perPage, currentPage * perPage)
+    : filteredCategories;
+  const totalPages = isSearching
+    ? Math.max(1, Math.ceil(filteredCategories.length / perPage))
+    : categoriesData?.meta?.totalPages || 1;
 
   const { data: categoryDetail, isLoading: isDetailLoading } = useQuery({
     queryKey: ["shop-categories", viewCategory?.id],
@@ -250,6 +271,21 @@ function ShopCategoriesContent() {
         }
       />
 
+      <PageToolbar>
+        <div className="relative w-full max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search categories"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value || null);
+              setCurrentPage(1);
+            }}
+            className="pl-9"
+          />
+        </div>
+      </PageToolbar>
+
       <DataTableShell>
         <Table>
           <TableHeader>
@@ -281,21 +317,27 @@ function ShopCategoriesContent() {
               <TableRow>
                 <TableCell colSpan={6} className="p-0">
                   <EmptyState
-                    title="No categories yet"
-                    description="Create your first category to group shops in the app."
+                    title="No categories found"
+                    description={
+                      search
+                        ? "Try a different search term."
+                        : "Create your first category to group shops in the app."
+                    }
                     action={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setFormData(defaultForm);
-                          setSelectedFile(null);
-                          setIsCreateOpen(true);
-                        }}
-                      >
-                        <Plus className="size-4" />
-                        Add category
-                      </Button>
+                      !search ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setFormData(defaultForm);
+                            setSelectedFile(null);
+                            setIsCreateOpen(true);
+                          }}
+                        >
+                          <Plus className="size-4" />
+                          Add category
+                        </Button>
+                      ) : null
                     }
                   />
                 </TableCell>
@@ -461,18 +503,15 @@ function ShopCategoriesContent() {
             <div>
               <p className="text-sm font-medium mb-2">Link a partner</p>
               <div className="flex gap-2">
-                <Select value={selectedPartnerId} onValueChange={setSelectedPartnerId}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select partner..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availablePartners.map((p) => (
-                      <SelectItem key={p.id} value={String(p.id)}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex-1">
+                  <SearchableSelect
+                    value={selectedPartnerId}
+                    onValueChange={setSelectedPartnerId}
+                    placeholder="Select partner..."
+                    searchPlaceholder="Search partners…"
+                    items={availablePartners.map((p) => ({ value: String(p.id), label: p.name }))}
+                  />
+                </div>
                 <Button
                   type="button"
                   disabled={!selectedPartnerId || linkPartnerMutation.isPending}

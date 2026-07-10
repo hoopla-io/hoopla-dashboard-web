@@ -12,6 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { DataTableShell } from "@/components/data-table/data-table-shell";
+import { EmptyState } from "@/components/data-table/empty-state";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -113,7 +115,7 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border">
+          <DataTableShell>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -126,8 +128,11 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
               <TableBody>
                 {translations.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                      No translations yet
+                    <TableCell colSpan={4} className="p-0">
+                      <EmptyState
+                        title="No translations yet"
+                        description="Add a translation for uz, ru, or en to get started."
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -177,7 +182,7 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
                 )}
               </TableBody>
             </Table>
-          </div>
+          </DataTableShell>
         </CardContent>
       </Card>
 
