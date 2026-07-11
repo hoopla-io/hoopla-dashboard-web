@@ -3,6 +3,8 @@ import type {
   GiftCard,
   GiftCardDetail,
   CreateGiftCardRequest,
+  BulkGiftCardRequest,
+  BulkGiftCardResult,
 } from "@/lib/api/schemas/gift-cards";
 import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
 
@@ -33,6 +35,27 @@ export const giftCardsApi = {
       data
     );
     return response.data.data ?? response.data;
+  },
+
+  bulkCreate: async (
+    data: BulkGiftCardRequest
+  ): Promise<BulkGiftCardResult> => {
+    const response = await httpClient.post<ApiResponse<BulkGiftCardResult>>(
+      "/api/v1/gift-card/bulk",
+      data
+    );
+    return response.data.data ?? response.data;
+  },
+
+  exportCsv: async (params?: {
+    code?: string;
+    is_active?: boolean;
+  }): Promise<Blob> => {
+    const response = await httpClient.get("/api/v1/gift-card/export", {
+      params,
+      responseType: "blob",
+    });
+    return response.data as Blob;
   },
 
   update: async (

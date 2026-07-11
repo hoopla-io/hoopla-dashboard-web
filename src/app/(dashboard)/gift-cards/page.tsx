@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, CalendarIcon, X, Wallet, History } from "lucide-react";
+import { Plus, Trash2, CalendarIcon, X, Wallet, History, Layers, Download } from "lucide-react";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { format } from "date-fns";
 
@@ -30,7 +30,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { AccountPicker } from "@/components/pickers/account-picker";
 import { giftCardsApi } from "@/lib/api/domains/gift-cards";
-import type { GiftCard, CreateGiftCardRequest } from "@/lib/api/schemas/gift-cards";
+import type { GiftCard, CreateGiftCardRequest, BulkGiftCardRequest, BulkGiftCardResult } from "@/lib/api/schemas/gift-cards";
 
 function isoToApi(iso: string): string {
   if (!iso) return "";
@@ -47,8 +47,42 @@ function extractError(err: unknown, fallback: string): string {
   return e?.response?.data?.message || fallback;
 }
 
+function downloadFile(filename: string, content: Blob | string) {
+  const blob = typeof content === "string" ? new Blob([content], { type: "text/csv" }) : content;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvField(value: string | number): string {
+  let s = String(value);
+  if (/^[=+\-@]/.test(s)) s = `'${s}`;
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function buildBulkCsv(res: BulkGiftCardResult): string {
+  const expires = res.expires_at ?? "";
+  const rows = res.codes
+    .map((c) => [c, res.initial_balance, res.currency, expires].map(csvField).join(","))
+    .join("\n");
+  return `code,initial_balance,currency,expires_at\n${rows}\n`;
+}
+
 const defaultForm: CreateGiftCardRequest = {
   code: "",
+  initial_balance: 100000,
+  currency: "uzs",
+  is_active: true,
+  expires_at: "",
+};
+
+const defaultBulkForm: BulkGiftCardRequest = {
+  count: 100,
+  code_prefix: "",
+  code_length: 10,
   initial_balance: 100000,
   currency: "uzs",
   is_active: true,
@@ -97,6 +131,9 @@ function GiftCardsContent() {
   const [topUpCard, setTopUpCard] = useState<GiftCard | null>(null);
   const [topUpAmount, setTopUpAmount] = useState<number>(0);
   const [historyCardId, setHistoryCardId] = useState<number | null>(null);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
+  const [bulkForm, setBulkForm] = useState<BulkGiftCardRequest>(defaultBulkForm);
+  const [exporting, setExporting] = useState(false);
 
   const { data: cardsData, isLoading } = useQuery({
     queryKey: ["gift-cards", currentPage, perPage, codeFilter, activeFilter, sortParam, orderParam],
@@ -126,6 +163,18 @@ function GiftCardsContent() {
     onError: (err: unknown) => toast.error(extractError(err, "Failed to create gift card")),
   });
 
+  const bulkMutation = useMutation({
+    mutationFn: (data: BulkGiftCardRequest) => giftCardsApi.bulkCreate(data),
+    onSuccess: (res) => {
+      invalidate();
+      toast.success(`${res.count} gift cards created`);
+      downloadFile(`gift-cards-${res.count}.csv`, buildBulkCsv(res));
+      setIsBulkOpen(false);
+      setBulkForm(defaultBulkForm);
+    },
+    onError: (err: unknown) => toast.error(extractError(err, "Failed to create gift cards")),
+  });
+
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) => giftCardsApi.update(id, { is_active }),
     onSuccess: () => { invalidate(); toast.success("Status updated!"); },
@@ -152,16 +201,49 @@ function GiftCardsContent() {
     createMutation.mutate(payload);
   }
 
+  function handleSubmitBulk(e: React.FormEvent) {
+    e.preventDefault();
+    const payload: BulkGiftCardRequest = { ...bulkForm };
+    if (payload.code_prefix) payload.code_prefix = payload.code_prefix.trim();
+    if (payload.expires_at) payload.expires_at = isoToApi(payload.expires_at);
+    bulkMutation.mutate(payload);
+  }
+
+  async function handleExportCsv() {
+    try {
+      setExporting(true);
+      const blob = await giftCardsApi.exportCsv({
+        code: codeFilter || undefined,
+        is_active: activeFilter === "" ? undefined : activeFilter === "true",
+      });
+      downloadFile("gift-cards.csv", blob);
+    } catch {
+      toast.error("Failed to export gift cards");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Gift Cards"
         description="Issue gift cards customers redeem once to top up their wallet balance."
         action={
-          <Button onClick={() => { setFormData(defaultForm); setIsCreateOpen(true); }}>
-            <Plus className="size-4" />
-            Issue gift card
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleExportCsv} disabled={exporting}>
+              <Download className="size-4" />
+              {exporting ? "Exporting…" : "Export CSV"}
+            </Button>
+            <Button variant="outline" onClick={() => { setBulkForm(defaultBulkForm); setIsBulkOpen(true); }}>
+              <Layers className="size-4" />
+              Bulk create
+            </Button>
+            <Button onClick={() => { setFormData(defaultForm); setIsCreateOpen(true); }}>
+              <Plus className="size-4" />
+              Issue gift card
+            </Button>
+          </div>
         }
       />
 
@@ -304,6 +386,65 @@ function GiftCardsContent() {
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? "Creating..." : "Issue"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk create */}
+      <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Bulk create gift cards</DialogTitle>
+            <DialogDescription>Generate up to 10,000 cards with unique random codes and download them as CSV.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmitBulk}>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>How many</Label>
+                  <Input type="number" min={1} max={10000} value={bulkForm.count}
+                    onChange={(e) => setBulkForm({ ...bulkForm, count: Number(e.target.value) })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Code prefix</Label>
+                  <Input value={bulkForm.code_prefix ?? ""} placeholder="GIFT-"
+                    onChange={(e) => setBulkForm({ ...bulkForm, code_prefix: e.target.value.toUpperCase() })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Random length</Label>
+                  <Input type="number" min={4} max={24} value={bulkForm.code_length ?? 10}
+                    onChange={(e) => setBulkForm({ ...bulkForm, code_length: Number(e.target.value) })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Value each (sum)</Label>
+                  <Input type="number" value={bulkForm.initial_balance ?? 0}
+                    onChange={(e) => setBulkForm({ ...bulkForm, initial_balance: Number(e.target.value) })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Currency</Label>
+                  <Input value={bulkForm.currency || "uzs"} onChange={(e) => setBulkForm({ ...bulkForm, currency: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Expires (Optional)</Label>
+                  <DatePicker value={bulkForm.expires_at || ""} onChange={(v) => setBulkForm({ ...bulkForm, expires_at: v })} onClear={() => setBulkForm({ ...bulkForm, expires_at: "" })} />
+                </div>
+                <div className="flex items-end gap-3 pb-1">
+                  <Switch checked={bulkForm.is_active ?? true} onCheckedChange={(v) => setBulkForm({ ...bulkForm, is_active: v })} />
+                  <Label>Active</Label>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Codes are generated on the server; the CSV downloads automatically when generation completes.</p>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsBulkOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={bulkMutation.isPending || !Number.isFinite(bulkForm.count) || bulkForm.count < 1}>
+                {bulkMutation.isPending ? "Generating…" : `Generate ${bulkForm.count} & download CSV`}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
