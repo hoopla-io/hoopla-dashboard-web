@@ -12,6 +12,8 @@ export interface OrdersGetAllParams extends PaginationParams, SortParams {
   shop?: string;
   search?: string;
   partner_id?: number;
+  // Include orders placed against test-type partners (excluded by default).
+  include_test?: boolean;
 }
 
 export const ordersApi = {

@@ -33,6 +33,7 @@ export const partnersApi = {
     if (data.cashback_percent !== undefined) formData.append("cashback_percent", String(data.cashback_percent));
     if (data.commission_percent !== undefined) formData.append("commission_percent", String(data.commission_percent));
     if (data.status !== undefined) formData.append("status", data.status ? "1" : "0");
+    if (data.type) formData.append("type", data.type);
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<{ partner_id: number }>>("/api/v1/partner/store", formData, {
@@ -53,6 +54,7 @@ export const partnersApi = {
     if (data.cashback_percent !== undefined) formData.append("cashback_percent", String(data.cashback_percent));
     if (data.commission_percent !== undefined) formData.append("commission_percent", String(data.commission_percent));
     if (data.status !== undefined) formData.append("status", data.status ? "1" : "0");
+    if (data.type) formData.append("type", data.type);
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Partner>>(`/api/v1/partner/edit/${id}`, formData, {
