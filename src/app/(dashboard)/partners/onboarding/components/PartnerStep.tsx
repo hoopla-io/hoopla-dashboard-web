@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { CreatePartnerSchema, type CreatePartnerRequest } from "@/lib/api/schemas/partners";
 
@@ -22,7 +23,7 @@ export function PartnerStep({ createdPartner, onCreated, onContinue }: PartnerSt
   const [file, setFile] = useState<File | undefined>(undefined);
   const form = useForm<CreatePartnerRequest>({
     resolver: zodResolver(CreatePartnerSchema),
-    defaultValues: { name: "", description: "" },
+    defaultValues: { name: "", description: "", type: "normal" },
   });
 
   const createMutation = useMutation({
@@ -82,6 +83,20 @@ export function PartnerStep({ createdPartner, onCreated, onContinue }: PartnerSt
           type="file"
           accept="image/jpeg,image/png"
           onChange={(e) => setFile(e.target.files?.[0])}
+        />
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border p-3">
+        <div className="space-y-0.5">
+          <Label htmlFor="onboarding-partner-type">Test partner</Label>
+          <p className="text-xs text-muted-foreground">
+            Hidden from real customers — only visible with the X-Hoopla-Test header. Use this for QA/dev runs.
+          </p>
+        </div>
+        <Switch
+          id="onboarding-partner-type"
+          checked={form.watch("type") === "test"}
+          onCheckedChange={(checked) => form.setValue("type", checked ? "test" : "normal")}
         />
       </div>
 

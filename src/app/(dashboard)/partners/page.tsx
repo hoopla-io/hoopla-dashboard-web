@@ -9,6 +9,7 @@ import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -294,7 +295,12 @@ function PartnersContent() {
                     )}
                   </TableCell>
                   <TableCell className="text-sm font-medium text-foreground">
-                    {partner.name}
+                    <div className="flex items-center gap-2">
+                      {partner.name}
+                      {partner.type === "test" && (
+                        <Badge variant="outline" className="text-[10px]">Test</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {partner.vendor || "—"}
@@ -336,6 +342,7 @@ function PartnersContent() {
                           setFormData({
                             name: partner.name,
                             description: partner.description || "",
+                            type: partner.type,
                           });
                           setIsCreateOpen(true);
                         }}
@@ -434,6 +441,21 @@ function PartnersContent() {
                   accept="image/jpeg,image/png"
                   onChange={handleFileChange}
                   className="cursor-pointer"
+                />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="type">Test partner</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Hidden from real customers — only visible with the X-Hoopla-Test header.
+                  </p>
+                </div>
+                <Switch
+                  id="type"
+                  checked={formData.type === "test"}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, type: checked ? "test" : "normal" })
+                  }
                 />
               </div>
             </div>

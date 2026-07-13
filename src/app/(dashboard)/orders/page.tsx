@@ -2,12 +2,13 @@
 import { Suspense } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import { useQueryState, parseAsInteger, parseAsString, parseAsBoolean } from "nuqs";
 import { toast } from "sonner";
 import { QrCode, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -81,12 +82,13 @@ function OrdersContent() {
   );
   const [dateFilter, setDateFilter] = useQueryState("date", parseAsString.withDefault(""));
   const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
+  const [includeTest, setIncludeTest] = useQueryState("include_test", parseAsBoolean.withDefault(false));
   const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
     setCurrentPage(1)
   );
 
   const { data: ordersData, isLoading } = useQuery({
-    queryKey: ["orders", currentPage, perPage, statusFilter, drinkFilter, dateFilter, phoneFilter, shopFilter, sortParam, orderParam],
+    queryKey: ["orders", currentPage, perPage, statusFilter, drinkFilter, dateFilter, phoneFilter, shopFilter, includeTest, sortParam, orderParam],
     queryFn: () =>
       ordersApi.getAll({
         page: currentPage,
@@ -96,6 +98,7 @@ function OrdersContent() {
         time: dateFilter || undefined,
         shop: shopFilter || undefined,
         search: phoneFilter || undefined,
+        include_test: includeTest || undefined,
         sort: sortParam,
         order: orderParam,
       }),
@@ -124,11 +127,12 @@ function OrdersContent() {
     setShopFilter(null);
     setDateFilter(null);
     setStatusFilter(null);
+    setIncludeTest(null);
     setCurrentPage(1);
   };
 
   const hasFilters =
-    !!phoneFilter || !!drinkFilter || !!shopFilter || !!dateFilter || statusFilter !== "all";
+    !!phoneFilter || !!drinkFilter || !!shopFilter || !!dateFilter || statusFilter !== "all" || includeTest;
 
   return (
     <div className="space-y-6">
@@ -188,14 +192,26 @@ function OrdersContent() {
             </SelectContent>
           </Select>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={clearFilters}
-          disabled={!hasFilters}
-        >
-          Clear filters
-        </Button>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Checkbox
+              checked={includeTest}
+              onCheckedChange={(checked) => {
+                setIncludeTest(checked === true ? true : null);
+                setCurrentPage(1);
+              }}
+            />
+            Include test partners
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearFilters}
+            disabled={!hasFilters}
+          >
+            Clear filters
+          </Button>
+        </div>
       </PageToolbar>
 
       <DataTableShell>

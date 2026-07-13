@@ -33,6 +33,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
     cashback_percent: 0,
     commission_percent: 10,
     status: true,
+    type: "normal",
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
 
@@ -52,6 +53,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
         cashback_percent: partner.cashback_percent || 0,
         commission_percent: partner.commission_percent ?? 10,
         status: partner.status ?? true,
+        type: partner.type ?? "normal",
       });
     }
   }, [partner]);
@@ -141,6 +143,24 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                   checked={formData.status}
                   onCheckedChange={(checked) => setFormData({ ...formData, status: checked })}
                 />
+              </div>
+              <div className="space-y-2 pt-4 border-t">
+                <Label htmlFor="type">Type</Label>
+                <Select
+                  value={formData.type}
+                  onValueChange={(val: "normal" | "test") => setFormData({ ...formData, type: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="test">Test</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Test partners (and their shops) are hidden from real customers — only visible with the X-Hoopla-Test header.
+                </p>
               </div>
             </div>
           </div>

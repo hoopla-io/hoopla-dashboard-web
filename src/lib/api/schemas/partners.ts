@@ -16,6 +16,7 @@ export const PartnerSchema = z.object({
   deleted_at: z.string().optional().nullable(),
   status: z.boolean().optional(),
   rating: z.number().optional().nullable(),
+  type: z.enum(["normal", "test"]).optional(),
 });
 
 export const CreatePartnerSchema = z.object({
@@ -29,6 +30,10 @@ export const CreatePartnerSchema = z.object({
   cashback_percent: z.number().optional(),
   commission_percent: z.number().optional(),
   status: z.boolean().optional(),
+  // "test" partners (and their shops) are hidden from real customer traffic
+  // unless the request carries the X-Hoopla-Test header — lets QA run a full
+  // real order flow without polluting what real customers see.
+  type: z.enum(["normal", "test"]).optional(),
 });
 
 export const UpdatePartnerSchema = CreatePartnerSchema.partial();
