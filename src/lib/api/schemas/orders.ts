@@ -27,6 +27,18 @@ export const OrderSchema = z.object({
   last_update: z.string().optional(),
   fiscal_link: z.string().optional(),
   feedback: OrderFeedbackSchema.optional().nullable(),
+  // Distinct drink lines for a cart-checkout order — length 1 for today's
+  // ordinary single-drink orders, absent/empty otherwise.
+  items: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        quantity: z.number(),
+        price: z.number(),
+      })
+    )
+    .optional(),
 });
 
 export type OrderFeedback = z.infer<typeof OrderFeedbackSchema>;
