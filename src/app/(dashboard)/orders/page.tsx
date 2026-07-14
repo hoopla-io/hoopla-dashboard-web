@@ -1,5 +1,5 @@
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQueryState, parseAsInteger, parseAsString, parseAsBoolean } from "nuqs";
@@ -9,6 +9,13 @@ import { QrCode, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -83,6 +90,7 @@ function OrdersContent() {
   const [dateFilter, setDateFilter] = useQueryState("date", parseAsString.withDefault(""));
   const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
   const [includeTest, setIncludeTest] = useQueryState("include_test", parseAsBoolean.withDefault(false));
+  const [itemsDialogOrder, setItemsDialogOrder] = useState<Order | null>(null);
   const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
     setCurrentPage(1)
   );
@@ -273,7 +281,19 @@ function OrdersContent() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm">{order.drink?.name || "—"}</TableCell>
+                  <TableCell className="text-sm">
+                    {order.items && order.items.length > 1 ? (
+                      <button
+                        type="button"
+                        className="underline-offset-2 hover:underline"
+                        onClick={() => setItemsDialogOrder(order)}
+                      >
+                        {order.drink?.name || `${order.items.length} items`}
+                      </button>
+                    ) : (
+                      order.drink?.name || "—"
+                    )}
+                  </TableCell>
                   <TableCell className="font-mono text-sm tabular-nums">
                     {formatPrice(order.price)}{" "}
                     <span className="text-xs text-muted-foreground">UZS</span>
@@ -372,6 +392,32 @@ function OrdersContent() {
           isLoading={isLoading}
         />
       </DataTableShell>
+
+      <Dialog
+        open={!!itemsDialogOrder}
+        onOpenChange={(open) => {
+          if (!open) setItemsDialogOrder(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
+            <DialogDescription>Line items for this order.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {itemsDialogOrder?.items?.map((item) => (
+              <div key={item.id} className="flex items-center justify-between text-sm">
+                <span>
+                  {item.name} × {item.quantity}
+                </span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {formatPrice(item.price * item.quantity)} UZS
+                </span>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
