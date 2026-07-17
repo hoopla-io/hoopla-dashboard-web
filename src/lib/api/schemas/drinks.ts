@@ -107,6 +107,7 @@ export const ModifierGroupSchema = z.object({
   name: z.string(),
   min_select: z.number(),
   max_select: z.number().nullable().optional(),
+  sort_order: z.number().optional(),
   option_count: z.number(),
 });
 export type ModifierGroup = z.infer<typeof ModifierGroupSchema>;
