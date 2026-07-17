@@ -32,6 +32,15 @@ export const ShopSchema = z.object({
   urls: z.any().optional().nullable(),
   deleted_at: z.string().optional().nullable(),
   status: z.boolean().optional(),
+  // Franchise-override fields: a shop can bill under its own legal entity
+  // instead of inheriting the partner's TIN, and can override the partner's
+  // default hours with "always open" or a POS restock window.
+  use_own_legal: z.boolean().optional().nullable(),
+  tin_type: z.string().optional().nullable(),
+  tin_num: z.string().optional().nullable(),
+  tin_percent: z.number().optional().nullable(),
+  always_open: z.boolean().optional().nullable(),
+  restock_time: z.string().optional().nullable(),
 });
 
 export const CreateShopSchema = z.object({
@@ -44,6 +53,13 @@ export const CreateShopSchema = z.object({
   vendor_password: z.string().min(4).max(255).optional(),
   vendor_organization_id: z.string().max(255).optional(),
   status: z.boolean().optional(),
+  use_own_legal: z.boolean().optional(),
+  tin_type: z.enum(["tin", "pinfl"]).optional(),
+  tin_num: z.string().optional(),
+  tin_percent: z.number().min(0).max(100).optional(),
+  always_open: z.boolean().optional(),
+  // "HH:MM"; sent as "" on edit to clear.
+  restock_time: z.string().optional(),
 });
 
 export const UpdateShopSchema = CreateShopSchema.partial();
@@ -87,3 +103,18 @@ export const ShopPictureSchema = z.object({
 });
 
 export type ShopPicture = z.infer<typeof ShopPictureSchema>;
+
+// A partner's drink as it appears in a specific shop's menu — lets an admin
+// disable a drink at just this shop without touching the partner-wide drink.
+export const ShopDrinkSchema = z.object({
+  partner_drink_id: z.number(),
+  name: z.string(),
+  picture_url: z.string().optional().nullable(),
+  product_price: z.number().optional().nullable(),
+  disabled: z.boolean(),
+  // POS-controlled, read-only from this admin surface.
+  out_of_stock: z.boolean(),
+  out_of_stock_until: z.string().optional().nullable(),
+});
+
+export type ShopDrink = z.infer<typeof ShopDrinkSchema>;

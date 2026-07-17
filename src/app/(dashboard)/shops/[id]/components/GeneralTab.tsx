@@ -49,6 +49,12 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
     vendor_password: "",
     vendor_organization_id: "",
     status: true,
+    use_own_legal: false,
+    tin_type: undefined,
+    tin_num: "",
+    tin_percent: 0,
+    always_open: false,
+    restock_time: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const [showVendorPassword, setShowVendorPassword] = useState(false);
@@ -67,6 +73,12 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
         vendor_password: "",
         vendor_organization_id: shop.vendor_organization_id || "",
         status: shop.status ?? true,
+        use_own_legal: shop.use_own_legal ?? false,
+        tin_type: (shop.tin_type || undefined) as CreateShopRequest["tin_type"],
+        tin_num: shop.tin_num || "",
+        tin_percent: shop.tin_percent ?? 0,
+        always_open: shop.always_open ?? false,
+        restock_time: shop.restock_time || "",
       }));
     }
   }, [shop]);
@@ -98,7 +110,26 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
       toast.error("Partner is required");
       return;
     }
-    updateMutation.mutate({ data: formData, file: selectedFile });
+    if (
+      formData.use_own_legal &&
+      (!formData.tin_type ||
+        !formData.tin_num?.trim() ||
+        formData.tin_percent == null ||
+        Number.isNaN(formData.tin_percent) ||
+        formData.tin_percent < 0 ||
+        formData.tin_percent > 100)
+    ) {
+      toast.error("TIN type, number, and percent are all required when billing under the shop's own legal entity");
+      return;
+    }
+    // Only send TIN fields when the shop actually bills under its own legal
+    // entity — otherwise it inherits the partner's TIN and these are moot.
+    const { tin_type, tin_num, tin_percent, ...rest } = formData;
+    const data: CreateShopRequest = {
+      ...rest,
+      ...(formData.use_own_legal ? { tin_type, tin_num, tin_percent } : {}),
+    };
+    updateMutation.mutate({ data, file: selectedFile });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -270,6 +301,97 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                   Selected: {selectedFile.name}
                 </p>
               )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Billing</h3>
+              <div className="flex items-center justify-between space-x-2">
+                <div className="space-y-0.5">
+                  <Label htmlFor="use_own_legal">Use own legal entity</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Bill this shop under its own TIN instead of the partner&apos;s.
+                  </p>
+                </div>
+                <Switch
+                  id="use_own_legal"
+                  checked={formData.use_own_legal}
+                  onCheckedChange={(checked) => setFormData({ ...formData, use_own_legal: checked })}
+                />
+              </div>
+              {formData.use_own_legal ? (
+                <div className="space-y-4 rounded-md border p-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="tin_type">TIN Type</Label>
+                    <Select
+                      value={formData.tin_type}
+                      // @ts-expect-error: Select onValueChange expects strict string type
+                      onValueChange={(val) => setFormData({ ...formData, tin_type: val })}
+                    >
+                      <SelectTrigger id="tin_type">
+                        <SelectValue placeholder="Select Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tin">TIN</SelectItem>
+                        <SelectItem value="pinfl">PINFL</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tin_num">TIN Number</Label>
+                    <Input
+                      id="tin_num"
+                      value={formData.tin_num || ""}
+                      onChange={(e) => setFormData({ ...formData, tin_num: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tin_percent">TIN Percent</Label>
+                    <Input
+                      id="tin_percent"
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={formData.tin_percent ?? 0}
+                      onChange={(e) => setFormData({ ...formData, tin_percent: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <p className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+                  Inherits billing from the partner.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Availability</h3>
+              <div className="flex items-center justify-between space-x-2">
+                <div className="space-y-0.5">
+                  <Label htmlFor="always_open">Always open</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Overrides working hours — the shop never shows as closed.
+                  </p>
+                </div>
+                <Switch
+                  id="always_open"
+                  checked={formData.always_open}
+                  onCheckedChange={(checked) => setFormData({ ...formData, always_open: checked })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="restock_time">Restock time</Label>
+                <Input
+                  id="restock_time"
+                  type="time"
+                  value={formData.restock_time || ""}
+                  onChange={(e) => setFormData({ ...formData, restock_time: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Optional daily time the shop restocks. Leave blank to clear.
+                </p>
+              </div>
             </div>
           </div>
 

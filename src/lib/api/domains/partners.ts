@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest, PartnerFeedback } from "@/lib/api/schemas/partners";
+import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest, PartnerFeedback, PartnerHours, CreatePartnerHoursRequest } from "@/lib/api/schemas/partners";
 
 
 
@@ -93,5 +93,41 @@ export const partnersApi = {
   getFeedbacks: async (partnerId: number): Promise<PartnerFeedback[]> => {
     const response = await httpClient.get<PartnerFeedback[]>(`/api/v1/partner/feedbacks/${partnerId}`);
     return response.data;
+  },
+
+  // Default working hours — the fallback schedule shops use unless they set
+  // their own hours or flip always_open. Mirrors shopsApi's hours CRUD.
+  getHours: async (partnerId: number): Promise<PartnerHours[]> => {
+    const response = await httpClient.get<ApiResponse<PartnerHours[]>>(`/api/v1/partner/hours/list/${partnerId}`);
+    return response.data.data || [];
+  },
+
+  createHours: async (data: CreatePartnerHoursRequest): Promise<PartnerHours> => {
+    const formData = new FormData();
+    formData.append("partner_id", String(data.partner_id));
+    formData.append("week_day", data.week_day);
+    formData.append("open_at", data.open_at);
+    formData.append("close_at", data.close_at);
+
+    const response = await httpClient.post<ApiResponse<PartnerHours>>("/api/v1/partner/hours/store", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.data ?? response.data;
+  },
+
+  updateHours: async (id: number, data: Partial<Omit<CreatePartnerHoursRequest, "partner_id">>): Promise<PartnerHours> => {
+    const formData = new FormData();
+    if (data.week_day) formData.append("week_day", data.week_day);
+    if (data.open_at) formData.append("open_at", data.open_at);
+    if (data.close_at) formData.append("close_at", data.close_at);
+
+    const response = await httpClient.put<ApiResponse<PartnerHours>>(`/api/v1/partner/hours/edit/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data.data ?? response.data;
+  },
+
+  deleteHours: async (id: number): Promise<void> => {
+    await httpClient.delete(`/api/v1/partner/hours/delete/${id}`);
   },
 };

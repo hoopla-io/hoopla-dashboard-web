@@ -197,6 +197,12 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                     vendor_organization_id: editingShop.vendor_organization_id || "",
                     location_lat: editingShop.location?.lat ?? editingShop.location_lat ?? 0,
                     location_long: editingShop.location?.lng ?? editingShop.location_long ?? 0,
+                    use_own_legal: editingShop.use_own_legal ?? false,
+                    tin_type: editingShop.tin_type ?? "",
+                    tin_num: editingShop.tin_num ?? "",
+                    tin_percent: editingShop.tin_percent ?? 0,
+                    always_open: editingShop.always_open ?? false,
+                    restock_time: editingShop.restock_time ?? "",
                   }
                 : undefined
             }
