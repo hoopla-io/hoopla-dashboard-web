@@ -1,9 +1,22 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Shop, CreateShopRequest, ShopAttribute, ShopHours, CreateShopHoursRequest, ShopPicture } from "@/lib/api/schemas/shops";
+import type { Shop, CreateShopRequest, ShopAttribute, ShopHours, CreateShopHoursRequest, ShopPicture, ShopDrink } from "@/lib/api/schemas/shops";
 
 
 
 import type { PaginatedResponse, ApiResponse, SortParams } from "@/lib/api/types";
+
+// Shared by create/update: billing (use_own_legal + TIN) and always_open/restock_time
+// overrides. TIN fields are only sent when use_own_legal is on — otherwise the shop
+// inherits the partner's legal/TIN info and the backend shouldn't receive stale values.
+function appendOverrideFields(formData: FormData, data: Partial<CreateShopRequest>) {
+  if (data.use_own_legal !== undefined) formData.append("use_own_legal", String(data.use_own_legal));
+  if (data.use_own_legal) {
+    if (data.tin_type) formData.append("tin_type", data.tin_type);
+    if (data.tin_num) formData.append("tin_num", data.tin_num);
+    if (data.tin_percent !== undefined) formData.append("tin_percent", String(data.tin_percent));
+  }
+  if (data.always_open !== undefined) formData.append("always_open", String(data.always_open));
+}
 
 export const shopsApi = {
   getAll: async (params?: { page?: number; limit?: number; search?: string; partner_id?: number } & SortParams): Promise<PaginatedResponse<Shop>> => {
@@ -35,6 +48,9 @@ export const shopsApi = {
     if (data.vendor_login) formData.append("vendor_login", data.vendor_login);
     if (data.vendor_password) formData.append("vendor_password", data.vendor_password);
     if (data.vendor_organization_id) formData.append("vendor_organization_id", data.vendor_organization_id);
+    appendOverrideFields(formData, data);
+    // restock_time has no prior value to clear on create, so only send it when set.
+    if (data.restock_time) formData.append("restock_time", data.restock_time);
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<{ id: number; message?: string; image_url?: string }>>("/api/v1/shop/store", formData, {
@@ -54,6 +70,9 @@ export const shopsApi = {
     if (data.vendor_password) formData.append("vendor_password", data.vendor_password);
     if (data.vendor_organization_id) formData.append("vendor_organization_id", data.vendor_organization_id);
     if (data.status !== undefined) formData.append("status", String(data.status));
+    appendOverrideFields(formData, data);
+    // On edit, an explicit "" clears a previously-set restock time.
+    if (data.restock_time !== undefined) formData.append("restock_time", data.restock_time);
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Shop>>(`/api/v1/shop/edit/${id}`, formData, {
@@ -111,5 +130,17 @@ export const shopsApi = {
 
   deletePicture: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/shop/picture/delete/${id}`);
+  },
+
+  // Per-shop menu: the partner's drinks as they appear at this specific shop,
+  // including the disable override and the POS-reported out-of-stock state.
+  getDrinks: async (shopId: number): Promise<ShopDrink[]> => {
+    const response = await httpClient.get<ApiResponse<ShopDrink[]> | ShopDrink[]>(`/api/v1/shops/${shopId}/drinks`);
+    const body = response.data;
+    return Array.isArray(body) ? body : body.data || [];
+  },
+
+  setDrinkDisabled: async (shopId: number, partnerDrinkId: number, disabled: boolean): Promise<void> => {
+    await httpClient.post(`/api/v1/shops/${shopId}/drinks/${partnerDrinkId}/disable`, { disabled });
   },
 };

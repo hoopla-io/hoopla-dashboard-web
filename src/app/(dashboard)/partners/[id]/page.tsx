@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { GeneralTab } from "@/app/(dashboard)/partners/[id]/components/GeneralTab";
 import { ShopsTab } from "@/app/(dashboard)/partners/[id]/components/ShopsTab";
+import { HoursTab } from "@/app/(dashboard)/partners/[id]/components/HoursTab";
 import { DrinksTab } from "@/app/(dashboard)/partners/[id]/components/DrinksTab";
 import { OrdersTab } from "@/app/(dashboard)/partners/[id]/components/OrdersTab";
 import { AttributesTab } from "@/app/(dashboard)/partners/[id]/components/AttributesTab";
@@ -19,7 +20,7 @@ import { SettlementsTab } from "@/app/(dashboard)/partners/[id]/components/Settl
 import { AnalyticsTab } from "@/app/(dashboard)/partners/[id]/components/AnalyticsTab";
 import { LogTab } from "@/app/(dashboard)/partners/[id]/components/LogTab";
 
-const VALID_TABS = ["general", "shops", "drinks", "orders", "analytics", "log", "attributes", "feedbacks", "categories", "staff", "settlements"];
+const VALID_TABS = ["general", "shops", "hours", "drinks", "orders", "analytics", "log", "attributes", "feedbacks", "categories", "staff", "settlements"];
 
 function PartnerDetailContent() {
   const params = useParams();
@@ -72,6 +73,7 @@ function PartnerDetailContent() {
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="shops">Shops</TabsTrigger>
+          <TabsTrigger value="hours">Hours</TabsTrigger>
           <TabsTrigger value="drinks">Drinks</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -89,6 +91,10 @@ function PartnerDetailContent() {
 
         <TabsContent value="shops">
           <ShopsTab partnerId={partnerId} />
+        </TabsContent>
+
+        <TabsContent value="hours">
+          <HoursTab partnerId={partnerId} />
         </TabsContent>
 
         <TabsContent value="drinks">
