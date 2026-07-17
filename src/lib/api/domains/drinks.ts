@@ -155,6 +155,10 @@ export const drinksApi = {
   updateModifierGroup: async (partnerDrinkId: number, data: UpdateModifierGroupRequest): Promise<void> => {
     await httpClient.put(`/api/v1/partner/drink/modifier/group/update/${partnerDrinkId}`, data);
   },
+
+  reorderModifierGroups: async (partnerDrinkId: number, keys: string[]): Promise<void> => {
+    await httpClient.put(`/api/v1/partner/drink/modifier/group/reorder/${partnerDrinkId}`, { keys });
+  },
 };
 
 export const categoryApi = {

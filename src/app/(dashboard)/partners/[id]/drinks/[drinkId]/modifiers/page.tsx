@@ -3,7 +3,7 @@ import { useState, useMemo, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, ArrowUp, ArrowDown } from "lucide-react";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,10 +31,18 @@ function GroupRow({
   group,
   onSave,
   saving,
+  isFirst,
+  isLast,
+  onMove,
+  moving,
 }: {
   group: ModifierGroup;
   onSave: (d: UpdateModifierGroupRequest) => void;
   saving: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+  onMove: (dir: -1 | 1) => void;
+  moving: boolean;
 }) {
   const [name, setName] = useState(group.name);
   const [min, setMin] = useState<number>(group.min_select);
@@ -45,6 +53,30 @@ function GroupRow({
 
   return (
     <TableRow>
+      <TableCell className="w-[72px]">
+        <div className="flex items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            disabled={isFirst || moving}
+            onClick={() => onMove(-1)}
+            aria-label={`Move ${group.name} up`}
+          >
+            <ArrowUp className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            disabled={isLast || moving}
+            onClick={() => onMove(1)}
+            aria-label={`Move ${group.name} down`}
+          >
+            <ArrowDown className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
       <TableCell className="font-mono text-[11px] text-muted-foreground">{group.key}</TableCell>
       <TableCell><Input value={name} onChange={(e) => setName(e.target.value)} /></TableCell>
       <TableCell><Input type="number" min={0} className="w-[80px]" value={min} onChange={(e) => setMin(Number(e.target.value))} /></TableCell>
@@ -79,6 +111,45 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
       toast.error((e as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to update group"),
   });
 
+  const reorderMutation = useMutation({
+    mutationFn: (keys: string[]) => drinksApi.reorderModifierGroups(partnerDrinkId, keys),
+    // Optimistic: apply the new order to the cache immediately so the UI (and any
+    // rapid follow-up ↑/↓ click, which recomputes from this cache) always sees the
+    // latest order — never a stale pre-reorder snapshot. Roll back on error.
+    onMutate: async (keys: string[]) => {
+      await queryClient.cancelQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+      const previous = queryClient.getQueryData<ModifierGroup[]>(["modifier_groups", partnerDrinkId]);
+      if (previous) {
+        const byKey = new Map(previous.map((g) => [g.key, g]));
+        const reordered = keys
+          .map((k) => byKey.get(k))
+          .filter((g): g is ModifierGroup => g !== undefined);
+        queryClient.setQueryData(["modifier_groups", partnerDrinkId], reordered);
+      }
+      return { previous };
+    },
+    onError: (e: unknown, _keys, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["modifier_groups", partnerDrinkId], context.previous);
+      }
+      toast.error((e as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to reorder groups");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+    },
+  });
+
+  // Swap a group with its neighbour and persist the whole new key order. The
+  // server assigns sort_order by array position; the query refetches in the new
+  // order on success.
+  const move = (index: number, dir: -1 | 1) => {
+    const next = index + dir;
+    if (next < 0 || next >= groups.length) return;
+    const keys = groups.map((g) => g.key);
+    [keys[index], keys[next]] = [keys[next], keys[index]];
+    reorderMutation.mutate(keys);
+  };
+
   if (!isLoading && groups.length === 0) return null;
 
   return (
@@ -86,7 +157,8 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
       <CardHeader>
         <CardTitle>Modifier Groups</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Set each group&apos;s display name and how many options a customer must (Min) and may (Max, blank = unlimited) choose.
+          Reorder groups with the arrows (top = shown first in the app), and set each group&apos;s display name and how
+          many options a customer must (Min) and may (Max, blank = unlimited) choose.
         </p>
       </CardHeader>
       <CardContent>
@@ -94,6 +166,7 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[72px]">Order</TableHead>
                 <TableHead>Group</TableHead>
                 <TableHead>Display name</TableHead>
                 <TableHead className="w-[90px]">Min</TableHead>
@@ -104,10 +177,19 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
               ) : (
-                groups.map((g) => (
-                  <GroupRow key={g.key} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
+                groups.map((g, i) => (
+                  <GroupRow
+                    key={g.key}
+                    group={g}
+                    saving={updateMutation.isPending}
+                    onSave={(d) => updateMutation.mutate(d)}
+                    isFirst={i === 0}
+                    isLast={i === groups.length - 1}
+                    onMove={(dir) => move(i, dir)}
+                    moving={reorderMutation.isPending}
+                  />
                 ))
               )}
             </TableBody>
