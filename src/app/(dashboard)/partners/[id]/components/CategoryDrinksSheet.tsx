@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Coffee, Search } from "lucide-react";
 import Image from "@/components/ui/image";
 
-import { formatUZS } from "@/lib/money";
+import { formatSomUZS } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -209,7 +209,7 @@ export function CategoryDrinksSheet({
                       <div className="flex flex-wrap items-center gap-1">
                         {pd.product_price != null && (
                           <span className="text-xs text-muted-foreground">
-                            {formatUZS(pd.product_price)} UZS
+                            {formatSomUZS(pd.product_price)} UZS
                           </span>
                         )}
                         {badgeIds.map((id) => {

@@ -15,7 +15,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { drinksApi } from "@/lib/api/domains/drinks";
-import { formatUZS } from "@/lib/money";
+import { formatSomUZS } from "@/lib/money";
 import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest, ModifierGroup, UpdateModifierGroupRequest } from "@/lib/api/schemas/drinks";
 
 const EMPTY_FORM = (partnerDrinkId: number): CreatePartnerDrinkModifierRequest => ({
@@ -299,7 +299,7 @@ function ModifiersContent() {
                         )}
                       </TableCell>
                       <TableCell>{mod.vendor_addon_id}</TableCell>
-                      <TableCell>{formatUZS(mod.vendor_addon_price)}</TableCell>
+                      <TableCell>{formatSomUZS(mod.vendor_addon_price)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon" onClick={() => openEditModal(mod)}>

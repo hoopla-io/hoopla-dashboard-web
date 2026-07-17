@@ -68,20 +68,20 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
 
   const { data: partners } = useQuery({
-    queryKey: ["partners"],
-    queryFn: () => partnersApi.getAll(),
+    queryKey: ["dashboard-overview", "partners"],
+    queryFn: () => partnersApi.getAll({ limit: 1 }),
   });
   const { data: shops } = useQuery({
-    queryKey: ["shops"],
-    queryFn: () => shopsApi.getAll(),
+    queryKey: ["dashboard-overview", "shops"],
+    queryFn: () => shopsApi.getAll({ limit: 1 }),
   });
   const { data: orders } = useQuery({
-    queryKey: ["orders"],
-    queryFn: () => ordersApi.getAll(),
+    queryKey: ["dashboard-overview", "orders"],
+    queryFn: () => ordersApi.getAll({ limit: 8 }),
   });
   const { data: users } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => usersApi.getAll(),
+    queryKey: ["dashboard-overview", "users"],
+    queryFn: () => usersApi.getAll({ limit: 1 }),
   });
   const { data: stories } = useQuery({
     queryKey: ["stories"],
@@ -92,12 +92,12 @@ export default function DashboardPage() {
     queryFn: () => bannersApi.getAll(),
   });
   const { data: notifications } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => notificationsApi.getAll(),
+    queryKey: ["dashboard-overview", "notifications"],
+    queryFn: () => notificationsApi.getAll({ limit: 1 }),
   });
   const { data: drinks } = useQuery({
-    queryKey: ["drinks"],
-    queryFn: () => drinksApi.getAll(),
+    queryKey: ["dashboard-overview", "drinks"],
+    queryFn: () => drinksApi.getAll({ limit: 1 }),
   });
   const { data: shopCategories } = useQuery({
     queryKey: ["shop-categories"],

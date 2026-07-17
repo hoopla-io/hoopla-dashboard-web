@@ -30,6 +30,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/auth-store";
+import { authApi } from "@/lib/api/domains/auth";
 
 type NavLeaf = {
   name: string;
@@ -149,7 +150,8 @@ export function SidebarContent() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authApi.logout().catch(() => undefined);
     logout();
     navigate("/login");
   };
