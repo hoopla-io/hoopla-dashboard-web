@@ -95,7 +95,7 @@ function OrdersContent() {
     setCurrentPage(1)
   );
 
-  const { data: ordersData, isLoading } = useQuery({
+  const { data: ordersData, isLoading, isError, refetch } = useQuery({
     queryKey: ["orders", currentPage, perPage, statusFilter, drinkFilter, dateFilter, phoneFilter, shopFilter, includeTest, sortParam, orderParam],
     queryFn: () =>
       ordersApi.getAll({
@@ -254,6 +254,19 @@ function OrdersContent() {
               <TableRow>
                 <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
                   Loading…
+                </TableCell>
+              </TableRow>
+            ) : isError ? (
+              <TableRow>
+                <TableCell colSpan={11} className="py-10 text-center">
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Couldn't load orders. Check your connection and try again.
+                    </p>
+                    <Button variant="outline" size="sm" onClick={() => refetch()}>
+                      Retry
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : orders.length === 0 ? (
