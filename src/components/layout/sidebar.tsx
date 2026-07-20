@@ -16,6 +16,7 @@ import {
   Wallet,
   TicketPercent,
   Gift,
+  Rocket,
   LogOut,
 } from "lucide-react";
 
@@ -77,7 +78,10 @@ const sections: NavSection[] = [
   },
   {
     label: "System",
-    items: [{ name: "Settings", href: "/settings", icon: Settings }],
+    items: [
+      { name: "App Releases", href: "/app-releases", icon: Rocket },
+      { name: "Settings", href: "/settings", icon: Settings },
+    ],
   },
 ];
 
