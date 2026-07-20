@@ -20,6 +20,7 @@ import NotificationsPage from "@/app/(dashboard)/notifications/page";
 import NotificationDetailPage from "@/app/(dashboard)/notifications/[id]/page";
 import ShopCategoriesPage from "@/app/(dashboard)/shop-categories/page";
 import SettlementsPage from "@/app/(dashboard)/settlements/page";
+import AppReleasesPage from "@/app/(dashboard)/app-releases/page";
 import SettingsPage from "@/app/(dashboard)/settings/page";
 import LoginPage from "@/app/login/page";
 
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
       { path: "notifications/:id", element: <NotificationDetailPage /> },
       { path: "shop-categories", element: <ShopCategoriesPage /> },
       { path: "settlements", element: <SettlementsPage /> },
+      { path: "app-releases", element: <AppReleasesPage /> },
       { path: "settings", element: <SettingsPage /> },
     ],
   },
