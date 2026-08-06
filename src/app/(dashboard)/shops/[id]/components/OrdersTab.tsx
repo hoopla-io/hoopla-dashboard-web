@@ -23,8 +23,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { OrderItemsDialog } from "@/components/orders/order-items-dialog";
 import { ordersApi } from "@/lib/api/domains/orders";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import { distinctDrinkCount } from "@/lib/orderItems";
 
 interface OrdersTabProps {
   shopId: number;
@@ -47,6 +49,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   const [perPage, setPerPage] = useState(ITEMS_PER_PAGE);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [itemsDialogOrder, setItemsDialogOrder] = useState<Order | null>(null);
 
   const { data: ordersData, isLoading } = useQuery({
     queryKey: ["shop-orders", shopId, page, perPage, statusFilter, searchTerm],
@@ -84,6 +87,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   };
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>Shop Orders</CardTitle>
@@ -153,7 +157,22 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         <span className="text-xs text-muted-foreground">{order.user?.phone_number}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{order.drink?.name || "-"}</TableCell>
+                    <TableCell>
+                      {order.items && order.items.length > 0 ? (
+                        <button
+                          type="button"
+                          className="underline-offset-2 hover:underline"
+                          onClick={() => setItemsDialogOrder(order)}
+                        >
+                          {order.drink?.name ||
+                            (distinctDrinkCount(order.items) > 1
+                              ? `${distinctDrinkCount(order.items)} items`
+                              : "-")}
+                        </button>
+                      ) : (
+                        order.drink?.name || "-"
+                      )}
+                    </TableCell>
                     <TableCell>{formatPrice(order.price)} UZS</TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {formatDate(order.time)}
@@ -199,5 +218,12 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
         </DataTableShell>
       </CardContent>
     </Card>
+    <OrderItemsDialog
+      order={itemsDialogOrder}
+      onOpenChange={(open) => {
+        if (!open) setItemsDialogOrder(null);
+      }}
+    />
+    </>
   );
 }

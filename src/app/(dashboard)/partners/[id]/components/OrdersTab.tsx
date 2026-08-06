@@ -10,9 +10,12 @@ import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { OrderItemsDialog } from "@/components/orders/order-items-dialog";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
 import { formatSomUZS } from "@/lib/money";
+import { distinctDrinkCount } from "@/lib/orderItems";
+import type { Order } from "@/lib/api/schemas/orders";
 
 interface OrdersTabProps {
   partnerId: number;
@@ -22,6 +25,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [ordersFilter, setOrdersFilter] = useState("");
+  const [itemsDialogOrder, setItemsDialogOrder] = useState<Order | null>(null);
   const { sort, order, onSort, sortParam, orderParam } = useTableSort(() => setCurrentPage(1));
 
   const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
@@ -42,6 +46,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
   const totalPages = ordersData?.meta?.totalPages || 1;
 
   return (
+    <>
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div className="max-w-sm w-full relative">
@@ -72,6 +77,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                   </SortableTableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Shop</TableHead>
+                  <TableHead>Drink</TableHead>
                   <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
                     Total
                   </SortableTableHead>
@@ -87,11 +93,11 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
               <TableBody>
                 {isLoadingOrders ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">Loading orders...</TableCell>
+                    <TableCell colSpan={8} className="text-center py-4">Loading orders...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="p-0">
+                    <TableCell colSpan={8} className="p-0">
                       <EmptyState
                         title="No orders found"
                         description={
@@ -117,6 +123,22 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                           </Link>
                         ) : (
                           "-"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {order.items && order.items.length > 0 ? (
+                          <button
+                            type="button"
+                            className="underline-offset-2 hover:underline"
+                            onClick={() => setItemsDialogOrder(order)}
+                          >
+                            {order.drink?.name ||
+                              (distinctDrinkCount(order.items) > 1
+                                ? `${distinctDrinkCount(order.items)} items`
+                                : "-")}
+                          </button>
+                        ) : (
+                          order.drink?.name || "-"
                         )}
                       </TableCell>
                       <TableCell>{formatSomUZS(order.price)} сум</TableCell>
@@ -162,5 +184,12 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
         </CardContent>
       </Card>
     </div>
+    <OrderItemsDialog
+      order={itemsDialogOrder}
+      onOpenChange={(open) => {
+        if (!open) setItemsDialogOrder(null);
+      }}
+    />
+    </>
   );
 }

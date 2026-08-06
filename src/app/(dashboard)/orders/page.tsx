@@ -9,13 +9,7 @@ import { QrCode, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { OrderItemsDialog } from "@/components/orders/order-items-dialog";
 import {
   Table,
   TableBody,
@@ -42,6 +36,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import { distinctDrinkCount } from "@/lib/orderItems";
 
 const statusTone: Record<string, StatusTone> = {
   pending_payment: "pending",
@@ -295,13 +290,23 @@ function OrdersContent() {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm">
-                    {order.items && order.items.length > 1 ? (
+                    {distinctDrinkCount(order.items) > 1 ? (
                       <button
                         type="button"
                         className="underline-offset-2 hover:underline"
                         onClick={() => setItemsDialogOrder(order)}
                       >
-                        {order.drink?.name || `${order.items.length} items`}
+                        {order.drink?.name || `${distinctDrinkCount(order.items)} items`}
+                      </button>
+                    ) : order.items && order.items.length > 1 ? (
+                      // Single drink with modifiers — not multi-item, but
+                      // still worth a peek at what was customized.
+                      <button
+                        type="button"
+                        className="underline-offset-2 hover:underline"
+                        onClick={() => setItemsDialogOrder(order)}
+                      >
+                        {order.drink?.name || "—"}
                       </button>
                     ) : (
                       order.drink?.name || "—"
@@ -406,31 +411,12 @@ function OrdersContent() {
         />
       </DataTableShell>
 
-      <Dialog
-        open={!!itemsDialogOrder}
+      <OrderItemsDialog
+        order={itemsDialogOrder}
         onOpenChange={(open) => {
           if (!open) setItemsDialogOrder(null);
         }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
-            <DialogDescription>Line items for this order.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            {itemsDialogOrder?.items?.map((item) => (
-              <div key={item.id} className="flex items-center justify-between text-sm">
-                <span>
-                  {item.name} × {item.quantity}
-                </span>
-                <span className="font-mono tabular-nums text-muted-foreground">
-                  {formatPrice(item.price * item.quantity)} UZS
-                </span>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      />
     </div>
   );
 }

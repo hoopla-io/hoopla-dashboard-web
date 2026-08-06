@@ -27,15 +27,19 @@ export const OrderSchema = z.object({
   last_update: z.string().optional(),
   fiscal_link: z.string().optional(),
   feedback: OrderFeedbackSchema.optional().nullable(),
-  // Distinct drink lines for a cart-checkout order — length 1 for today's
-  // ordinary single-drink orders, absent/empty otherwise.
+  // Every line of the order's composition — drinks and their modifiers.
+  // Length 1 for today's ordinary single-drink orders. A "modifier" row's
+  // parent_item_id is the id of the "drink" row it belongs to; group by it
+  // instead of assuming array order.
   items: z
     .array(
       z.object({
         id: z.number(),
+        type: z.enum(["drink", "modifier"]),
         name: z.string(),
         quantity: z.number(),
         price: z.number(),
+        parent_item_id: z.number().nullable(),
       })
     )
     .optional(),
