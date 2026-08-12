@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
@@ -13,6 +20,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
 import { formatSomUZS } from "@/lib/money";
+import type { Order } from "@/lib/api/schemas/orders";
 
 interface OrdersTabProps {
   partnerId: number;
@@ -22,6 +30,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [ordersFilter, setOrdersFilter] = useState("");
+  const [itemsDialogOrder, setItemsDialogOrder] = useState<Order | null>(null);
   const { sort, order, onSort, sortParam, orderParam } = useTableSort(() => setCurrentPage(1));
 
   const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
@@ -72,6 +81,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                   </SortableTableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Shop</TableHead>
+                  <TableHead>Drink</TableHead>
                   <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
                     Total
                   </SortableTableHead>
@@ -87,11 +97,11 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
               <TableBody>
                 {isLoadingOrders ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">Loading orders...</TableCell>
+                    <TableCell colSpan={8} className="text-center py-4">Loading orders...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="p-0">
+                    <TableCell colSpan={8} className="p-0">
                       <EmptyState
                         title="No orders found"
                         description={
@@ -117,6 +127,19 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                           </Link>
                         ) : (
                           "-"
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {order.items && order.items.length > 1 ? (
+                          <button
+                            type="button"
+                            className="underline-offset-2 hover:underline"
+                            onClick={() => setItemsDialogOrder(order)}
+                          >
+                            {order.drink?.name || `${order.items.length} items`}
+                          </button>
+                        ) : (
+                          order.drink?.name || "-"
                         )}
                       </TableCell>
                       <TableCell>{formatSomUZS(order.price)} сум</TableCell>
@@ -161,6 +184,32 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
           </DataTableShell>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={!!itemsDialogOrder}
+        onOpenChange={(open) => {
+          if (!open) setItemsDialogOrder(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
+            <DialogDescription>Line items for this order.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {itemsDialogOrder?.items?.map((item) => (
+              <div key={item.id} className="flex items-center justify-between text-sm">
+                <span>
+                  {item.name} × {item.quantity}
+                </span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {formatSomUZS(item.price * item.quantity)} сум
+                </span>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
