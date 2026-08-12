@@ -37,6 +37,6 @@ export const ordersApi = {
   },
 
   changeStatus: async (data: ChangeOrderStatusRequest): Promise<void> => {
-    await httpClient.put("/api/v1/shop/orders/status", data);
+    await httpClient.put(`/api/v1/orders/edit/${data.id}`, { status: data.status });
   },
 };
