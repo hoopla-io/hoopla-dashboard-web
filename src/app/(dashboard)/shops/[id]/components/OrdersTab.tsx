@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatSomUZS } from "@/lib/money";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -47,6 +54,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   const [perPage, setPerPage] = useState(ITEMS_PER_PAGE);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [itemsDialogOrder, setItemsDialogOrder] = useState<Order | null>(null);
 
   const { data: ordersData, isLoading } = useQuery({
     queryKey: ["shop-orders", shopId, page, perPage, statusFilter, searchTerm],
@@ -84,120 +92,160 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Shop Orders</CardTitle>
-        <CardDescription>View and manage orders for this shop</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <Input
-            placeholder="Search phone/user..."
-            value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-            className="md:max-w-sm"
-          />
-          <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setPage(1); }}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All Statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {statusOptions.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Shop Orders</CardTitle>
+          <CardDescription>View and manage orders for this shop</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <Input
+              placeholder="Search phone/user..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+              className="md:max-w-sm"
+            />
+            <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setPage(1); }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {statusOptions.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <DataTableShell>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Order ID</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Drink</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+          <DataTableShell>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
+                  <TableHead>Order ID</TableHead>
+                  <TableHead>User</TableHead>
+                  <TableHead>Drink</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ) : orders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="p-0">
-                    <EmptyState
-                      title="No orders found"
-                      description={
-                        searchTerm || statusFilter !== "all"
-                          ? "Try adjusting or clearing your filters."
-                          : "Orders placed at this shop will appear here."
-                      }
-                    />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                orders.map((order: Order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">#{order.id}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm">{order.user?.name || "-"}</span>
-                        <span className="text-xs text-muted-foreground">{order.user?.phone_number}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{order.drink?.name || "-"}</TableCell>
-                    <TableCell>{formatPrice(order.price)} UZS</TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {formatDate(order.time)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={statusColors[order.status] || "bg-muted"}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={order.status}
-                        onValueChange={(value) => handleStatusChange(order.id, value)}
-                      >
-                        <SelectTrigger className="w-[120px] h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {statusOptions.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
+                  </TableRow>
+                ) : orders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="p-0">
+                      <EmptyState
+                        title="No orders found"
+                        description={
+                          searchTerm || statusFilter !== "all"
+                            ? "Try adjusting or clearing your filters."
+                            : "Orders placed at this shop will appear here."
+                        }
+                      />
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          <PaginationControls
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            perPage={perPage}
-            onPerPageChange={(n) => {
-              setPerPage(n);
-              setPage(1);
-            }}
-            isLoading={isLoading}
-          />
-        </DataTableShell>
-      </CardContent>
-    </Card>
+                ) : (
+                  orders.map((order: Order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">#{order.id}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">{order.user?.name || "-"}</span>
+                          <span className="text-xs text-muted-foreground">{order.user?.phone_number}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {order.items && order.items.length > 1 ? (
+                          <button
+                            type="button"
+                            className="underline-offset-2 hover:underline"
+                            onClick={() => setItemsDialogOrder(order)}
+                          >
+                            {order.drink?.name || `${order.items.length} items`}
+                          </button>
+                        ) : (
+                          order.drink?.name || "-"
+                        )}
+                      </TableCell>
+                      <TableCell>{formatPrice(order.price)} UZS</TableCell>
+                      <TableCell className="text-muted-foreground text-xs">
+                        {formatDate(order.time)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[order.status] || "bg-muted"}>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={order.status}
+                          onValueChange={(value) => handleStatusChange(order.id, value)}
+                        >
+                          <SelectTrigger className="w-[120px] h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {statusOptions.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <PaginationControls
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              perPage={perPage}
+              onPerPageChange={(n) => {
+                setPerPage(n);
+                setPage(1);
+              }}
+              isLoading={isLoading}
+            />
+          </DataTableShell>
+        </CardContent>
+      </Card>
+
+      <Dialog
+        open={!!itemsDialogOrder}
+        onOpenChange={(open) => {
+          if (!open) setItemsDialogOrder(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
+            <DialogDescription>Line items for this order.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {itemsDialogOrder?.items?.map((item) => (
+              <div key={item.id} className="flex items-center justify-between text-sm">
+                <span>
+                  {item.name} × {item.quantity}
+                </span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {formatPrice(item.price * item.quantity)} UZS
+                </span>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
