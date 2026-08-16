@@ -3,7 +3,7 @@ import { useState, useMemo, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowLeft, GripVertical, Save, RotateCcw } from "lucide-react";
 import { useQueryState, parseAsInteger } from "nuqs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { drinksApi } from "@/lib/api/domains/drinks";
+import { useDragReorder } from "@/hooks/use-drag-reorder";
 import { formatUZS } from "@/lib/money";
 import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest, ModifierGroup, UpdateModifierGroupRequest } from "@/lib/api/schemas/drinks";
 
@@ -31,10 +32,12 @@ function GroupRow({
   group,
   onSave,
   saving,
+  rowProps,
 }: {
   group: ModifierGroup;
   onSave: (d: UpdateModifierGroupRequest) => void;
   saving: boolean;
+  rowProps: React.HTMLAttributes<HTMLTableRowElement> & { draggable?: boolean };
 }) {
   const [name, setName] = useState(group.name);
   const [min, setMin] = useState<number>(group.min_select);
@@ -44,7 +47,8 @@ function GroupRow({
   const dirty = name !== group.name || min !== group.min_select || max !== maxNorm;
 
   return (
-    <TableRow>
+    <TableRow {...rowProps}>
+      <TableCell className="text-muted-foreground"><GripVertical className="h-4 w-4" /></TableCell>
       <TableCell className="font-mono text-[11px] text-muted-foreground">{group.key}</TableCell>
       <TableCell><Input value={name} onChange={(e) => setName(e.target.value)} /></TableCell>
       <TableCell><Input type="number" min={0} className="w-[80px]" value={min} onChange={(e) => setMin(Number(e.target.value))} /></TableCell>
@@ -79,21 +83,53 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
       toast.error((e as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to update group"),
   });
 
+  // Group order = the order of sections on the drink screen in the app.
+  const reorder = useDragReorder(groups, (g) => g.key);
+  const reorderMutation = useMutation({
+    mutationFn: () =>
+      drinksApi.reorderModifierGroups(partnerDrinkId, {
+        items: reorder.order.map((g, i) => ({ key: g.key, sortOrder: i })),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+      toast.success("Group order saved!");
+    },
+    onError: () => toast.error("Failed to save group order"),
+  });
+
   if (!isLoading && groups.length === 0) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Modifier Groups</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Set each group&apos;s display name and how many options a customer must (Min) and may (Max, blank = unlimited) choose.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <CardTitle>Modifier Groups</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Set each group&apos;s display name and how many options a customer must (Min) and may (Max, blank = unlimited) choose.
+              Drag rows to set the order of groups on the drink screen.
+            </p>
+          </div>
+          {reorder.isDirty && (
+            <div className="flex shrink-0 items-center gap-2">
+              <Button variant="outline" size="sm" onClick={reorder.reset} disabled={reorderMutation.isPending}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+              <Button size="sm" onClick={() => reorderMutation.mutate()} disabled={reorderMutation.isPending}>
+                <Save className="mr-2 h-4 w-4" />
+                {reorderMutation.isPending ? "Saving..." : "Save order"}
+              </Button>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <DataTableShell>
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]"></TableHead>
                 <TableHead>Group</TableHead>
                 <TableHead>Display name</TableHead>
                 <TableHead className="w-[90px]">Min</TableHead>
@@ -104,10 +140,16 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
               ) : (
-                groups.map((g) => (
-                  <GroupRow key={g.key} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
+                reorder.order.map((g) => (
+                  <GroupRow
+                    key={g.key}
+                    group={g}
+                    saving={updateMutation.isPending}
+                    onSave={(d) => updateMutation.mutate(d)}
+                    rowProps={reorder.rowProps(g.key)}
+                  />
                 ))
               )}
             </TableBody>
@@ -146,6 +188,24 @@ function ModifiersContent() {
   const modifiers = useMemo(() => modifiersData?.data || [], [modifiersData]);
   const meta = modifiersData?.meta;
   const totalPages = meta?.totalPages || 1;
+
+  // Drag&drop order of options (within their group, as the app shows them).
+  // The list is paginated, so positions are saved as global offsets of the
+  // current page: (page-1)*perPage + row index — pages stay consistent because
+  // the backend lists by sort_order. Bump "per page" to see everything at once.
+  const modifierReorder = useDragReorder(modifiers, (m) => m.id);
+  const reorderModifiersMutation = useMutation({
+    mutationFn: () =>
+      drinksApi.reorderModifiers(partnerDrinkId, {
+        items: modifierReorder.order.map((m, i) => ({ id: m.id, sortOrder: (currentPage - 1) * perPage + i })),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
+      queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+      toast.success("Addon order saved!");
+    },
+    onError: () => toast.error("Failed to save addon order"),
+  });
 
   // Suggestions for the (free-text) Vendor Addon Key: a few common defaults plus
   // every key already used on this drink. The field is NOT limited to these — type
@@ -254,7 +314,19 @@ function ModifiersContent() {
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {modifierReorder.isDirty && (
+          <>
+            <Button variant="outline" onClick={modifierReorder.reset} disabled={reorderModifiersMutation.isPending}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Reset
+            </Button>
+            <Button onClick={() => reorderModifiersMutation.mutate()} disabled={reorderModifiersMutation.isPending}>
+              <Save className="mr-2 h-4 w-4" />
+              {reorderModifiersMutation.isPending ? "Saving..." : "Save order"}
+            </Button>
+          </>
+        )}
         <Button onClick={() => { setAddForm({ ...EMPTY_FORM(partnerDrinkId), vendor_group_id: nextVendorGroupId }); setAddModalOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" />
           Add Addon
@@ -264,12 +336,16 @@ function ModifiersContent() {
       <Card>
         <CardHeader>
           <CardTitle>Addons</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Drag rows to set the order of options inside their group, then save.
+          </p>
         </CardHeader>
         <CardContent>
           <DataTableShell>
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[40px]"></TableHead>
                   <TableHead>Addon Name</TableHead>
                   <TableHead>Group</TableHead>
                   <TableHead>Vendor Addon ID</TableHead>
@@ -279,17 +355,18 @@ function ModifiersContent() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
                 ) : modifiers.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="p-0">
+                  <TableRow><TableCell colSpan={6} className="p-0">
                     <EmptyState
                       title="No addons found"
                       description="Add an addon to get started."
                     />
                   </TableCell></TableRow>
                 ) : (
-                  modifiers.map((mod) => (
-                    <TableRow key={mod.id}>
+                  modifierReorder.order.map((mod) => (
+                    <TableRow key={mod.id} {...modifierReorder.rowProps(mod.id)}>
+                      <TableCell className="text-muted-foreground"><GripVertical className="h-4 w-4" /></TableCell>
                       <TableCell className="font-medium">{mod.vendor_addon_name}</TableCell>
                       <TableCell>
                         {mod.vendor_addon_key ? (

@@ -4,6 +4,7 @@ import type {
   PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
   PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest,
   ModifierGroup, UpdateModifierGroupRequest,
+  ReorderPartnerDrinksRequest, ReorderModifiersRequest, ReorderModifierGroupsRequest,
   DrinkCategory, CategoryWithDrinks, CreateCategoryRequest, UpdateCategoryRequest, LinkDrinkRequest, ReorderCategoriesRequest,
 } from "@/lib/api/schemas/drinks";
 
@@ -119,6 +120,12 @@ export const drinksApi = {
     await httpClient.delete(`/api/v1/partner/drink/delete/${id}`);
   },
 
+  // Persist the admin's drag&drop order of a partner's drinks — this is the
+  // order the consumer app shows within a category.
+  reorderPartnerDrinks: async (data: ReorderPartnerDrinksRequest): Promise<void> => {
+    await httpClient.put("/api/v1/partner/drink/reorder", data);
+  },
+
   // --- Drink Modifiers ---
   listModifiers: async (partnerDrinkId: number, params?: { page?: number; limit?: number }): Promise<PaginatedResponse<PartnerDrinkModifier>> => {
     const response = await httpClient.get<ApiResponse<PartnerDrinkModifier[]>>(`/api/v1/partner/drink/modifier/list/${partnerDrinkId}`, { params });
@@ -144,6 +151,11 @@ export const drinksApi = {
     await httpClient.delete(`/api/v1/partner/drink/modifier/delete/${id}`);
   },
 
+  // Order of options inside their group, as shown in the consumer app.
+  reorderModifiers: async (partnerDrinkId: number, data: ReorderModifiersRequest): Promise<void> => {
+    await httpClient.put(`/api/v1/partner/drink/modifier/reorder/${partnerDrinkId}`, data);
+  },
+
   // --- Modifier Groups (name + min/max selection rules) ---
   listModifierGroups: async (partnerDrinkId: number): Promise<ModifierGroup[]> => {
     const response = await httpClient.get<ApiResponse<ModifierGroup[]>>(
@@ -154,6 +166,11 @@ export const drinksApi = {
 
   updateModifierGroup: async (partnerDrinkId: number, data: UpdateModifierGroupRequest): Promise<void> => {
     await httpClient.put(`/api/v1/partner/drink/modifier/group/update/${partnerDrinkId}`, data);
+  },
+
+  // Order of the groups themselves on the drink screen.
+  reorderModifierGroups: async (partnerDrinkId: number, data: ReorderModifierGroupsRequest): Promise<void> => {
+    await httpClient.put(`/api/v1/partner/drink/modifier/group/reorder/${partnerDrinkId}`, data);
   },
 };
 
