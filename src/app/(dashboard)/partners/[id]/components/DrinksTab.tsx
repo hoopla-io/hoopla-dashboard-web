@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, GripVertical, Save, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { drinksApi, categoryApi } from "@/lib/api/domains/drinks";
+import { useDragReorder } from "@/hooks/use-drag-reorder";
 import { formatSomUZS } from "@/lib/money";
 import type { CreatePartnerDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
 
@@ -78,10 +79,30 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     });
   };
 
-  const filteredDrinks = (partnerDrinks || []).filter(pd =>
+  // Drag&drop ordering works on the full, unfiltered list (the server returns
+  // it in sort_order); a filter would hide rows and make the saved positions
+  // meaningless, so dragging is disabled while a filter is active.
+  const serverDrinks = useMemo(() => partnerDrinks ?? [], [partnerDrinks]);
+  const reorder = useDragReorder(serverDrinks, (pd) => pd.id);
+  const canDrag = drinksFilter.trim() === "";
+
+  const filteredDrinks = reorder.order.filter(pd =>
     pd.vendor_product_name?.toLowerCase().includes(drinksFilter.toLowerCase()) ||
     pd.name?.toLowerCase().includes(drinksFilter.toLowerCase())
   );
+
+  const reorderMutation = useMutation({
+    mutationFn: () =>
+      drinksApi.reorderPartnerDrinks({
+        partner_id: partnerId,
+        items: reorder.order.map((pd, i) => ({ id: pd.id, sortOrder: i })),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
+      toast.success("Drink order saved!");
+    },
+    onError: () => toast.error("Failed to save drink order"),
+  });
 
   const createDrinkMutation = useMutation({
     mutationFn: ({ data, file }: { data: CreatePartnerDrinkRequest; file?: File }) =>
@@ -159,25 +180,45 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
             className="pl-10"
           />
         </div>
-        <Button onClick={() => {
-          setDrinkEditId(null);
-          setDrinkFormData({ partner_id: partnerId, drink_id: 0, product_price: 0, vendor_product_price: 0, vendor_product_name: "", vendor_product_id: nextVendorProductId, category_ids: [] });
-          setDrinkFile(undefined);
-          setIsDrinkDialogOpen(true);
-        }}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Drink
-        </Button>
+        <div className="flex items-center gap-2">
+          {reorder.isDirty && (
+            <>
+              <Button variant="outline" onClick={reorder.reset} disabled={reorderMutation.isPending}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+              <Button onClick={() => reorderMutation.mutate()} disabled={reorderMutation.isPending}>
+                <Save className="mr-2 h-4 w-4" />
+                {reorderMutation.isPending ? "Saving..." : "Save order"}
+              </Button>
+            </>
+          )}
+          <Button onClick={() => {
+            setDrinkEditId(null);
+            setDrinkFormData({ partner_id: partnerId, drink_id: 0, product_price: 0, vendor_product_price: 0, vendor_product_name: "", vendor_product_id: nextVendorProductId, category_ids: [] });
+            setDrinkFile(undefined);
+            setIsDrinkDialogOpen(true);
+          }}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Drink
+          </Button>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Drinks</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {canDrag
+              ? "Drag rows to set the order shown in the app, then save."
+              : "Clear the filter to drag rows and change the order shown in the app."}
+          </p>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]"></TableHead>
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Vendor Name</TableHead>
@@ -190,12 +231,15 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
             </TableHeader>
             <TableBody>
               {isLoadingPartnerDrinks ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-4">Loading drinks...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-4">Loading drinks...</TableCell></TableRow>
               ) : filteredDrinks.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-4 text-muted-foreground">No drinks found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-4 text-muted-foreground">No drinks found</TableCell></TableRow>
               ) : (
                 filteredDrinks.map(pd => (
-                  <TableRow key={pd.id}>
+                  <TableRow key={pd.id} {...reorder.rowProps(pd.id, canDrag)}>
+                    <TableCell className="text-muted-foreground">
+                      {canDrag && <GripVertical className="h-4 w-4" />}
+                    </TableCell>
                     <TableCell>
                       {pd.image_url || pd.imageUrl ? (
                         <button

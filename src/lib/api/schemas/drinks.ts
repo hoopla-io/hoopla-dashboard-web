@@ -57,6 +57,7 @@ export const PartnerDrinkSchema = z.object({
   category_ids: z.array(z.number()).nullable().optional(),
   imageUrl: z.string().optional(),
   image_url: z.string().nullable().optional(),
+  sort_order: z.number().optional(),
 });
 
 export const CreatePartnerDrinkSchema = z.object({
@@ -84,6 +85,7 @@ export const PartnerDrinkModifierSchema = z.object({
   vendor_addon_name: z.string(),
   vendor_addon_price: z.number(),
   vendor_group_id: z.string().optional().nullable(),
+  sort_order: z.number().optional(),
 });
 
 export const CreatePartnerDrinkModifierSchema = z.object({
@@ -108,8 +110,17 @@ export const ModifierGroupSchema = z.object({
   min_select: z.number(),
   max_select: z.number().nullable().optional(),
   option_count: z.number(),
+  sort_order: z.number().optional(),
 });
 export type ModifierGroup = z.infer<typeof ModifierGroupSchema>;
+
+// Bulk reorder payloads (dashboard-api PUT .../reorder). sortOrder is what the
+// consumer API sorts by first (hoopla-api migration 000030); ties keep the old
+// implicit order, so sending 0..n-1 in display order is enough.
+export type ReorderItem = { id: number; sortOrder: number };
+export type ReorderPartnerDrinksRequest = { partner_id: number; items: ReorderItem[] };
+export type ReorderModifiersRequest = { items: ReorderItem[] };
+export type ReorderModifierGroupsRequest = { items: { key: string; sortOrder: number }[] };
 
 export interface UpdateModifierGroupRequest {
   key: string;
