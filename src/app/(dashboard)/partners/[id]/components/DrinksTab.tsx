@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     category_ids: [],
   });
   const [drinkFile, setDrinkFile] = useState<File | undefined>(undefined);
+  const [defaultDescription, setDefaultDescription] = useState<string | undefined>(undefined);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const { data: partnerDrinks, isLoading: isLoadingPartnerDrinks } = useQuery({
@@ -49,6 +51,13 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     queryFn: () => drinksApi.getAll(),
   });
   const allDrinks = allDrinksData?.data || [];
+
+  const catalogDrink = allDrinks.find((drink) => drink.id === drinkFormData.drink_id);
+
+  useEffect(() => {
+    if (!isDrinkDialogOpen || !drinkEditId || defaultDescription !== undefined || !catalogDrink) return;
+    setDefaultDescription(catalogDrink.description ?? "");
+  }, [catalogDrink, defaultDescription, drinkEditId, isDrinkDialogOpen]);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["partner_categories", partnerId],
@@ -83,11 +92,22 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     pd.name?.toLowerCase().includes(drinksFilter.toLowerCase())
   );
 
+  const saveDefaultDescription = async () => {
+    if (!catalogDrink || defaultDescription === undefined) return;
+    await drinksApi.update(catalogDrink.id, {
+      name: catalogDrink.name,
+      description: defaultDescription,
+    });
+  };
+
   const createDrinkMutation = useMutation({
-    mutationFn: ({ data, file }: { data: CreatePartnerDrinkRequest; file?: File }) =>
-      drinksApi.assignToPartner(data, file),
+    mutationFn: async ({ data, file }: { data: CreatePartnerDrinkRequest; file?: File }) => {
+      await saveDefaultDescription();
+      return drinksApi.assignToPartner(data, file);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
+      queryClient.invalidateQueries({ queryKey: ["drinks"] });
       toast.success("Drink assigned successfully");
       setIsDrinkDialogOpen(false);
     },
@@ -95,10 +115,13 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
   });
 
   const updateDrinkMutation = useMutation({
-    mutationFn: ({ id, data, file }: { id: number; data: CreatePartnerDrinkRequest; file?: File }) =>
-      drinksApi.updatePartnerDrink(id, data, file),
+    mutationFn: async ({ id, data, file }: { id: number; data: CreatePartnerDrinkRequest; file?: File }) => {
+      await saveDefaultDescription();
+      return drinksApi.updatePartnerDrink(id, data, file);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
+      queryClient.invalidateQueries({ queryKey: ["drinks"] });
       toast.success("Drink updated successfully");
       setIsDrinkDialogOpen(false);
     },
@@ -163,6 +186,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
           setDrinkEditId(null);
           setDrinkFormData({ partner_id: partnerId, drink_id: 0, product_price: 0, vendor_product_price: 0, vendor_product_name: "", vendor_product_id: nextVendorProductId, category_ids: [] });
           setDrinkFile(undefined);
+          setDefaultDescription(undefined);
           setIsDrinkDialogOpen(true);
         }}>
           <Plus className="mr-2 h-4 w-4" />
@@ -258,6 +282,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                               vendor_product_name: pd.vendor_product_name || "",
                               category_ids: pd.category_ids ?? [],
                             });
+                            setDefaultDescription(allDrinks.find((drink) => drink.id === pd.drink_id)?.description ?? undefined);
                             setDrinkFile(undefined);
                             setIsDrinkDialogOpen(true);
                           }}
@@ -307,7 +332,12 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                 <Label htmlFor="drink-select">Select Drink</Label>
                 <Select
                   value={drinkFormData.drink_id ? String(drinkFormData.drink_id) : undefined}
-                  onValueChange={(val) => setDrinkFormData({ ...drinkFormData, drink_id: Number(val) })}
+                  onValueChange={(val) => {
+                    const drinkID = Number(val);
+                    const selectedDrink = allDrinks.find((drink) => drink.id === drinkID);
+                    setDrinkFormData({ ...drinkFormData, drink_id: drinkID });
+                    setDefaultDescription(selectedDrink?.description ?? "");
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a drink" />
@@ -318,6 +348,19 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="default_description">Default Description</Label>
+                <Textarea
+                  id="default_description"
+                  value={defaultDescription ?? ""}
+                  onChange={(e) => setDefaultDescription(e.target.value)}
+                  placeholder="Default description shown to customers"
+                  disabled={!drinkFormData.drink_id}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Shared by every partner that uses this catalog drink. Leave blank to remove it.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vendor_product_name">Vendor Product Name</Label>
