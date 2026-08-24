@@ -27,6 +27,7 @@ export type ReorderCategoriesRequest = { partner_id: number; category_ids: numbe
 export const DrinkSchema = z.object({
   id: z.number(),
   name: z.string(),
+  description: z.string().nullable().optional(),
   price: z.number().optional(),
   partner: z.string().optional(),
   image_url: z.string().optional(),
@@ -35,6 +36,7 @@ export const DrinkSchema = z.object({
 
 export const CreateDrinkSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
 });
 
 export const UpdateDrinkSchema = CreateDrinkSchema.partial();

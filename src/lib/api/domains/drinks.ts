@@ -36,6 +36,7 @@ export const drinksApi = {
   create: async (data: CreateDrinkRequest, file?: File): Promise<{ drinkId: number }> => {
     const formData = new FormData();
     formData.append("name", data.name);
+    if (data.description) formData.append("description", data.description);
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<{ drinkId: number }>>("/api/v1/drink/store", formData, {
@@ -47,6 +48,7 @@ export const drinksApi = {
   update: async (id: number, data: Partial<CreateDrinkRequest>, file?: File): Promise<Drink> => {
     const formData = new FormData();
     if (data.name) formData.append("name", data.name);
+    if (data.description !== undefined) formData.append("description", data.description);
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Drink>>(`/api/v1/drink/edit/${id}`, formData, {

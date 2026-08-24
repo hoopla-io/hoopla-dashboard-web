@@ -9,6 +9,7 @@ import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -63,7 +64,7 @@ function DrinksContent() {
   }, [searchParams, navigate]);
 
   const [editDrink, setEditDrink] = useState<Drink | null>(null);
-  const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "" });
+  const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "", description: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -90,7 +91,7 @@ function DrinksContent() {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
       toast.success("Drink created");
       setIsCreateOpen(false);
-      setFormData({ name: "" });
+      setFormData({ name: "", description: "" });
       setSelectedFile(null);
     },
     onError: () => toast.error("Failed to create drink"),
@@ -233,7 +234,7 @@ function DrinksContent() {
                         size="icon-sm"
                         onClick={() => {
                           setEditDrink(drink);
-                          setFormData({ name: drink.name });
+                          setFormData({ name: drink.name, description: drink.description ?? "" });
                           setSelectedFile(null);
                         }}
                       >
@@ -288,9 +289,18 @@ function DrinksContent() {
                 <Label>Name</Label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData({ name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Drink name"
                   required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="create-description">Description</Label>
+                <Textarea
+                  id="create-description"
+                  value={formData.description ?? ""}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Default description shown to customers"
                 />
               </div>
               <div className="space-y-1.5">
@@ -369,9 +379,21 @@ function DrinksContent() {
                 <Label>Name</Label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData({ name: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Drink name"
                 />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={formData.description ?? ""}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Default description shown to customers"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Leave blank to remove the default description.
+                </p>
               </div>
 
               <div className="space-y-1.5">
