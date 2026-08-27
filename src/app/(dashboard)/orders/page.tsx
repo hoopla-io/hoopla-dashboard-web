@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQueryState, parseAsInteger, parseAsString, parseAsBoolean } from "nuqs";
 import { toast } from "sonner";
-import { QrCode, Star } from "lucide-react";
+import { ExternalLink, ReceiptText, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,8 +70,6 @@ const formatDate = (dateStr?: string) => {
 	if (!dateStr) return "—";
 	return new Date(dateStr).toLocaleString();
 };
-
-const isFiscalLinkEmpty = (fiscalLink?: string) => !fiscalLink?.trim();
 
 function OrdersContent() {
   const queryClient = useQueryClient();
@@ -252,12 +250,12 @@ function OrdersContent() {
               <SortableTableHead column="updated_at" sort={sort} order={order} onSort={onSort}>
                 Updated
               </SortableTableHead>
-              <TableHead>Fiscal</TableHead>
               <TableHead>Feedback</TableHead>
               <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
                 Status
               </SortableTableHead>
               <TableHead className="text-right">Action</TableHead>
+              <TableHead className="text-center">Fiscal</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -341,22 +339,6 @@ function OrdersContent() {
                     {formatDate(order.last_update)}
                   </TableCell>
                   <TableCell>
-                    {order.fiscal_link ? (
-                      <Button asChild variant="outline" size="icon-sm">
-                        <a
-                          href={order.fiscal_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="Fiscal receipt"
-                        >
-                          <QrCode className="size-4" />
-                        </a>
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
                     {order.feedback ? (
                       <div className="flex flex-col gap-0.5">
                         <span className="inline-flex items-center gap-1 text-xs text-foreground">
@@ -383,7 +365,7 @@ function OrdersContent() {
                     />
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="grid grid-cols-[140px_32px] items-center justify-end gap-2">
                       <Select
                         value={order.status}
                         onValueChange={(value) => handleStatusChange(order.id, value)}
@@ -399,17 +381,35 @@ function OrdersContent() {
                           ))}
                         </SelectContent>
                       </Select>
-                      {order.status === "completed" && isFiscalLinkEmpty(order.fiscal_link) && (
+                      {!order.fiscal_link?.trim() && (
                         <Button
                           variant="outline"
-                          size="sm"
+                          size="icon-sm"
                           onClick={() => fiscalizeMutation.mutate(order.id)}
                           disabled={fiscalizeMutation.isPending}
+                          title="Fiscalize order"
+                          aria-label="Fiscalize order"
                         >
-                          Fiscalize
+                          <ReceiptText className="size-4" />
                         </Button>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {order.fiscal_link?.trim() ? (
+                      <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
+                        <a
+                          href={order.fiscal_link.trim()}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Open fiscal receipt"
+                        >
+                          <ExternalLink className="size-4" />
+                        </a>
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

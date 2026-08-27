@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ExternalLink, ReceiptText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -142,16 +143,17 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
+                  <TableHead className="text-center">Fiscal</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
+                    <TableCell colSpan={8} className="text-center py-8">Loading...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="p-0">
+                    <TableCell colSpan={8} className="p-0">
                       <EmptyState
                         title="No orders found"
                         description={
@@ -195,7 +197,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="grid grid-cols-[120px_32px] items-center gap-2">
                           <Select
                             value={order.status}
                             onValueChange={(value) => handleStatusChange(order.id, value)}
@@ -211,17 +213,35 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                               ))}
                             </SelectContent>
                           </Select>
-                          {order.status === "completed" && !order.fiscal_link?.trim() && (
+                          {!order.fiscal_link?.trim() && (
                             <Button
                               variant="outline"
-                              size="sm"
+                              size="icon-sm"
                               onClick={() => fiscalizeMutation.mutate(order.id)}
                               disabled={fiscalizeMutation.isPending}
+                              title="Fiscalize order"
+                              aria-label="Fiscalize order"
                             >
-                              Fiscalize
+                              <ReceiptText className="size-4" />
                             </Button>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {order.fiscal_link?.trim() ? (
+                          <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
+                            <a
+                              href={order.fiscal_link.trim()}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="Open fiscal receipt"
+                            >
+                              <ExternalLink className="size-4" />
+                            </a>
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))

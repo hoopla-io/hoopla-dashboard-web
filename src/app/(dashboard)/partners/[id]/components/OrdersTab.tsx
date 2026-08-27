@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { ExternalLink, ReceiptText, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,7 +104,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                     Date
                   </SortableTableHead>
                   <TableHead>Feedback</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-10 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -179,14 +179,27 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {order.status === "completed" && !order.fiscal_link?.trim() && (
+                        {order.fiscal_link?.trim() ? (
+                          <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
+                            <a
+                              href={order.fiscal_link.trim()}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="Open fiscal receipt"
+                            >
+                              <ExternalLink className="size-4" />
+                            </a>
+                          </Button>
+                        ) : (
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="icon-sm"
                             onClick={() => fiscalizeMutation.mutate(order.id)}
                             disabled={fiscalizeMutation.isPending}
+                            title="Fiscalize order"
+                            aria-label="Fiscalize order"
                           >
-                            Fiscalize
+                            <ReceiptText className="size-4" />
                           </Button>
                         )}
                       </TableCell>
