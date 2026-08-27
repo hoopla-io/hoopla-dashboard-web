@@ -399,7 +399,7 @@ function OrdersContent() {
                           ))}
                         </SelectContent>
                       </Select>
-                      {isFiscalLinkEmpty(order.fiscal_link) && (
+                      {order.status === "completed" && isFiscalLinkEmpty(order.fiscal_link) && (
                         <Button
                           variant="outline"
                           size="sm"

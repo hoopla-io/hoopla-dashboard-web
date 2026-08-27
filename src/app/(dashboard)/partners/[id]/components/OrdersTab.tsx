@@ -179,7 +179,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {!order.fiscal_link?.trim() && (
+                        {order.status === "completed" && !order.fiscal_link?.trim() && (
                           <Button
                             variant="outline"
                             size="sm"

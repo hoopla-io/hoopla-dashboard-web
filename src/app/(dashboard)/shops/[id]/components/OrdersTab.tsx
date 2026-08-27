@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { formatSomUZS } from "@/lib/money";
@@ -83,6 +84,15 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   const handleStatusChange = (orderId: number, newStatus: string) => {
     statusMutation.mutate({ id: orderId, status: newStatus });
   };
+
+  const fiscalizeMutation = useMutation({
+    mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-orders", shopId] });
+      toast.success("Fiscalization requested");
+    },
+    onError: () => toast.error("Failed to fiscalize order"),
+  });
 
   const formatPrice = (price?: number) => formatSomUZS(price);
 
@@ -185,21 +195,33 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={order.status}
-                          onValueChange={(value) => handleStatusChange(order.id, value)}
-                        >
-                          <SelectTrigger className="w-[120px] h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {statusOptions.map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={order.status}
+                            onValueChange={(value) => handleStatusChange(order.id, value)}
+                          >
+                            <SelectTrigger className="w-[120px] h-8">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statusOptions.map((status) => (
+                                <SelectItem key={status} value={status}>
+                                  {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {order.status === "completed" && !order.fiscal_link?.trim() && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => fiscalizeMutation.mutate(order.id)}
+                              disabled={fiscalizeMutation.isPending}
+                            >
+                              Fiscalize
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

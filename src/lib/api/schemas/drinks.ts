@@ -23,6 +23,7 @@ export type UpdateCategoryRequest = { name: string };
 // Multi-select link: link one or more partner drinks to a category at once.
 export type LinkDrinkRequest = { category_id: number; partner_drink_ids: number[] };
 export type ReorderCategoriesRequest = { partner_id: number; category_ids: number[] };
+export type ReorderPartnerDrinksRequest = { partner_id: number; partner_drink_ids: number[] };
 
 export const DrinkSchema = z.object({
   id: z.number(),
@@ -55,6 +56,7 @@ export const PartnerDrinkSchema = z.object({
   product_price: z.number().optional(),
   vendor_product_price: z.number().optional(),
   vendor_product_name: z.string().optional(),
+  priority: z.number(),
   is_active: z.boolean().optional(),
   category_ids: z.array(z.number()).nullable().optional(),
   imageUrl: z.string().optional(),

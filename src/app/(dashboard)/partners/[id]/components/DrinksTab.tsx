@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { ChevronDown, ChevronUp, GripVertical, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +39,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
   const [drinkFile, setDrinkFile] = useState<File | undefined>(undefined);
   const [defaultDescription, setDefaultDescription] = useState<string | undefined>(undefined);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [draggedDrinkId, setDraggedDrinkId] = useState<number | null>(null);
 
   const { data: partnerDrinks, isLoading: isLoadingPartnerDrinks } = useQuery({
     queryKey: ["partner_drinks", partnerId],
@@ -91,6 +92,44 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     pd.vendor_product_name?.toLowerCase().includes(drinksFilter.toLowerCase()) ||
     pd.name?.toLowerCase().includes(drinksFilter.toLowerCase())
   );
+  const isReorderDisabled = Boolean(drinksFilter.trim());
+
+  const reorderDrinksMutation = useMutation({
+    mutationFn: (orderedDrinks: PartnerDrink[]) =>
+      drinksApi.reorderPartnerDrinks({
+        partner_id: partnerId,
+        partner_drink_ids: orderedDrinks.map((drink) => drink.id),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
+    },
+  });
+
+  const moveDrink = (fromIndex: number, toIndex: number) => {
+    const current = partnerDrinks ?? [];
+    if (
+      isReorderDisabled ||
+      reorderDrinksMutation.isPending ||
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= current.length ||
+      toIndex >= current.length
+    ) return;
+
+    const reordered = [...current];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    queryClient.setQueryData<PartnerDrink[]>(["partner_drinks", partnerId], reordered);
+
+    reorderDrinksMutation.mutate(reordered, {
+      onError: () => {
+        queryClient.setQueryData<PartnerDrink[]>(["partner_drinks", partnerId], current);
+		queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
+        toast.error("Failed to save drink order");
+      },
+    });
+  };
 
   const saveDefaultDescription = async () => {
     if (!catalogDrink || defaultDescription === undefined) return;
@@ -202,6 +241,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
           <Table>
             <TableHeader>
               <TableRow>
+				<TableHead className="w-10"><span className="sr-only">Reorder</span></TableHead>
                 <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Vendor Name</TableHead>
@@ -209,17 +249,51 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                 <TableHead>Price</TableHead>
                 <TableHead>Vendor Price</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="w-[100px]"></TableHead>
+				<TableHead className="w-[132px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingPartnerDrinks ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-4">Loading drinks...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-4">Loading drinks...</TableCell></TableRow>
               ) : filteredDrinks.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center py-4 text-muted-foreground">No drinks found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center py-4 text-muted-foreground">No drinks found</TableCell></TableRow>
               ) : (
-                filteredDrinks.map(pd => (
-                  <TableRow key={pd.id}>
+                filteredDrinks.map(pd => {
+                  const drinkIndex = (partnerDrinks ?? []).findIndex((drink) => drink.id === pd.id);
+                  return (
+                  <TableRow
+                    key={pd.id}
+                    onDragOver={(event) => {
+                      if (!isReorderDisabled && !reorderDrinksMutation.isPending) event.preventDefault();
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      const fromIndex = (partnerDrinks ?? []).findIndex((drink) => drink.id === draggedDrinkId);
+                      moveDrink(fromIndex, drinkIndex);
+                      setDraggedDrinkId(null);
+                    }}
+                    className={draggedDrinkId === pd.id ? "opacity-50" : undefined}
+                  >
+					<TableCell className="px-2">
+						<div className="flex items-center gap-0.5">
+							<button
+								type="button"
+								draggable={!isReorderDisabled && !reorderDrinksMutation.isPending}
+								disabled={isReorderDisabled || reorderDrinksMutation.isPending}
+								onDragStart={() => setDraggedDrinkId(pd.id)}
+								onDragEnd={() => setDraggedDrinkId(null)}
+								className="cursor-grab rounded p-1 text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 active:cursor-grabbing"
+								aria-label={isReorderDisabled ? "Clear the filter to reorder drinks" : `Drag ${pd.vendor_product_name || pd.name || "drink"} to reorder`}
+								title={isReorderDisabled ? "Clear the filter to reorder drinks" : "Drag to reorder"}
+							>
+								<GripVertical className="h-4 w-4" />
+							</button>
+							<div className="flex flex-col">
+								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex - 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === 0} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "drink"} up`}><ChevronUp className="h-3 w-3" /></button>
+								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex + 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === (partnerDrinks?.length ?? 0) - 1} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "drink"} down`}><ChevronDown className="h-3 w-3" /></button>
+							</div>
+						</div>
+					</TableCell>
                     <TableCell>
                       {pd.image_url || pd.imageUrl ? (
                         <button
@@ -299,8 +373,9 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))
+				  </TableRow>
+				  );
+				})
               )}
             </TableBody>
           </Table>

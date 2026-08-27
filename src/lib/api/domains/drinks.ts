@@ -1,7 +1,8 @@
 import { httpClient } from "@/lib/api/http-client";
 import type {
   Drink, CreateDrinkRequest,
-  PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
+	PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
+	ReorderPartnerDrinksRequest,
   PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest,
   ModifierGroup, UpdateModifierGroupRequest,
   DrinkCategory, CategoryWithDrinks, CreateCategoryRequest, UpdateCategoryRequest, LinkDrinkRequest, ReorderCategoriesRequest,
@@ -65,6 +66,10 @@ export const drinksApi = {
     const response = await httpClient.get<ApiResponse<PartnerDrink[]>>(`/api/v1/partner/drink/list/${partnerId}`);
     return Array.isArray(response.data.data) ? response.data.data : [];
   },
+
+  reorderPartnerDrinks: async (data: ReorderPartnerDrinksRequest): Promise<void> => {
+	await httpClient.post("/api/v1/partner/drink/reorder", data);
+	},
 
   // Note: the backend's store response is a narrow { id, message } DTO, not a
   // full PartnerDrink — fetch via getPartnerDrinkById if the complete record is needed after create.
