@@ -33,6 +33,7 @@ import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ordersApi } from "@/lib/api/domains/orders";
+import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
 interface OrdersTabProps {
@@ -92,7 +93,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
       queryClient.invalidateQueries({ queryKey: ["shop-orders", shopId] });
       toast.success("Fiscalization requested");
     },
-    onError: () => toast.error("Failed to fiscalize order"),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to fiscalize order")),
   });
 
   const formatPrice = (price?: number) => formatSomUZS(price);

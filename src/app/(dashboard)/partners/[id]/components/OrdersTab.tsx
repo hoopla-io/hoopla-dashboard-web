@@ -21,6 +21,7 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
+import { getApiErrorMessage } from "@/lib/api/error";
 import { formatSomUZS } from "@/lib/money";
 import type { Order } from "@/lib/api/schemas/orders";
 
@@ -59,7 +60,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
       queryClient.invalidateQueries({ queryKey: ["partner_orders", partnerId] });
       toast.success("Fiscalization requested");
     },
-    onError: () => toast.error("Failed to fiscalize order"),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to fiscalize order")),
   });
 
   return (

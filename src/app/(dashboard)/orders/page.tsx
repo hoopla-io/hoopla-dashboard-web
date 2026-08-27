@@ -41,6 +41,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
+import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 
 const statusTone: Record<string, StatusTone> = {
@@ -135,7 +136,7 @@ function OrdersContent() {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast.success("Fiscalization requested");
     },
-    onError: () => toast.error("Failed to fiscalize order"),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to fiscalize order")),
   });
 
   const clearFilters = () => {
