@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,6 +29,7 @@ interface OrdersTabProps {
 }
 
 export function OrdersTab({ partnerId }: OrdersTabProps) {
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [ordersFilter, setOrdersFilter] = useState("");
@@ -49,6 +52,15 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
 
   const orders = ordersData?.data || [];
   const totalPages = ordersData?.meta?.totalPages || 1;
+
+  const fiscalizeMutation = useMutation({
+    mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_orders", partnerId] });
+      toast.success("Fiscalization requested");
+    },
+    onError: () => toast.error("Failed to fiscalize order"),
+  });
 
   return (
     <div className="space-y-4">
@@ -92,16 +104,17 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                     Date
                   </SortableTableHead>
                   <TableHead>Feedback</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingOrders ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-4">Loading orders...</TableCell>
+                    <TableCell colSpan={9} className="text-center py-4">Loading orders...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="p-0">
+                    <TableCell colSpan={9} className="p-0">
                       <EmptyState
                         title="No orders found"
                         description={
@@ -163,6 +176,18 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                           </div>
                         ) : (
                           <span className="text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {!order.fiscal_link?.trim() && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fiscalizeMutation.mutate(order.id)}
+                            disabled={fiscalizeMutation.isPending}
+                          >
+                            Fiscalize
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>

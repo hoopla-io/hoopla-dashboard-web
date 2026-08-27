@@ -67,9 +67,11 @@ import { formatSomUZS } from "@/lib/money";
 const formatPrice = (price?: number) => formatSomUZS(price);
 
 const formatDate = (dateStr?: string) => {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleString();
+	if (!dateStr) return "—";
+	return new Date(dateStr).toLocaleString();
 };
+
+const isFiscalLinkEmpty = (fiscalLink?: string) => !fiscalLink?.trim();
 
 function OrdersContent() {
   const queryClient = useQueryClient();
@@ -351,14 +353,7 @@ function OrdersContent() {
                         </a>
                       </Button>
                     ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fiscalizeMutation.mutate(order.id)}
-                        disabled={fiscalizeMutation.isPending}
-                      >
-                        Fiscalize
-                      </Button>
+                      <span className="text-xs text-muted-foreground">—</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -388,21 +383,33 @@ function OrdersContent() {
                     />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Select
-                      value={order.status}
-                      onValueChange={(value) => handleStatusChange(order.id, value)}
-                    >
-                      <SelectTrigger size="sm" className="h-8 w-[140px] text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusOptions.map((status) => (
-                          <SelectItem key={status} value={status} className="text-xs">
-                            {formatStatus(status)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex justify-end gap-2">
+                      <Select
+                        value={order.status}
+                        onValueChange={(value) => handleStatusChange(order.id, value)}
+                      >
+                        <SelectTrigger size="sm" className="h-8 w-[140px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusOptions.map((status) => (
+                            <SelectItem key={status} value={status} className="text-xs">
+                              {formatStatus(status)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {isFiscalLinkEmpty(order.fiscal_link) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fiscalizeMutation.mutate(order.id)}
+                          disabled={fiscalizeMutation.isPending}
+                        >
+                          Fiscalize
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
