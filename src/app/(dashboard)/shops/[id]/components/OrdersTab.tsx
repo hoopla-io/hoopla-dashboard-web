@@ -197,7 +197,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="grid grid-cols-[120px_32px] items-center gap-2">
+                        <div className="flex items-center">
                           <Select
                             value={order.status}
                             onValueChange={(value) => handleStatusChange(order.id, value)}
@@ -213,18 +213,6 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                               ))}
                             </SelectContent>
                           </Select>
-                          {!order.fiscal_link?.trim() && (
-                            <Button
-                              variant="outline"
-                              size="icon-sm"
-                              onClick={() => fiscalizeMutation.mutate(order.id)}
-                              disabled={fiscalizeMutation.isPending}
-                              title="Fiscalize order"
-                              aria-label="Fiscalize order"
-                            >
-                              <ReceiptText className="size-4" />
-                            </Button>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
@@ -240,7 +228,16 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                             </a>
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <Button
+                            variant="outline"
+                            size="icon-sm"
+                            onClick={() => fiscalizeMutation.mutate(order.id)}
+                            disabled={fiscalizeMutation.isPending}
+                            title="Fiscalize order"
+                            aria-label="Fiscalize order"
+                          >
+                            <ReceiptText className="size-4" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>

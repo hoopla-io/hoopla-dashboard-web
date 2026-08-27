@@ -104,7 +104,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                     Date
                   </SortableTableHead>
                   <TableHead>Feedback</TableHead>
-                  <TableHead className="w-10 text-right">Actions</TableHead>
+                  <TableHead className="w-10 text-right">Fiscal</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
