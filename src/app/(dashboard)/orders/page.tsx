@@ -384,7 +384,7 @@ function OrdersContent() {
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    {order.fiscal_link?.trim() ? (
+                    {order.status === "completed" && (order.fiscal_link?.trim() ? (
                       <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
                         <a
                           href={order.fiscal_link.trim()}
@@ -406,7 +406,7 @@ function OrdersContent() {
                       >
                         <ReceiptText className="size-4" />
                       </Button>
-                    )}
+                    ))}
                   </TableCell>
                 </TableRow>
               ))

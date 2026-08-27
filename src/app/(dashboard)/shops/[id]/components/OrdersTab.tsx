@@ -216,7 +216,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        {order.fiscal_link?.trim() ? (
+                        {order.status === "completed" && (order.fiscal_link?.trim() ? (
                           <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
                             <a
                               href={order.fiscal_link.trim()}
@@ -238,7 +238,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                           >
                             <ReceiptText className="size-4" />
                           </Button>
-                        )}
+                        ))}
                       </TableCell>
                     </TableRow>
                   ))
