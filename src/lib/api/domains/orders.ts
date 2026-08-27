@@ -39,4 +39,8 @@ export const ordersApi = {
   changeStatus: async (data: ChangeOrderStatusRequest): Promise<void> => {
     await httpClient.put(`/api/v1/orders/edit/${data.id}`, { status: data.status });
   },
+
+  fiscalize: async (orderId: number): Promise<void> => {
+    await httpClient.post(`/api/v1/orders/${orderId}/fiscalize`);
+  },
 };

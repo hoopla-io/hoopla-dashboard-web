@@ -129,6 +129,15 @@ function OrdersContent() {
     statusMutation.mutate({ id: orderId, status: newStatus });
   };
 
+  const fiscalizeMutation = useMutation({
+    mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toast.success("Fiscalization requested");
+    },
+    onError: () => toast.error("Failed to fiscalize order"),
+  });
+
   const clearFilters = () => {
     setPhoneFilter(null);
     setDrinkFilter(null);
@@ -342,7 +351,14 @@ function OrdersContent() {
                         </a>
                       </Button>
                     ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fiscalizeMutation.mutate(order.id)}
+                        disabled={fiscalizeMutation.isPending}
+                      >
+                        Fiscalize
+                      </Button>
                     )}
                   </TableCell>
                   <TableCell>
