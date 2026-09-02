@@ -58,6 +58,8 @@ export const PartnerDrinkSchema = z.object({
   vendor_product_name: z.string().optional(),
   priority: z.number(),
   is_active: z.boolean().optional(),
+  available_in_hoopla: z.boolean().optional(),
+  available_in_onecafe: z.boolean().optional(),
   category_ids: z.array(z.number()).nullable().optional(),
   imageUrl: z.string().optional(),
   image_url: z.string().nullable().optional(),

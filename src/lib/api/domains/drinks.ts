@@ -117,6 +117,13 @@ export const drinksApi = {
     await httpClient.put(`/api/v1/partner/drink/toggle/${id}`, { is_active: isActive });
   },
 
+  setAvailability: async (
+    id: number,
+    data: { available_in_hoopla?: boolean; available_in_onecafe?: boolean }
+  ): Promise<void> => {
+    await httpClient.put(`/api/v1/partner/drink/availability/${id}`, data);
+  },
+
   getPartnerDrinkById: async (id: number): Promise<PartnerDrink> => {
     const response = await httpClient.get<ApiResponse<PartnerDrink>>(`/api/v1/partner/drink/show/${id}`);
     return response.data.data ?? response.data;

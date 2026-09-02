@@ -126,7 +126,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
       onError: () => {
         queryClient.setQueryData<PartnerDrink[]>(["partner_drinks", partnerId], current);
 		queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
-        toast.error("Failed to save drink order");
+        toast.error("Failed to save product order");
       },
     });
   };
@@ -147,10 +147,10 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Drink assigned successfully");
+      toast.success("Product assigned successfully");
       setIsDrinkDialogOpen(false);
     },
-    onError: () => toast.error("Failed to assign drink"),
+    onError: () => toast.error("Failed to assign product"),
   });
 
   const updateDrinkMutation = useMutation({
@@ -161,19 +161,19 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Drink updated successfully");
+      toast.success("Product updated successfully");
       setIsDrinkDialogOpen(false);
     },
-    onError: () => toast.error("Failed to update drink"),
+    onError: () => toast.error("Failed to update product"),
   });
 
   const deleteDrinkMutation = useMutation({
     mutationFn: drinksApi.deletePartnerDrink,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
-      toast.success("Drink removed successfully");
+      toast.success("Product removed successfully");
     },
-    onError: () => toast.error("Failed to remove drink"),
+    onError: () => toast.error("Failed to remove product"),
   });
 
   const toggleActiveMutation = useMutation({
@@ -181,9 +181,39 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
       drinksApi.toggleActive(id, isActive),
     onSuccess: (_data, { isActive }) => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
-      toast.success(isActive ? "Drink shown in app" : "Drink hidden from app");
+      toast.success(isActive ? "Product shown in app" : "Product hidden from app");
     },
-    onError: () => toast.error("Failed to update drink status"),
+    onError: () => toast.error("Failed to update product status"),
+  });
+
+  const availabilityMutation = useMutation({
+    mutationFn: ({ id, field, available }: {
+      id: number;
+      field: "available_in_hoopla" | "available_in_onecafe";
+      available: boolean;
+    }) => drinksApi.setAvailability(id, { [field]: available }),
+    onMutate: async ({ id, field, available }) => {
+      await queryClient.cancelQueries({ queryKey: ["partner_drinks", partnerId] });
+      const previous = queryClient.getQueryData<PartnerDrink[]>(["partner_drinks", partnerId]);
+      queryClient.setQueryData<PartnerDrink[]>(
+        ["partner_drinks", partnerId],
+        (current) => current?.map((product) => (
+          product.id === id ? { ...product, [field]: available } : product
+        ))
+      );
+      return { previous };
+    },
+    onSuccess: (_data, { field, available }) => {
+      const channel = field === "available_in_hoopla" ? "Hoopla" : "OneCafe";
+      toast.success(`${channel} availability ${available ? "enabled" : "disabled"}`);
+    },
+    onError: (_error, _variables, context) => {
+      queryClient.setQueryData(["partner_drinks", partnerId], context?.previous);
+      toast.error("Failed to update product availability");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
+    },
   });
 
   const handleSaveDrink = () => {
@@ -191,7 +221,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
       updateDrinkMutation.mutate({ id: drinkEditId, data: drinkFormData, file: drinkFile });
     } else {
       if (!drinkFormData.drink_id) {
-        toast.error("Please select a drink");
+        toast.error("Please select a product");
         return;
       }
       if (!drinkFile) {
@@ -205,8 +235,8 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
   };
 
   const handleNavigateToModifiers = (pd: PartnerDrink) => {
-    const drinkName = encodeURIComponent(pd.vendor_product_name || pd.name || pd.drink?.name || "Drink");
-    navigate(`/partners/${partnerId}/drinks/${pd.id}/modifiers?drinkName=${drinkName}`);
+    const drinkName = encodeURIComponent(pd.vendor_product_name || pd.name || pd.drink?.name || "Product");
+    navigate(`/partners/${partnerId}/products/${pd.id}/modifiers?productName=${drinkName}`);
   };
 
   return (
@@ -215,7 +245,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
         <div className="max-w-sm w-full relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Filter drinks..."
+            placeholder="Filter products..."
             value={drinksFilter}
             onChange={(e) => setDrinksFilter(e.target.value)}
             className="pl-10"
@@ -229,13 +259,13 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
           setIsDrinkDialogOpen(true);
         }}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Drink
+          Add Product
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Drinks</CardTitle>
+          <CardTitle>Products</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -249,14 +279,15 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                 <TableHead>Price</TableHead>
                 <TableHead>Vendor Price</TableHead>
                 <TableHead>Status</TableHead>
+				<TableHead>Availability</TableHead>
 				<TableHead className="w-[132px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingPartnerDrinks ? (
-                <TableRow><TableCell colSpan={9} className="text-center py-4">Loading drinks...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-4">Loading products...</TableCell></TableRow>
               ) : filteredDrinks.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center py-4 text-muted-foreground">No drinks found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-4 text-muted-foreground">No products found</TableCell></TableRow>
               ) : (
                 filteredDrinks.map(pd => {
                   const drinkIndex = (partnerDrinks ?? []).findIndex((drink) => drink.id === pd.id);
@@ -283,14 +314,14 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
 								onDragStart={() => setDraggedDrinkId(pd.id)}
 								onDragEnd={() => setDraggedDrinkId(null)}
 								className="cursor-grab rounded p-1 text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 active:cursor-grabbing"
-								aria-label={isReorderDisabled ? "Clear the filter to reorder drinks" : `Drag ${pd.vendor_product_name || pd.name || "drink"} to reorder`}
-								title={isReorderDisabled ? "Clear the filter to reorder drinks" : "Drag to reorder"}
+								aria-label={isReorderDisabled ? "Clear the filter to reorder products" : `Drag ${pd.vendor_product_name || pd.name || "product"} to reorder`}
+								title={isReorderDisabled ? "Clear the filter to reorder products" : "Drag to reorder"}
 							>
 								<GripVertical className="h-4 w-4" />
 							</button>
 							<div className="flex flex-col">
-								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex - 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === 0} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "drink"} up`}><ChevronUp className="h-3 w-3" /></button>
-								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex + 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === (partnerDrinks?.length ?? 0) - 1} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "drink"} down`}><ChevronDown className="h-3 w-3" /></button>
+								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex - 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === 0} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "product"} up`}><ChevronUp className="h-3 w-3" /></button>
+								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex + 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === (partnerDrinks?.length ?? 0) - 1} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "product"} down`}><ChevronDown className="h-3 w-3" /></button>
 							</div>
 						</div>
 					</TableCell>
@@ -301,7 +332,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                           className="h-10 w-10 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => setPreviewImage(pd.image_url || pd.imageUrl || "")}
                         >
-                          <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Drink"} className="h-10 w-10 rounded-md object-cover" />
+                          <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Product"} className="h-10 w-10 rounded-md object-cover" />
                         </button>
                       ) : pd.drink?.image_url ? (
                         <button
@@ -326,11 +357,41 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                           checked={pd.is_active !== false}
                           onCheckedChange={(checked) => toggleActiveMutation.mutate({ id: pd.id, isActive: checked })}
                           disabled={toggleActiveMutation.isPending}
-                          aria-label={pd.is_active !== false ? "Hide drink from app" : "Show drink in app"}
+                          aria-label={pd.is_active !== false ? "Hide product from app" : "Show product in app"}
                         />
                         <span className="text-xs text-muted-foreground">
                           {pd.is_active !== false ? "Active" : "Hidden"}
                         </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={pd.available_in_hoopla === true}
+                            onCheckedChange={(available) => availabilityMutation.mutate({
+                              id: pd.id,
+                              field: "available_in_hoopla",
+                              available,
+                            })}
+                            disabled={availabilityMutation.isPending}
+                            aria-label={`${pd.available_in_hoopla ? "Disable" : "Enable"} product in Hoopla`}
+                          />
+                          <span className="text-xs text-muted-foreground">Hoopla</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={pd.available_in_onecafe === true}
+                            onCheckedChange={(available) => availabilityMutation.mutate({
+                              id: pd.id,
+                              field: "available_in_onecafe",
+                              available,
+                            })}
+                            disabled={availabilityMutation.isPending}
+                            aria-label={`${pd.available_in_onecafe ? "Disable" : "Enable"} product in OneCafe`}
+                          />
+                          <span className="text-xs text-muted-foreground">OneCafe</span>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -387,10 +448,10 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
             <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>Drink image preview</DialogDescription>
+            <DialogDescription>Product image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            <img src={previewImage} alt="Drink preview" className="w-full h-auto rounded" />
+            <img src={previewImage} alt="Product preview" className="w-full h-auto rounded" />
           )}
         </DialogContent>
       </Dialog>
@@ -398,13 +459,13 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
       <Dialog open={isDrinkDialogOpen} onOpenChange={setIsDrinkDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{drinkEditId ? "Edit Drink" : "Add Drink"}</DialogTitle>
-            <DialogDescription>{drinkEditId ? "Update drink details" : "Assign a new drink to this partner"}</DialogDescription>
+            <DialogTitle>{drinkEditId ? "Edit Product" : "Add Product"}</DialogTitle>
+            <DialogDescription>{drinkEditId ? "Update product details" : "Assign a new product to this partner"}</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleSaveDrink(); }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="drink-select">Select Drink</Label>
+                <Label htmlFor="drink-select">Select Product</Label>
                 <Select
                   value={drinkFormData.drink_id ? String(drinkFormData.drink_id) : undefined}
                   onValueChange={(val) => {
@@ -415,7 +476,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a drink" />
+                    <SelectValue placeholder="Select a product" />
                   </SelectTrigger>
                   <SelectContent>
                     {allDrinks.map(d => (
@@ -434,7 +495,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                   disabled={!drinkFormData.drink_id}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Shared by every partner that uses this catalog drink. Leave blank to remove it.
+                  Shared by every partner that uses this catalog product. Leave blank to remove it.
                 </p>
               </div>
               <div className="space-y-2">
