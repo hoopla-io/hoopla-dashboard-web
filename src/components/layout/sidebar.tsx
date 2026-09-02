@@ -6,6 +6,7 @@ import {
   Building2,
   Store,
   Coffee,
+  Languages,
   ShoppingCart,
   Settings,
   ChevronDown,
@@ -13,10 +14,8 @@ import {
   LayoutPanelTop,
   LayoutGrid,
   BookOpen,
-  Wallet,
   TicketPercent,
   Gift,
-  Rocket,
   LogOut,
 } from "lucide-react";
 
@@ -59,11 +58,11 @@ const sections: NavSection[] = [
     items: [
       { name: "Partners", href: "/partners", icon: Building2 },
       { name: "Shops", href: "/shops", icon: Store },
-      { name: "Drinks", href: "/drinks", icon: Coffee },
+      { name: "Products", href: "/products", icon: Coffee },
+      { name: "Categories", href: "/categories", icon: Languages },
       { name: "Orders", href: "/orders", icon: ShoppingCart },
       { name: "Promocodes", href: "/promocodes", icon: TicketPercent },
       { name: "Gift Cards", href: "/gift-cards", icon: Gift },
-      { name: "Settlements", href: "/settlements", icon: Wallet },
       { name: "Users", href: "/users", icon: Users },
     ],
   },
@@ -79,7 +78,6 @@ const sections: NavSection[] = [
   {
     label: "System",
     items: [
-      { name: "App Releases", href: "/app-releases", icon: Rocket },
       { name: "Settings", href: "/settings", icon: Settings },
     ],
   },

@@ -139,7 +139,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                 <TableRow>
                   <TableHead>Order ID</TableHead>
                   <TableHead>User</TableHead>
-                  <TableHead>Drink</TableHead>
+                  <TableHead>Product</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>

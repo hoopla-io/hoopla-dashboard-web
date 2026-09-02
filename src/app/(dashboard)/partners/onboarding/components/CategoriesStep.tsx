@@ -59,9 +59,9 @@ export function CategoriesStep({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Drink categories</h2>
+        <h2 className="text-lg font-semibold text-foreground">Product categories</h2>
         <p className="text-sm text-muted-foreground">
-          e.g. Coffee, Cold Drinks, Desserts — add as many as you'd like, or skip for now.
+          e.g. Coffee, Cold Beverages, Desserts — add as many as you'd like, or skip for now.
         </p>
       </div>
 

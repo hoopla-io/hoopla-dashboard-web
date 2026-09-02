@@ -83,7 +83,7 @@ export default function LoginPage() {
             <span className="text-white/70">Every coffee in the city.</span>
           </h2>
           <p className="text-sm leading-relaxed text-white/60">
-            Manage partners, drinks, shops, and stories — every part of the
+            Manage partners, products, shops, and stories — every part of the
             Hoopla platform, from a single dashboard.
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-6 text-[11px] uppercase tracking-[0.18em] text-white/40">

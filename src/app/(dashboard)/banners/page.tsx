@@ -36,7 +36,7 @@ import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Banner, CreateBannerRequest } from "@/lib/api/schemas/banners";
 
-const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Drink", url: "URL" };
+const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Product", url: "URL" };
 const POSITION_LABELS: Record<string, string> = { main: "Main", partner: "Partner" };
 
 function dateToIso(dateStr: string | null | undefined): string {
@@ -313,7 +313,7 @@ function BannersContent() {
           <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="partner">Partner</SelectItem>
-            <SelectItem value="drink">Drink</SelectItem>
+            <SelectItem value="drink">Product</SelectItem>
             <SelectItem value="url">URL</SelectItem>
           </SelectContent>
         </Select>
@@ -333,8 +333,8 @@ function BannersContent() {
           <SearchableSelect
             value={formData.link_value || ""}
             onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-            placeholder="Select drink..."
-            searchPlaceholder="Search drinks..."
+            placeholder="Select product..."
+            searchPlaceholder="Search products..."
             items={drinks.map((d) => ({ value: String(d.id), label: d.name }))}
           />
         ) : (

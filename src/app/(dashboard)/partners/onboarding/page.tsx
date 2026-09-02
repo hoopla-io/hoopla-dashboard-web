@@ -16,7 +16,7 @@ const STEPS: WizardStep[] = [
   { key: "partner", label: "Partner" },
   { key: "shop", label: "Shop" },
   { key: "categories", label: "Categories" },
-  { key: "drinks", label: "Drinks" },
+  { key: "drinks", label: "Products" },
   { key: "review", label: "Review" },
 ];
 
@@ -49,7 +49,7 @@ function OnboardingContent() {
         <div>
           <h1 className="text-xl font-semibold text-foreground">Onboard a new partner</h1>
           <p className="text-sm text-muted-foreground">
-            Create a partner, its first shop, categories, and drinks in one guided flow.
+            Create a partner, its first shop, categories, and products in one guided flow.
           </p>
         </div>
       </div>

@@ -110,7 +110,7 @@ export function AnalyticsTab({ partnerId }: AnalyticsTabProps) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title="Top drinks">
+        <ChartCard title="Top products">
           <TopBarList data={data.top_drinks} />
         </ChartCard>
         <ChartCard title="Top categories">

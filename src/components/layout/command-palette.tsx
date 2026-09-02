@@ -15,10 +15,8 @@ import {
   Bell,
   TicketPercent,
   Gift,
-  Wallet,
   Settings,
   Sparkles,
-  Rocket,
 } from "lucide-react";
 
 import {
@@ -127,11 +125,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 <CommandItem
                   key={`drink-${drink.id}`}
                   value={`drink-${drink.id}-${drink.name}`}
-                  onSelect={() => runCommand(() => navigate(`/drinks?search=${encodeURIComponent(drink.name)}`))}
+                  onSelect={() => runCommand(() => navigate(`/products?search=${encodeURIComponent(drink.name)}`))}
                 >
                   <Coffee className="size-4 text-muted-foreground" />
                   {drink.name}
-                  <span className="ml-auto text-xs text-muted-foreground">Drink</span>
+                  <span className="ml-auto text-xs text-muted-foreground">Product</span>
                 </CommandItem>
               ))}
               {searchResults!.users.map((user) => (
@@ -167,9 +165,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <Plus className="size-4 text-muted-foreground" />
             Add shop
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate("/drinks?action=create"))}>
+          <CommandItem onSelect={() => runCommand(() => navigate("/products?action=create"))}>
             <Plus className="size-4 text-muted-foreground" />
-            Add drink
+            Add product
           </CommandItem>
         </CommandGroup>
 
@@ -188,9 +186,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <Store className="size-4 text-muted-foreground" />
             Shops
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate("/drinks"))}>
+          <CommandItem onSelect={() => runCommand(() => navigate("/products"))}>
             <Coffee className="size-4 text-muted-foreground" />
-            Drinks
+            Products
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/orders"))}>
             <ShoppingCart className="size-4 text-muted-foreground" />
@@ -203,10 +201,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <CommandItem onSelect={() => runCommand(() => navigate("/gift-cards"))}>
             <Gift className="size-4 text-muted-foreground" />
             Gift cards
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate("/settlements"))}>
-            <Wallet className="size-4 text-muted-foreground" />
-            Settlements
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/users"))}>
             <Users className="size-4 text-muted-foreground" />
@@ -227,10 +221,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <CommandItem onSelect={() => runCommand(() => navigate("/notifications"))}>
             <Bell className="size-4 text-muted-foreground" />
             Notifications
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate("/app-releases"))}>
-            <Rocket className="size-4 text-muted-foreground" />
-            App Releases
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/settings"))}>
             <Settings className="size-4 text-muted-foreground" />

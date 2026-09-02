@@ -40,7 +40,7 @@ export function ReviewStep({ partnerId, partnerName, shopName, categoryCount, dr
         </li>
         <li className="flex items-center gap-3 rounded-lg border border-border p-3">
           <Coffee className="size-4 shrink-0 text-muted-foreground" />
-          <span className="text-sm text-foreground">{drinkCount} drinks added</span>
+          <span className="text-sm text-foreground">{drinkCount} products added</span>
         </li>
       </ul>
 

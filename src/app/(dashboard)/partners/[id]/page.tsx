@@ -14,12 +14,9 @@ import { OrdersTab } from "@/app/(dashboard)/partners/[id]/components/OrdersTab"
 import { AttributesTab } from "@/app/(dashboard)/partners/[id]/components/AttributesTab";
 import { FeedbacksTab } from "@/app/(dashboard)/partners/[id]/components/FeedbacksTab";
 import { CategoriesTab } from "@/app/(dashboard)/partners/[id]/components/CategoriesTab";
-import { StaffTab } from "@/app/(dashboard)/partners/[id]/components/StaffTab";
-import { SettlementsTab } from "@/app/(dashboard)/partners/[id]/components/SettlementsTab";
 import { AnalyticsTab } from "@/app/(dashboard)/partners/[id]/components/AnalyticsTab";
-import { LogTab } from "@/app/(dashboard)/partners/[id]/components/LogTab";
 
-const VALID_TABS = ["general", "shops", "drinks", "orders", "analytics", "log", "attributes", "feedbacks", "categories", "staff", "settlements"];
+const VALID_TABS = ["general", "shops", "products", "orders", "analytics", "attributes", "feedbacks", "categories"];
 
 function PartnerDetailContent() {
   const params = useParams();
@@ -27,7 +24,8 @@ function PartnerDetailContent() {
   const [searchParams] = useSearchParams();
   const partnerId = Number(params.id);
 
-  const rawTab = searchParams.get("tab") ?? "general";
+  const requestedTab = searchParams.get("tab") ?? "general";
+  const rawTab = requestedTab === "drinks" ? "products" : requestedTab;
   const activeTab = VALID_TABS.includes(rawTab) ? rawTab : "general";
 
   function handleTabChange(tab: string) {
@@ -72,15 +70,12 @@ function PartnerDetailContent() {
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="shops">Shops</TabsTrigger>
-          <TabsTrigger value="drinks">Drinks</TabsTrigger>
+          <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="log">Log</TabsTrigger>
           <TabsTrigger value="attributes">Attributes</TabsTrigger>
           <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
-          <TabsTrigger value="settlements">Settlements</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -91,7 +86,7 @@ function PartnerDetailContent() {
           <ShopsTab partnerId={partnerId} />
         </TabsContent>
 
-        <TabsContent value="drinks">
+        <TabsContent value="products">
           <DrinksTab partnerId={partnerId} />
         </TabsContent>
 
@@ -101,10 +96,6 @@ function PartnerDetailContent() {
 
         <TabsContent value="analytics">
           <AnalyticsTab partnerId={partnerId} />
-        </TabsContent>
-
-        <TabsContent value="log">
-          <LogTab partnerId={partnerId} />
         </TabsContent>
 
         <TabsContent value="attributes">
@@ -119,13 +110,6 @@ function PartnerDetailContent() {
           <CategoriesTab partnerId={partnerId} />
         </TabsContent>
 
-        <TabsContent value="staff">
-          <StaffTab partnerId={partnerId} />
-        </TabsContent>
-
-        <TabsContent value="settlements">
-          <SettlementsTab partnerId={partnerId} />
-        </TabsContent>
       </Tabs>
     </div>
   );

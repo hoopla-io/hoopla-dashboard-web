@@ -10,10 +10,9 @@ import { GeneralTab } from "./components/GeneralTab";
 import { PicturesTab } from "./components/PicturesTab";
 import { HoursTab } from "./components/HoursTab";
 import { OrdersTab } from "./components/OrdersTab";
-import { StaffTab } from "./components/StaffTab";
 import { ErrorBoundary } from "@/components/error-boundary";
 
-const VALID_TABS = ["general", "pictures", "hours", "orders", "staff"];
+const VALID_TABS = ["general", "pictures", "hours", "orders"];
 
 function ShopDetailContent() {
   const params = useParams();
@@ -88,7 +87,6 @@ function ShopDetailContent() {
           <TabsTrigger value="pictures">Pictures</TabsTrigger>
           <TabsTrigger value="hours">Hours</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -107,9 +105,6 @@ function ShopDetailContent() {
           <OrdersTab shopId={shopId} />
         </TabsContent>
 
-        <TabsContent value="staff">
-          <StaffTab shopId={shopId} />
-        </TabsContent>
       </Tabs>
     </div>
   );

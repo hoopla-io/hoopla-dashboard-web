@@ -117,7 +117,7 @@ export function CategoryDrinksSheet({
       queryClient.invalidateQueries({ queryKey: ["partner_category_detail", category.id] });
     },
     onSuccess: () => {
-      toast.success("Category drinks updated!");
+      toast.success("Category products updated!");
       setOverrides(new Map());
       onOpenChange(false);
     },
@@ -141,7 +141,7 @@ export function CategoryDrinksSheet({
         <SheetHeader className="border-b">
           <SheetTitle>{category.name}</SheetTitle>
           <SheetDescription>
-            {attachedCount} {attachedCount === 1 ? "drink" : "drinks"} attached
+            {attachedCount} {attachedCount === 1 ? "product" : "products"} attached
           </SheetDescription>
         </SheetHeader>
 
@@ -151,7 +151,7 @@ export function CategoryDrinksSheet({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search drinks..."
+              placeholder="Search products..."
               className="pl-8"
             />
           </div>
@@ -166,11 +166,11 @@ export function CategoryDrinksSheet({
             </div>
           ) : partnerDrinks.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No drinks for this partner yet. Add them in the Drinks tab.
+              No products for this partner yet. Add them in the Products tab.
             </p>
           ) : visibleDrinks.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No drinks match &quot;{search}&quot;
+              No products match &quot;{search}&quot;
             </p>
           ) : (
             <div className="space-y-2 py-2">

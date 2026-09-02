@@ -130,7 +130,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Drink Categories</h2>
+          <h2 className="text-xl font-semibold">Product Categories</h2>
           <p className="text-sm text-muted-foreground">
             Manage categories for this partner. Drag rows to set the order shown in the app.
           </p>
@@ -215,7 +215,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                         className="cursor-pointer text-xs"
                         onClick={() => setSheetCategory(category)}
                       >
-                        Drinks
+                        Products
                         {(attachedCountByCategory.get(category.id) ?? 0) > 0
                           ? ` (${attachedCountByCategory.get(category.id)})`
                           : ""}
@@ -253,7 +253,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create Category</DialogTitle>
-            <DialogDescription>Add a new drink category</DialogDescription>
+            <DialogDescription>Add a new product category</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();

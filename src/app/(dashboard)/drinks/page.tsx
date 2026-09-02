@@ -59,7 +59,7 @@ function DrinksContent() {
       queueMicrotask(() => setIsCreateOpen(true));
       const params = new URLSearchParams(searchParams.toString());
       params.delete("action");
-      navigate(`/drinks?${params.toString()}`, { replace: true });
+      navigate(`/products?${params.toString()}`, { replace: true });
     }
   }, [searchParams, navigate]);
 
@@ -89,12 +89,12 @@ function DrinksContent() {
       drinksApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Drink created");
+      toast.success("Product created");
       setIsCreateOpen(false);
       setFormData({ name: "", description: "" });
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to create drink"),
+    onError: () => toast.error("Failed to create product"),
   });
 
   const updateMutation = useMutation({
@@ -109,30 +109,30 @@ function DrinksContent() {
     }) => drinksApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Drink updated");
+      toast.success("Product updated");
       setEditDrink(null);
     },
-    onError: () => toast.error("Failed to update drink"),
+    onError: () => toast.error("Failed to update product"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: drinksApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Drink deleted");
+      toast.success("Product deleted");
     },
-    onError: () => toast.error("Failed to delete drink"),
+    onError: () => toast.error("Failed to delete product"),
   });
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Drinks"
+        title="Products"
         description="Manage the beverage catalog used by every partner shop."
         action={
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="size-4" />
-            Add drink
+            Add product
           </Button>
         }
       />
@@ -141,7 +141,7 @@ function DrinksContent() {
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search drinks"
+            placeholder="Search products"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -177,11 +177,11 @@ function DrinksContent() {
               <TableRow>
                 <TableCell colSpan={4} className="p-0">
                   <EmptyState
-                    title="No drinks found"
+                    title="No products found"
                     description={
                       search
                         ? "Try a different search term."
-                        : "Add your first drink to populate the catalog."
+                        : "Add your first product to populate the catalog."
                     }
                     action={
                       !search ? (
@@ -191,7 +191,7 @@ function DrinksContent() {
                           onClick={() => setIsCreateOpen(true)}
                         >
                           <Plus className="size-4" />
-                          Add drink
+                          Add product
                         </Button>
                       ) : null
                     }
@@ -271,7 +271,7 @@ function DrinksContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create drink</DialogTitle>
+            <DialogTitle>Create product</DialogTitle>
             <DialogDescription>Add a new beverage to the catalog.</DialogDescription>
           </DialogHeader>
           <form
@@ -290,7 +290,7 @@ function DrinksContent() {
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Drink name"
+                  placeholder="Product name"
                   required
                 />
               </div>
@@ -336,12 +336,12 @@ function DrinksContent() {
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
             <DialogTitle>Image preview</DialogTitle>
-            <DialogDescription>Drink image preview</DialogDescription>
+            <DialogDescription>Product image preview</DialogDescription>
           </DialogHeader>
           {previewImage && (
             <img
               src={previewImage}
-              alt="Drink preview"
+              alt="Product preview"
               className="h-auto w-full rounded"
             />
           )}
@@ -359,8 +359,8 @@ function DrinksContent() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit drink</DialogTitle>
-            <DialogDescription>Update drink information.</DialogDescription>
+            <DialogTitle>Edit product</DialogTitle>
+            <DialogDescription>Update product information.</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -380,7 +380,7 @@ function DrinksContent() {
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Drink name"
+                  placeholder="Product name"
                 />
               </div>
               <div className="space-y-1.5">
@@ -464,7 +464,7 @@ export default function DrinksPage() {
     <Suspense
       fallback={
         <div className="p-8 text-center text-sm text-muted-foreground">
-          Loading drinks…
+          Loading products…
         </div>
       }
     >

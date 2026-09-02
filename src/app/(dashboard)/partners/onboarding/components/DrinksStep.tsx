@@ -60,7 +60,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
   const createGlobalDrinkMutation = useMutation({
     mutationFn: ({ data, file }: { data: NewDrinkValues; file?: File }) => drinksApi.create(data, file),
     onSuccess: (result, variables) => {
-      toast.success("Drink added to catalog!");
+      toast.success("Product added to catalog!");
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
       setSelectedDrinkId(String(result.drinkId));
       setPendingDrinkName(variables.data.name);
@@ -68,7 +68,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
       newDrinkForm.reset({ name: "" });
       setNewDrinkFile(undefined);
     },
-    onError: () => toast.error("Failed to create drink"),
+    onError: () => toast.error("Failed to create product"),
   });
 
   const detailsForm = useForm<DrinkDetailsValues>({
@@ -90,7 +90,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
         file
       ),
     onSuccess: (pd, variables) => {
-      toast.success("Drink added to menu!");
+      toast.success("Product added to menu!");
       const catalogDrink = catalog.find((d) => String(d.id) === selectedDrinkId);
       const label = variables.data.vendor_product_name || pendingDrinkName || catalogDrink?.name || `#${pd.id}`;
       onAdd({ id: pd.id, label });
@@ -100,7 +100,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
       setFile(undefined);
       detailsForm.reset({ vendor_product_name: "", product_price: 0, vendor_product_price: 0 });
     },
-    onError: () => toast.error("Failed to add drink"),
+    onError: () => toast.error("Failed to add product"),
   });
 
   const toggleCategory = (id: number) => {
@@ -109,7 +109,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
 
   const handleAssign = detailsForm.handleSubmit((data) => {
     if (!selectedDrinkId) {
-      toast.error("Pick or create a drink first");
+      toast.error("Pick or create a product first");
       return;
     }
     if (!file) {
@@ -122,7 +122,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Drinks</h2>
+        <h2 className="text-lg font-semibold text-foreground">Products</h2>
         <p className="text-sm text-muted-foreground">
           Add menu items for this partner — pick from the global catalog or create a new one. Skip for now if you'd rather finish this later.
         </p>
@@ -142,7 +142,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
       <div className="space-y-4 rounded-lg border border-dashed border-border p-4">
         {!showNewDrinkForm ? (
           <div className="space-y-1.5">
-            <Label>Drink</Label>
+            <Label>Product</Label>
             <div className="flex gap-2">
               <div className="flex-1">
                 <SearchableSelect
@@ -152,7 +152,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
                     setPendingDrinkName(undefined);
                   }}
                   placeholder="Select from catalog…"
-                  searchPlaceholder="Search drinks…"
+                  searchPlaceholder="Search products…"
                   items={catalog.map((d) => ({ value: String(d.id), label: d.name }))}
                 />
               </div>
@@ -165,7 +165,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>New catalog drink</Label>
+              <Label>New catalog product</Label>
               <button
                 type="button"
                 className="text-muted-foreground hover:text-foreground"
@@ -175,7 +175,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
                 <X className="size-4" />
               </button>
             </div>
-            <Input placeholder="Drink name" {...newDrinkForm.register("name")} />
+            <Input placeholder="Product name" {...newDrinkForm.register("name")} />
             {newDrinkForm.formState.errors.name && (
               <p className="text-xs text-destructive">{newDrinkForm.formState.errors.name.message}</p>
             )}
@@ -196,7 +196,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
                 createGlobalDrinkMutation.mutate({ data, file: newDrinkFile });
               })}
             >
-              {createGlobalDrinkMutation.isPending ? "Creating…" : "Create drink"}
+              {createGlobalDrinkMutation.isPending ? "Creating…" : "Create product"}
             </Button>
           </div>
         )}
@@ -264,7 +264,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
                 <Loader2 className="size-4 animate-spin" /> Adding…
               </>
             ) : (
-              "Add drink to menu"
+              "Add product to menu"
             )}
           </Button>
         </form>

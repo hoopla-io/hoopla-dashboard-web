@@ -94,7 +94,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                   </SortableTableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Shop</TableHead>
-                  <TableHead>Drink</TableHead>
+                  <TableHead>Product</TableHead>
                   <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
                     Total
                   </SortableTableHead>

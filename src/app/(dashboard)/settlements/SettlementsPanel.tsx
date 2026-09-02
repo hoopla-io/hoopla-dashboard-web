@@ -283,7 +283,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                     <SortableTableHead column="id" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
                       Order
                     </SortableTableHead>
-                    <TableHead>Drink</TableHead>
+                    <TableHead>Product</TableHead>
                     <TableHead>Shop</TableHead>
                     <SortableTableHead column="price" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
                       Price
@@ -481,7 +481,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Order</TableHead>
-                  <TableHead>Drink</TableHead>
+                  <TableHead>Product</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Payout</TableHead>
                   <TableHead>Date</TableHead>

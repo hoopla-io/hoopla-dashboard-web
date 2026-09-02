@@ -167,7 +167,7 @@ function OrdersContent() {
             }}
           />
           <Input
-            placeholder="Drink"
+            placeholder="Product"
             value={drinkFilter}
             onChange={(e) => {
               setDrinkFilter(e.target.value || null);
@@ -240,7 +240,7 @@ function OrdersContent() {
                 Order
               </SortableTableHead>
               <TableHead>User</TableHead>
-              <TableHead>Drink</TableHead>
+              <TableHead>Product</TableHead>
               <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
                 Price
               </SortableTableHead>

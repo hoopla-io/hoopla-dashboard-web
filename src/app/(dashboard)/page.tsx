@@ -134,9 +134,9 @@ export default function DashboardPage() {
       href: "/banners",
     },
     {
-      label: "Drinks",
+      label: "Products",
       value: getTotal(drinks),
-      href: "/drinks",
+      href: "/products",
     },
     {
       label: "Categories",
@@ -226,7 +226,7 @@ export default function DashboardPage() {
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm text-foreground">
-                            {order.drink?.name ?? "Drink"}
+                            {order.drink?.name ?? "Product"}
                           </p>
                           <p className="truncate text-xs text-muted-foreground">
                             {order.shop?.name ?? "—"}
@@ -262,10 +262,10 @@ export default function DashboardPage() {
               Add a shop
             </Link>
             <Link
-              to="/drinks?action=create"
+              to="/products?action=create"
               className="text-sm text-foreground underline-offset-4 hover:underline"
             >
-              Add a drink
+              Add a product
             </Link>
             <Link
               to="/stories?action=create"

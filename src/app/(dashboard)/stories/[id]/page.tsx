@@ -28,7 +28,7 @@ import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { StoryItem, CreateStoryItemRequest } from "@/lib/api/schemas/stories";
 
-const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Drink", url: "URL" };
+const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Product", url: "URL" };
 
 const defaultItemForm: Omit<CreateStoryItemRequest, "story_id"> = {
   title: "",
@@ -171,7 +171,7 @@ function StoryDetailContent() {
           <SelectContent>
             <SelectItem value="none">None</SelectItem>
             <SelectItem value="partner">Partner</SelectItem>
-            <SelectItem value="drink">Drink</SelectItem>
+            <SelectItem value="drink">Product</SelectItem>
             <SelectItem value="url">URL</SelectItem>
           </SelectContent>
         </Select>
@@ -192,8 +192,8 @@ function StoryDetailContent() {
             <SearchableSelect
               value={formData.link_value || ""}
               onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-              placeholder="Select drink..."
-              searchPlaceholder="Search drinks..."
+              placeholder="Select product..."
+              searchPlaceholder="Search products..."
               items={drinks.map((d) => ({ value: String(d.id), label: d.name }))}
             />
           ) : (

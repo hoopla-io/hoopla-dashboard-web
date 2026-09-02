@@ -126,7 +126,7 @@ function ModifiersContent() {
 
   const partnerId = Number(params.id);
   const partnerDrinkId = Number(params.drinkId);
-  const drinkName = searchParams.get("drinkName") || "Drink";
+  const drinkName = searchParams.get("productName") || searchParams.get("drinkName") || "Product";
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
@@ -212,7 +212,7 @@ function ModifiersContent() {
       return;
     }
     if (modifiers.some((m) => (m.vendor_addon_id ?? "") === addForm.vendor_addon_id)) {
-      toast.error(`Vendor Addon ID "${addForm.vendor_addon_id}" is already used on this drink. Each option needs a unique ID.`);
+      toast.error(`Vendor Addon ID "${addForm.vendor_addon_id}" is already used on this product. Each option needs a unique ID.`);
       return;
     }
     createMutation.mutate({ ...addForm, partner_drink_id: partnerDrinkId });
@@ -225,7 +225,7 @@ function ModifiersContent() {
       return;
     }
     if (modifiers.some((m) => m.id !== editingModifier.id && (m.vendor_addon_id ?? "") === editForm.vendor_addon_id)) {
-      toast.error(`Vendor Addon ID "${editForm.vendor_addon_id}" is already used on this drink. Each option needs a unique ID.`);
+      toast.error(`Vendor Addon ID "${editForm.vendor_addon_id}" is already used on this product. Each option needs a unique ID.`);
       return;
     }
     updateMutation.mutate({ id: editingModifier.id, data: editForm as UpdatePartnerDrinkModifierRequest });
@@ -245,12 +245,12 @@ function ModifiersContent() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(`/partners/${partnerId}?tab=drinks`)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate(`/partners/${partnerId}?tab=products`)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold">Addons for {drinkName}</h1>
-          <p className="text-sm text-muted-foreground">Manage modifiers/addons for this drink</p>
+          <p className="text-sm text-muted-foreground">Manage modifiers/addons for this product</p>
         </div>
       </div>
 
@@ -361,7 +361,7 @@ function ModifiersContent() {
                 id="add_vendor_addon_id"
                 value={addForm.vendor_addon_id}
                 onChange={(e) => setAddForm({ ...addForm, vendor_addon_id: e.target.value })}
-                placeholder={`Unique per drink — e.g. ${nextVendorAddonId}`}
+                placeholder={`Unique per product — e.g. ${nextVendorAddonId}`}
               />
             </div>
             <div className="space-y-2">
