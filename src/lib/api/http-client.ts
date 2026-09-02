@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_BASE_URL = "https://dashboard.hoopla.uz";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "" : "https://dashboard.hoopla.uz");
 
 export const httpClient = axios.create({
   baseURL:  API_BASE_URL,
