@@ -15,6 +15,7 @@ import { shopCategoriesApi } from "@/lib/api/domains/shop-categories";
 import { useAuthStore } from "@/stores/auth-store";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
+import { formatOrderSource } from "@/lib/order-source";
 import { cn } from "@/lib/utils";
 
 type ListResponse = { data?: unknown[]; meta?: { totalItems?: number } | null } | null | undefined;
@@ -231,6 +232,7 @@ export default function DashboardPage() {
                           <p className="truncate text-xs text-muted-foreground">
                             {order.shop?.name ?? "—"}
                             {order.user?.name ? ` · ${order.user.name}` : ""}
+                            {` · ${formatOrderSource(order.source)}`}
                           </p>
                         </div>
                         <StatusBadge label={label} tone={tone} />

@@ -35,6 +35,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ordersApi } from "@/lib/api/domains/orders";
 import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import { formatOrderSource } from "@/lib/order-source";
 
 interface OrdersTabProps {
   shopId: number;
@@ -141,6 +142,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                   <TableHead>User</TableHead>
                   <TableHead>Product</TableHead>
                   <TableHead>Price</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -150,11 +152,11 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">Loading...</TableCell>
+                    <TableCell colSpan={9} className="text-center py-8">Loading...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="p-0">
+                    <TableCell colSpan={9} className="p-0">
                       <EmptyState
                         title="No orders found"
                         description={
@@ -189,6 +191,9 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         )}
                       </TableCell>
                       <TableCell>{formatPrice(order.price)} UZS</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatOrderSource(order.source)}
+                      </TableCell>
                       <TableCell className="text-muted-foreground text-xs">
                         {formatDate(order.time)}
                       </TableCell>

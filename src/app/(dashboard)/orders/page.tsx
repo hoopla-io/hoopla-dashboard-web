@@ -43,6 +43,7 @@ import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
 import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import { formatOrderSource } from "@/lib/order-source";
 
 const statusTone: Record<string, StatusTone> = {
   pending_payment: "pending",
@@ -245,6 +246,9 @@ function OrdersContent() {
                 Price
               </SortableTableHead>
               <TableHead>Shop</TableHead>
+              <SortableTableHead column="source" sort={sort} order={order} onSort={onSort}>
+                Source
+              </SortableTableHead>
               <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
                 Time
               </SortableTableHead>
@@ -262,13 +266,13 @@ function OrdersContent() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={12} className="py-10 text-center text-sm text-muted-foreground">
                   Loading…
                 </TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={11} className="py-10 text-center">
+                <TableCell colSpan={12} className="py-10 text-center">
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Couldn't load orders. Check your connection and try again.
@@ -281,7 +285,7 @@ function OrdersContent() {
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={11} className="p-0">
+                <TableCell colSpan={12} className="p-0">
                   <EmptyState
                     title="No orders found"
                     description={
@@ -332,6 +336,9 @@ function OrdersContent() {
                     ) : (
                       "—"
                     )}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatOrderSource(order.source)}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(order.time)}

@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StaffTab } from "@/app/(dashboard)/partners/[id]/components/StaffTab";
 import { PageHeader } from "@/components/layout/page-header";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { GeneralTab } from "@/app/(dashboard)/partners/[id]/components/GeneralTab";
@@ -16,7 +17,7 @@ import { FeedbacksTab } from "@/app/(dashboard)/partners/[id]/components/Feedbac
 import { CategoriesTab } from "@/app/(dashboard)/partners/[id]/components/CategoriesTab";
 import { AnalyticsTab } from "@/app/(dashboard)/partners/[id]/components/AnalyticsTab";
 
-const VALID_TABS = ["general", "shops", "products", "orders", "analytics", "attributes", "feedbacks", "categories"];
+const VALID_TABS = ["general", "shops", "products", "orders", "analytics", "attributes", "feedbacks", "categories", "staff"];
 
 function PartnerDetailContent() {
   const params = useParams();
@@ -76,6 +77,7 @@ function PartnerDetailContent() {
           <TabsTrigger value="attributes">Attributes</TabsTrigger>
           <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="staff">Staff</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -108,6 +110,9 @@ function PartnerDetailContent() {
 
         <TabsContent value="categories">
           <CategoriesTab partnerId={partnerId} />
+        </TabsContent>
+        <TabsContent value="staff">
+          <StaffTab partnerId={partnerId} />
         </TabsContent>
 
       </Tabs>

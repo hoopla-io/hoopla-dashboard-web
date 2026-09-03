@@ -39,6 +39,7 @@ import { formatSomUZS } from "@/lib/money";
 import { nextSortState } from "@/hooks/use-table-sort";
 import type { Settlement, SettlementPayment, SettlementStatus } from "@/lib/api/schemas/settlements";
 import type { SortOrder } from "@/lib/api/types";
+import { formatOrderSource } from "@/lib/order-source";
 
 function useLocalSort(onChange: () => void) {
   const [sort, setSort] = useState("");
@@ -285,6 +286,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                     </SortableTableHead>
                     <TableHead>Product</TableHead>
                     <TableHead>Shop</TableHead>
+                    <TableHead>Source</TableHead>
                     <SortableTableHead column="price" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
                       Price
                     </SortableTableHead>
@@ -297,17 +299,18 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                 </TableHeader>
                 <TableBody>
                   {!rangeValid ? (
-                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">Pick a valid date range</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">Pick a valid date range</TableCell></TableRow>
                   ) : ordersQuery.isLoading ? (
-                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
                   ) : orders.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">No completed orders in this range</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">No completed orders in this range</TableCell></TableRow>
                   ) : (
                     orders.map((o) => (
                       <TableRow key={o.id}>
                         <TableCell className="font-mono text-xs">#{o.id}</TableCell>
                         <TableCell className="text-sm">{o.drink_name || "—"}</TableCell>
                         <TableCell className="text-sm">{o.shop_name || "—"}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{formatOrderSource(o.source)}</TableCell>
                         <TableCell className="font-mono text-sm tabular-nums">{formatSomUZS(o.price)}</TableCell>
                         <TableCell className="font-mono text-sm tabular-nums">{formatSomUZS(o.payout)}</TableCell>
                         <TableCell className="text-xs text-muted-foreground">{fmtDateTime(o.created_at)}</TableCell>
@@ -483,21 +486,23 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                   <TableHead>Order</TableHead>
                   <TableHead>Product</TableHead>
                   <TableHead>Price</TableHead>
+                  <TableHead>Source</TableHead>
                   <TableHead>Payout</TableHead>
                   <TableHead>Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {viewQuery.isLoading ? (
-                  <TableRow><TableCell colSpan={5} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
                 ) : (viewQuery.data?.orders ?? []).length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="py-6 text-center text-muted-foreground">No orders</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">No orders</TableCell></TableRow>
                 ) : (
                   (viewQuery.data?.orders ?? []).map((o) => (
                     <TableRow key={o.id}>
                       <TableCell className="font-mono text-xs">#{o.id}</TableCell>
                       <TableCell className="text-sm">{o.drink_name || "—"}</TableCell>
                       <TableCell className="font-mono text-sm tabular-nums">{formatSomUZS(o.price)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{formatOrderSource(o.source)}</TableCell>
                       <TableCell className="font-mono text-sm tabular-nums">{formatSomUZS(o.payout)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{fmtDateTime(o.created_at)}</TableCell>
                     </TableRow>

@@ -19,6 +19,7 @@ export interface Settlement {
 export interface SettlementOrder {
   id: number;
   status: string;
+  source?: string;
   price: number; // gross som
   payout: number; // som Hoopla owes the partner
   drink_name?: string;

@@ -24,6 +24,7 @@ import { ordersApi } from "@/lib/api/domains/orders";
 import { getApiErrorMessage } from "@/lib/api/error";
 import { formatSomUZS } from "@/lib/money";
 import type { Order } from "@/lib/api/schemas/orders";
+import { formatOrderSource } from "@/lib/order-source";
 
 interface OrdersTabProps {
   partnerId: number;
@@ -98,6 +99,9 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                   <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
                     Total
                   </SortableTableHead>
+                  <SortableTableHead column="source" sort={sort} order={order} onSort={onSort}>
+                    Source
+                  </SortableTableHead>
                   <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
                     Status
                   </SortableTableHead>
@@ -111,11 +115,11 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
               <TableBody>
                 {isLoadingOrders ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-4">Loading orders...</TableCell>
+                    <TableCell colSpan={10} className="text-center py-4">Loading orders...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="p-0">
+                    <TableCell colSpan={10} className="p-0">
                       <EmptyState
                         title="No orders found"
                         description={
@@ -157,6 +161,9 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                         )}
                       </TableCell>
                       <TableCell>{formatSomUZS(order.price)} сум</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatOrderSource(order.source)}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={
                           order.status === "completed" ? "default" :

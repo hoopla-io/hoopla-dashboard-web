@@ -5,6 +5,7 @@ import { ArrowLeft, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StaffTab } from "./components/StaffTab";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { GeneralTab } from "./components/GeneralTab";
 import { PicturesTab } from "./components/PicturesTab";
@@ -12,7 +13,7 @@ import { HoursTab } from "./components/HoursTab";
 import { OrdersTab } from "./components/OrdersTab";
 import { ErrorBoundary } from "@/components/error-boundary";
 
-const VALID_TABS = ["general", "pictures", "hours", "orders"];
+const VALID_TABS = ["general", "pictures", "hours", "orders", "staff"];
 
 function ShopDetailContent() {
   const params = useParams();
@@ -87,6 +88,7 @@ function ShopDetailContent() {
           <TabsTrigger value="pictures">Pictures</TabsTrigger>
           <TabsTrigger value="hours">Hours</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="staff">Staff</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -103,6 +105,9 @@ function ShopDetailContent() {
 
         <TabsContent value="orders">
           <OrdersTab shopId={shopId} />
+        </TabsContent>
+        <TabsContent value="staff">
+          <StaffTab shopId={shopId} />
         </TabsContent>
 
       </Tabs>

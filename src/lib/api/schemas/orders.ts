@@ -9,6 +9,7 @@ export const OrderFeedbackSchema = z.object({
 export const OrderSchema = z.object({
   id: z.number(),
   status: z.string(),
+  source: z.string().optional(),
   user: z.object({
     id: z.number(),
     name: z.string(),
