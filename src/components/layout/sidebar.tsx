@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
+  Wallet,
   Building2,
   Store,
   Coffee,
@@ -63,6 +64,7 @@ const sections: NavSection[] = [
       { name: "Orders", href: "/orders", icon: ShoppingCart },
       { name: "Promocodes", href: "/promocodes", icon: TicketPercent },
       { name: "Gift Cards", href: "/gift-cards", icon: Gift },
+      { name: "Settlements", href: "/settlements", icon: Wallet },
       { name: "Users", href: "/users", icon: Users },
     ],
   },

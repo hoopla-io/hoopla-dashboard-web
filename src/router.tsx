@@ -20,6 +20,7 @@ import GiftCardsPage from "@/app/(dashboard)/gift-cards/page";
 import NotificationsPage from "@/app/(dashboard)/notifications/page";
 import NotificationDetailPage from "@/app/(dashboard)/notifications/[id]/page";
 import ShopCategoriesPage from "@/app/(dashboard)/shop-categories/page";
+import SettlementsPage from "@/app/(dashboard)/settlements/page";
 import SettingsPage from "@/app/(dashboard)/settings/page";
 import LoginPage from "@/app/login/page";
 
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
       { path: "notifications", element: <NotificationsPage /> },
       { path: "notifications/:id", element: <NotificationDetailPage /> },
       { path: "shop-categories", element: <ShopCategoriesPage /> },
+      { path: "settlements", element: <SettlementsPage /> },
       { path: "settings", element: <SettingsPage /> },
     ],
   },
