@@ -393,6 +393,7 @@ function OrdersContent() {
               <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
                 Status
               </SortableTableHead>
+              <TableHead>Payment</TableHead>
               <TableHead className="text-right">Action</TableHead>
               <TableHead className="text-center">Fiscal</TableHead>
             </TableRow>
@@ -400,13 +401,13 @@ function OrdersContent() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={12} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={13} className="py-10 text-center text-sm text-muted-foreground">
                   Loading…
                 </TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={12} className="py-10 text-center">
+                <TableCell colSpan={13} className="py-10 text-center">
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Couldn't load orders. Check your connection and try again.
@@ -419,7 +420,7 @@ function OrdersContent() {
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="p-0">
+                <TableCell colSpan={13} className="p-0">
                   <EmptyState
                     title="No orders found"
                     description={
@@ -506,6 +507,12 @@ function OrdersContent() {
                     <StatusBadge
                       label={formatStatus(order.status)}
                       tone={statusTone[order.status] ?? "neutral"}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge
+                      label={order.settlement_paid ? "Paid" : "Not paid"}
+                      tone={order.settlement_paid ? "success" : "neutral"}
                     />
                   </TableCell>
                   <TableCell className="text-right">

@@ -24,6 +24,7 @@ export const OrderSchema = z.object({
     id: z.number(),
     name: z.string(),
   }).optional(),
+  settlement_paid: z.boolean().optional(),
   time: z.string().optional(),
   last_update: z.string().optional(),
   fiscal_link: z.string().optional(),
