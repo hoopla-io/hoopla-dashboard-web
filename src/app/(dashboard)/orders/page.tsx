@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Building2, ExternalLink, ReceiptText, Star, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SearchInput } from "@/components/ui/search-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateRangePicker } from "@/components/pickers/date-range-picker";
@@ -46,7 +47,7 @@ import { partnersApi } from "@/lib/api/domains/partners";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
-import { ORDER_SOURCES, formatOrderSource } from "@/lib/order-source";
+import { ORDER_SOURCES, formatOrderSource, orderSourceVariant } from "@/lib/order-source";
 
 const statusTone: Record<string, StatusTone> = {
   pending_payment: "pending",
@@ -442,8 +443,10 @@ function OrdersContent() {
                       "—"
                     )}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {formatOrderSource(order.source)}
+                  <TableCell>
+                    <Badge variant={orderSourceVariant(order.source)}>
+                      {formatOrderSource(order.source)}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(order.time)}

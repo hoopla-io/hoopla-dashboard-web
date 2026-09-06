@@ -15,3 +15,7 @@ export function formatOrderSource(source?: string): string {
         .replace(/\b\w/g, (character) => character.toUpperCase());
   }
 }
+
+export function orderSourceVariant(source?: string): "outline" | "secondary" {
+  return source?.trim().toLowerCase() === "onecafe" ? "secondary" : "outline";
+}
