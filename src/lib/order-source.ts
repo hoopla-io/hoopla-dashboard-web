@@ -1,3 +1,5 @@
+export const ORDER_SOURCES = ["hoopla", "onecafe"] as const;
+
 export function formatOrderSource(source?: string): string {
   const value = source?.trim();
   if (!value) return "—";

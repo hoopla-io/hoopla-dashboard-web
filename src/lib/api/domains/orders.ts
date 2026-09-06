@@ -9,9 +9,13 @@ export interface OrdersGetAllParams extends PaginationParams, SortParams {
   status?: string;
   drink?: string;
   time?: string;
+  from?: string;
+  to?: string;
   shop?: string;
   search?: string;
   partner_id?: number;
+  shop_id?: number;
+  source?: string;
   // Include orders placed against test-type partners (excluded by default).
   include_test?: boolean;
 }
