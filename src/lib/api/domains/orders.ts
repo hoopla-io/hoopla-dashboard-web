@@ -28,6 +28,16 @@ export const ordersApi = {
     return response.data;
   },
 
+  exportExcel: async (params?: OrdersGetAllParams): Promise<{ blob: Blob; filename: string }> => {
+    const response = await httpClient.get("/api/v1/orders/export", {
+      params,
+      responseType: "blob",
+    });
+    const disposition = response.headers["content-disposition"] as string | undefined;
+    const match = disposition ? /filename="?([^";]+)"?/i.exec(disposition) : null;
+    return { blob: response.data as Blob, filename: match ? match[1] : "orders.xlsx" };
+  },
+
   getByPartner: async (partnerId: number): Promise<Order[]> => {
     const response = await httpClient.get<ApiResponse<Order[]>>(`/api/v1/partner/orders/${partnerId}`);
     return response.data.data || [];

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQueryState, parseAsInteger, parseAsString, parseAsBoolean } from "nuqs";
 import { toast } from "sonner";
-import { Building2, ExternalLink, ReceiptText, Star, Store } from "lucide-react";
+import { Building2, Download, ExternalLink, ReceiptText, Star, Store } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -145,6 +145,21 @@ function OrdersContent() {
       }),
   });
 
+  const exportMutation = useMutation({
+    mutationFn: () => ordersApi.exportExcel(filterParams),
+    onSuccess: ({ blob, filename }) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    },
+    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to export orders")),
+  });
+
   const orders = ordersData?.data || [];
   const meta = ordersData?.meta;
   const totalPages = meta?.totalPages || 1;
@@ -209,7 +224,20 @@ function OrdersContent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Orders" description="Manage and track all orders across shops." />
+      <PageHeader
+        title="Orders"
+        description="Manage and track all orders across shops."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => exportMutation.mutate()}
+            disabled={exportMutation.isPending}
+          >
+            <Download className="size-4" />
+            {exportMutation.isPending ? "Exporting…" : "Export Excel"}
+          </Button>
+        }
+      />
 
       <PageToolbar className="flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-end">
         <div className="flex flex-1 flex-col gap-2">
