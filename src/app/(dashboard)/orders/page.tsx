@@ -92,6 +92,7 @@ function OrdersContent() {
   const [partnerFilter, setPartnerFilter] = useQueryState("partner_id", parseAsInteger);
   const [shopIdFilter, setShopIdFilter] = useQueryState("shop_id", parseAsInteger);
   const [sourceFilter, setSourceFilter] = useQueryState("source", parseAsString.withDefault("all"));
+  const [paymentFilter, setPaymentFilter] = useQueryState("payment", parseAsString.withDefault("all"));
   const [fromFilter, setFromFilter] = useQueryState("from", parseAsString.withDefault(""));
   const [toFilter, setToFilter] = useQueryState("to", parseAsString.withDefault(""));
   const [statusFilter, setStatusFilter] = useQueryState("status", parseAsString.withDefault("all"));
@@ -129,12 +130,13 @@ function OrdersContent() {
     partner_id: partnerFilter ?? undefined,
     shop_id: shopIdFilter ?? undefined,
     source: sourceFilter !== "all" ? sourceFilter : undefined,
+    payment: paymentFilter !== "all" ? paymentFilter : undefined,
     search: phoneFilter || undefined,
     include_test: includeTest || undefined,
   };
 
   const { data: ordersData, isLoading, isError, refetch } = useQuery({
-    queryKey: ["orders", currentPage, perPage, statusFilter, drinkFilter, fromFilter, toFilter, phoneFilter, partnerFilter, shopIdFilter, sourceFilter, includeTest, sortParam, orderParam],
+    queryKey: ["orders", currentPage, perPage, statusFilter, drinkFilter, fromFilter, toFilter, phoneFilter, partnerFilter, shopIdFilter, sourceFilter, paymentFilter, includeTest, sortParam, orderParam],
     queryFn: () =>
       ordersApi.getAll({
         ...filterParams,
@@ -192,6 +194,7 @@ function OrdersContent() {
     setPartnerFilter(null);
     setShopIdFilter(null);
     setSourceFilter(null);
+    setPaymentFilter(null);
     setFromFilter(null);
     setToFilter(null);
     setStatusFilter(null);
@@ -217,6 +220,7 @@ function OrdersContent() {
     !!partnerFilter ||
     !!shopIdFilter ||
     sourceFilter !== "all" ||
+    paymentFilter !== "all" ||
     !!fromFilter ||
     !!toFilter ||
     statusFilter !== "all" ||
@@ -299,6 +303,24 @@ function OrdersContent() {
                     {formatOrderSource(source)}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={paymentFilter}
+              onValueChange={(val) => {
+                setPaymentFilter(val === "all" ? null : val);
+                setCurrentPage(1);
+              }}
+            >
+              <SelectTrigger size="sm" className="w-52">
+                <span className="text-muted-foreground">Payment:</span>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="not_paid">Not paid</SelectItem>
               </SelectContent>
             </Select>
 
