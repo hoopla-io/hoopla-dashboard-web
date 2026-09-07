@@ -17,6 +17,7 @@ import {
   Gift,
   Settings,
   Sparkles,
+  Rocket,
 } from "lucide-react";
 
 import {
@@ -221,6 +222,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <CommandItem onSelect={() => runCommand(() => navigate("/notifications"))}>
             <Bell className="size-4 text-muted-foreground" />
             Notifications
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate("/app-releases"))}>
+            <Rocket className="size-4 text-muted-foreground" />
+            App Releases
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/settings"))}>
             <Settings className="size-4 text-muted-foreground" />
