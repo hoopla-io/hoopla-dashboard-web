@@ -81,6 +81,7 @@ export const drinksApi = {
     if (data.product_price) formData.append("product_price", String(data.product_price));
     if (data.vendor_product_price) formData.append("vendor_product_price", String(data.vendor_product_price));
     if (data.vendor_product_name) formData.append("vendor_product_name", data.vendor_product_name);
+    if (data.description !== undefined) formData.append("description", data.description);
     if (data.is_active !== undefined) formData.append("is_active", String(data.is_active));
     appendCategoryIds(formData, data.category_ids);
     if (file) formData.append("file", file);
@@ -102,6 +103,7 @@ export const drinksApi = {
     if (data.product_price) formData.append("product_price", String(data.product_price));
     if (data.vendor_product_price) formData.append("vendor_product_price", String(data.vendor_product_price));
     if (data.vendor_product_name) formData.append("vendor_product_name", data.vendor_product_name);
+    if (data.description !== undefined) formData.append("description", data.description);
     if (data.is_active !== undefined) formData.append("is_active", String(data.is_active));
     appendCategoryIds(formData, data.category_ids);
     if (file) formData.append("file", file);

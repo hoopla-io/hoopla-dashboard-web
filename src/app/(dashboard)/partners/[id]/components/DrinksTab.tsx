@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -34,10 +34,10 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     product_price: 0,
     vendor_product_price: 0,
     vendor_product_name: "",
+    description: "",
     category_ids: [],
   });
   const [drinkFile, setDrinkFile] = useState<File | undefined>(undefined);
-  const [defaultDescription, setDefaultDescription] = useState<string | undefined>(undefined);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [draggedDrinkId, setDraggedDrinkId] = useState<number | null>(null);
 
@@ -52,13 +52,6 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     queryFn: () => drinksApi.getAll(),
   });
   const allDrinks = allDrinksData?.data || [];
-
-  const catalogDrink = allDrinks.find((drink) => drink.id === drinkFormData.drink_id);
-
-  useEffect(() => {
-    if (!isDrinkDialogOpen || !drinkEditId || defaultDescription !== undefined || !catalogDrink) return;
-    setDefaultDescription(catalogDrink.description ?? "");
-  }, [catalogDrink, defaultDescription, drinkEditId, isDrinkDialogOpen]);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["partner_categories", partnerId],
@@ -131,19 +124,9 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     });
   };
 
-  const saveDefaultDescription = async () => {
-    if (!catalogDrink || defaultDescription === undefined) return;
-    await drinksApi.update(catalogDrink.id, {
-      name: catalogDrink.name,
-      description: defaultDescription,
-    });
-  };
-
   const createDrinkMutation = useMutation({
-    mutationFn: async ({ data, file }: { data: CreatePartnerDrinkRequest; file?: File }) => {
-      await saveDefaultDescription();
-      return drinksApi.assignToPartner(data, file);
-    },
+    mutationFn: ({ data, file }: { data: CreatePartnerDrinkRequest; file?: File }) =>
+      drinksApi.assignToPartner(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
@@ -154,10 +137,8 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
   });
 
   const updateDrinkMutation = useMutation({
-    mutationFn: async ({ id, data, file }: { id: number; data: CreatePartnerDrinkRequest; file?: File }) => {
-      await saveDefaultDescription();
-      return drinksApi.updatePartnerDrink(id, data, file);
-    },
+    mutationFn: ({ id, data, file }: { id: number; data: CreatePartnerDrinkRequest; file?: File }) =>
+      drinksApi.updatePartnerDrink(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
@@ -253,9 +234,8 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
         </div>
         <Button onClick={() => {
           setDrinkEditId(null);
-          setDrinkFormData({ partner_id: partnerId, drink_id: 0, product_price: 0, vendor_product_price: 0, vendor_product_name: "", vendor_product_id: nextVendorProductId, category_ids: [] });
+          setDrinkFormData({ partner_id: partnerId, drink_id: 0, product_price: 0, vendor_product_price: 0, vendor_product_name: "", vendor_product_id: nextVendorProductId, description: "", category_ids: [] });
           setDrinkFile(undefined);
-          setDefaultDescription(undefined);
           setIsDrinkDialogOpen(true);
         }}>
           <Plus className="mr-2 h-4 w-4" />
@@ -415,9 +395,9 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                               product_price: pd.product_price || 0,
                               vendor_product_price: pd.vendor_product_price || 0,
                               vendor_product_name: pd.vendor_product_name || "",
+                              description: pd.description ?? "",
                               category_ids: pd.category_ids ?? [],
                             });
-                            setDefaultDescription(allDrinks.find((drink) => drink.id === pd.drink_id)?.description ?? undefined);
                             setDrinkFile(undefined);
                             setIsDrinkDialogOpen(true);
                           }}
@@ -471,8 +451,11 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                   onValueChange={(val) => {
                     const drinkID = Number(val);
                     const selectedDrink = allDrinks.find((drink) => drink.id === drinkID);
-                    setDrinkFormData({ ...drinkFormData, drink_id: drinkID });
-                    setDefaultDescription(selectedDrink?.description ?? "");
+                    setDrinkFormData({
+                      ...drinkFormData,
+                      drink_id: drinkID,
+                      description: drinkFormData.description || (selectedDrink?.description ?? ""),
+                    });
                   }}
                 >
                   <SelectTrigger>
@@ -486,16 +469,15 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="default_description">Default Description</Label>
+                <Label htmlFor="description">Description</Label>
                 <Textarea
-                  id="default_description"
-                  value={defaultDescription ?? ""}
-                  onChange={(e) => setDefaultDescription(e.target.value)}
-                  placeholder="Default description shown to customers"
-                  disabled={!drinkFormData.drink_id}
+                  id="description"
+                  value={drinkFormData.description ?? ""}
+                  onChange={(e) => setDrinkFormData({ ...drinkFormData, description: e.target.value })}
+                  placeholder="Description shown to customers"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Shared by every partner that uses this catalog product. Leave blank to remove it.
+                  Applies to this partner&apos;s product only. Leave blank to remove it.
                 </p>
               </div>
               <div className="space-y-2">

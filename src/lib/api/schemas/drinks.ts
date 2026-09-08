@@ -56,6 +56,7 @@ export const PartnerDrinkSchema = z.object({
   product_price: z.number().optional(),
   vendor_product_price: z.number().optional(),
   vendor_product_name: z.string().optional(),
+  description: z.string().nullable().optional(),
   priority: z.number(),
   is_active: z.boolean().optional(),
   available_in_hoopla: z.boolean().optional(),
@@ -72,6 +73,7 @@ export const CreatePartnerDrinkSchema = z.object({
   product_price: z.number().optional(),
   vendor_product_price: z.number().optional(),
   vendor_product_name: z.string().optional(),
+  description: z.string().optional(),
   is_active: z.boolean().optional(),
   category_ids: z.array(z.number()).optional(),
 });
