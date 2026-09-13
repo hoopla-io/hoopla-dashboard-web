@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { useConfirm } from "@/hooks/use-confirm";
 import { appReleasesApi } from "@/lib/api/domains/app-releases";
 import type { AppRelease, AppReleasePlatform } from "@/lib/api/schemas/app-releases";
 
@@ -68,6 +69,8 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
     onSettled: () => setUploadProgress(null),
   });
 
+  const confirmDelete = useConfirm();
+
   const deleteMutation = useMutation({
     mutationFn: appReleasesApi.remove,
     onSuccess: () => {
@@ -106,8 +109,8 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
     createMutation.mutate({ platform, version: version.trim(), forceUpdate, file });
   }
 
-  function handleDelete(release: AppRelease) {
-    if (!confirm(`Delete ${label} version ${release.version}?`)) return;
+  async function handleDelete(release: AppRelease) {
+    if (!(await confirmDelete({ title: `Delete ${label} version ${release.version}?` }))) return;
     deleteMutation.mutate(release.id);
   }
 

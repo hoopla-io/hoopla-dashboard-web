@@ -40,6 +40,7 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { useConfirm } from "@/hooks/use-confirm";
 import { usersApi } from "@/lib/api/domains/users";
 import type { User, EditUserRequest } from "@/lib/api/schemas/users";
 
@@ -96,6 +97,8 @@ function UsersContent() {
     },
     onError: () => toast.error("Failed to update user"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: usersApi.delete,
@@ -255,7 +258,7 @@ function UsersContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(user.id)}
+                        onClick={async () => { if (await confirmDelete({ title: "Delete user?" })) deleteMutation.mutate(user.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>

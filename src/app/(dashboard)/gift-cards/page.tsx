@@ -5,6 +5,7 @@ import { Plus, Trash2, CalendarIcon, X, Wallet, History, Layers, Download } from
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { format } from "date-fns";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -187,6 +188,8 @@ function GiftCardsContent() {
     onError: (err: unknown) => toast.error(extractError(err, "Failed to top up")),
   });
 
+  const confirmDelete = useConfirm();
+
   const deleteMutation = useMutation({
     mutationFn: giftCardsApi.delete,
     onSuccess: () => { invalidate(); toast.success("Gift card deleted!"); },
@@ -330,7 +333,7 @@ function GiftCardsContent() {
                         <History className="size-4" />
                       </Button>
                       <Button variant="ghost" size="icon-sm" className="text-destructive hover:text-destructive" title="Delete"
-                        onClick={() => deleteMutation.mutate(card.id)}>
+                        onClick={async () => { if (await confirmDelete({ title: "Delete gift card?" })) deleteMutation.mutate(card.id); }}>
                         <Trash2 className="size-4" />
                       </Button>
                     </div>

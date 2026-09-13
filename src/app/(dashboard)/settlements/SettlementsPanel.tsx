@@ -33,6 +33,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useConfirm } from "@/hooks/use-confirm";
 import { settlementsApi } from "@/lib/api/domains/settlements";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { formatSomUZS } from "@/lib/money";
@@ -182,6 +183,8 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
     },
     onError: () => toast.error("Failed to mark settlement paid"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => settlementsApi.remove(id),
@@ -410,8 +413,8 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                                   size="sm"
                                   className="text-destructive hover:text-destructive"
                                   disabled={deleteMutation.isPending}
-                                  onClick={() => {
-                                    if (confirm("Delete this pending settlement? Its orders become unsettled again.")) {
+                                  onClick={async () => {
+                                    if (await confirmDelete({ title: "Delete this pending settlement?", description: "Its orders become unsettled again." })) {
                                       deleteMutation.mutate(b.id);
                                     }
                                   }}

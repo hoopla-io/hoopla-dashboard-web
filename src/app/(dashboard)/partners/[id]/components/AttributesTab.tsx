@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useConfirm } from "@/hooks/use-confirm";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { CreatePartnerAttributeRequest } from "@/lib/api/schemas/partners";
 
@@ -41,6 +42,8 @@ export function AttributesTab({ partnerId }: AttributesTabProps) {
     },
     onError: () => toast.error("Failed to add attribute"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteAttributeMutation = useMutation({
     mutationFn: partnersApi.deleteAttribute,
@@ -96,7 +99,7 @@ export function AttributesTab({ partnerId }: AttributesTabProps) {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => deleteAttributeMutation.mutate(attr.id)}
+                        onClick={async () => { if (await confirmDelete({ title: `Delete “${attr.attribute_key}”?` })) deleteAttributeMutation.mutate(attr.id); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { ShopForm } from "@/components/forms/shop-form";
+import { useConfirm } from "@/hooks/use-confirm";
 import { shopsApi } from "@/lib/api/domains/shops";
 import type { CreateShopRequest } from "@/lib/api/schemas/shops";
 
@@ -39,6 +40,8 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     },
     onError: () => toast.error("Failed to create shop"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteShopMutation = useMutation({
     mutationFn: shopsApi.delete,
@@ -119,9 +122,9 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          deleteShopMutation.mutate(shop.id);
+                          if (await confirmDelete({ title: `Delete “${shop.name}”?` })) deleteShopMutation.mutate(shop.id);
                         }}
                       >
                         <Trash2 className="h-4 w-4" />

@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useConfirm } from "@/hooks/use-confirm";
 import { categoryApi } from "@/lib/api/domains/drinks";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
@@ -48,6 +49,8 @@ export function CategoriesStep({
   });
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const confirmDelete = useConfirm();
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => categoryApi.delete(id),
     onMutate: (id) => setDeletingId(id),
@@ -77,7 +80,7 @@ export function CategoriesStep({
               <button
                 type="button"
                 className="text-muted-foreground hover:text-destructive disabled:opacity-50"
-                onClick={() => deleteMutation.mutate(c.id)}
+                onClick={async () => { if (await confirmDelete({ title: `Delete “${c.name}”?` })) deleteMutation.mutate(c.id); }}
                 disabled={deletingId === c.id}
                 aria-label={`Remove ${c.name}`}
               >

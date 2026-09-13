@@ -20,6 +20,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { useConfirm } from "@/hooks/use-confirm";
 import { notificationsApi, translationsApi } from "@/lib/api/domains/notifications";
 import type { NotificationTranslation, CreateTranslationRequest, UpdateTranslationRequest } from "@/lib/api/schemas/notifications";
 
@@ -75,6 +76,8 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
     },
     onError: () => toast.error("Failed to update translation"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: translationsApi.delete,
@@ -171,7 +174,7 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
                             variant="ghost"
                             size="icon"
                             className="text-destructive hover:text-destructive cursor-pointer"
-                            onClick={() => deleteMutation.mutate(translation.id)}
+                            onClick={async () => { if (await confirmDelete({ title: "Delete translation?" })) deleteMutation.mutate(translation.id); }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

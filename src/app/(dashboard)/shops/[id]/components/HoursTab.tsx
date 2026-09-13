@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
+import { useConfirm } from "@/hooks/use-confirm";
 import { shopsApi } from "@/lib/api/domains/shops";
 import type { CreateShopHoursRequest } from "@/lib/api/schemas/shops";
 
@@ -74,6 +75,8 @@ export function HoursTab({ shopId }: HoursTabProps) {
     },
     onError: () => toast.error("Failed to add hours"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => shopsApi.deleteHours(id),
@@ -208,7 +211,7 @@ export function HoursTab({ shopId }: HoursTabProps) {
                           variant="ghost"
                           size="icon"
                           className="text-destructive h-8 w-8"
-                          onClick={() => deleteMutation.mutate(hour.id)}
+                          onClick={async () => { if (await confirmDelete({ title: `Delete ${hour.week_day} hours?` })) deleteMutation.mutate(hour.id); }}
                           disabled={deleteMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4" />

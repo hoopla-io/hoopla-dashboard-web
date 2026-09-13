@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useConfirm } from "@/hooks/use-confirm";
 import { categoryApi, drinksApi } from "@/lib/api/domains/drinks";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 import { CategoryDrinksSheet } from "./CategoryDrinksSheet";
@@ -116,6 +117,8 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
     },
     onError: () => toast.error("Failed to update category"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: categoryApi.delete,
@@ -235,7 +238,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive cursor-pointer"
-                        onClick={() => deleteMutation.mutate(category.id)}
+                        onClick={async () => { if (await confirmDelete({ title: `Delete “${category.name}”?` })) deleteMutation.mutate(category.id); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

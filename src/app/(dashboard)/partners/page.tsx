@@ -35,6 +35,7 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { useConfirm } from "@/hooks/use-confirm";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { CreatePartnerRequest } from "@/lib/api/schemas/partners";
 
@@ -113,6 +114,8 @@ function PartnersContent() {
     },
     onError: () => toast.error("Failed to update partner"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: partnersApi.delete,
@@ -327,7 +330,7 @@ function PartnersContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(partner.id)}
+                        onClick={async () => { if (await confirmDelete({ title: `Delete “${partner.name}”?` })) deleteMutation.mutate(partner.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>

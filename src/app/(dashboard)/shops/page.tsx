@@ -39,6 +39,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { ShopForm } from "@/components/forms/shop-form";
+import { useConfirm } from "@/hooks/use-confirm";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { CreateShopRequest } from "@/lib/api/schemas/shops";
@@ -119,6 +120,8 @@ function ShopsContent() {
     },
     onError: () => toast.error("Failed to update shop"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: shopsApi.delete,
@@ -278,7 +281,7 @@ function ShopsContent() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
-                            onClick={() => deleteMutation.mutate(shop.id)}
+                            onClick={async () => { if (await confirmDelete({ title: `Delete “${shop.name}”?` })) deleteMutation.mutate(shop.id); }}
                           >
                             <Trash2 className="size-4" />
                             Delete

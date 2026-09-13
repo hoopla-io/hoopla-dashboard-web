@@ -23,6 +23,7 @@ import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { useConfirm } from "@/hooks/use-confirm";
 import { notificationsApi } from "@/lib/api/domains/notifications";
 import type { Notification, CreateNotificationRequest } from "@/lib/api/schemas/notifications";
 
@@ -81,6 +82,8 @@ function NotificationsContent() {
     },
     onError: () => toast.error("Failed to update notification"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: notificationsApi.delete,
@@ -224,7 +227,7 @@ function NotificationsContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(notification.id)}
+                        onClick={async () => { if (await confirmDelete({ title: "Delete notification?" })) deleteMutation.mutate(notification.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>

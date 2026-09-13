@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, CalendarIcon, X, Layers, Download } from "lucide-
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { format } from "date-fns";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -264,6 +265,8 @@ function PromocodesContent() {
     },
     onError: () => toast.error("Failed to update status"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: promocodesApi.delete,
@@ -640,7 +643,7 @@ function PromocodesContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(promocode.id)}
+                        onClick={async () => { if (await confirmDelete({ title: "Delete promocode?" })) deleteMutation.mutate(promocode.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>

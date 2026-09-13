@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, Eye, BookOpen, X, CalendarIcon, ChevronLeft, Chev
 import Image from "@/components/ui/image";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
+import { useConfirm } from "@/hooks/use-confirm";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -396,6 +397,8 @@ function StoriesContent() {
     onError: () => toast.error("Failed to update status"),
   });
 
+  const confirmDelete = useConfirm();
+
   const deleteMutation = useMutation({
     mutationFn: storiesApi.delete,
     onSuccess: () => {
@@ -673,7 +676,7 @@ function StoriesContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(story.id)}
+                        onClick={async () => { if (await confirmDelete({ title: "Delete story?" })) deleteMutation.mutate(story.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useConfirm } from "@/hooks/use-confirm";
 import { shopsApi } from "@/lib/api/domains/shops";
 
 interface PicturesTabProps {
@@ -44,6 +45,8 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
     },
     onError: () => toast.error("Failed to upload picture"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => shopsApi.deletePicture(id),
@@ -139,7 +142,7 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
                       variant="destructive"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => deleteMutation.mutate(pic.id)}
+                      onClick={async () => { if (await confirmDelete({ title: "Delete picture?" })) deleteMutation.mutate(pic.id); }}
                       disabled={deleteMutation.isPending}
                     >
                       <Trash2 className="h-4 w-4" />

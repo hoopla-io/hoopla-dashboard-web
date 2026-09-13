@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
+import { useConfirm } from "@/hooks/use-confirm";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import { formatUZS } from "@/lib/money";
 import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest, ModifierGroup, UpdateModifierGroupRequest } from "@/lib/api/schemas/drinks";
@@ -197,6 +198,8 @@ function ModifiersContent() {
     onError: () => toast.error("Failed to update addon"),
   });
 
+  const confirmDelete = useConfirm();
+
   const deleteMutation = useMutation({
     mutationFn: drinksApi.deleteModifier,
     onSuccess: () => {
@@ -309,7 +312,7 @@ function ModifiersContent() {
                             variant="ghost"
                             size="icon"
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => deleteMutation.mutate(mod.id)}
+                            onClick={async () => { if (await confirmDelete({ title: "Delete modifier?" })) deleteMutation.mutate(mod.id); }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

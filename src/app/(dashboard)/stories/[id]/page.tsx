@@ -23,6 +23,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
+import { useConfirm } from "@/hooks/use-confirm";
 import { storiesApi, storyItemsApi } from "@/lib/api/domains/stories";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
@@ -96,6 +97,8 @@ function StoryDetailContent() {
     },
     onError: () => toast.error("Failed to update slide"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteItemMutation = useMutation({
     mutationFn: storyItemsApi.delete,
@@ -382,7 +385,7 @@ function StoryDetailContent() {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive cursor-pointer"
-                        onClick={() => deleteItemMutation.mutate(item.id)}
+                        onClick={async () => { if (await confirmDelete({ title: "Delete slide?" })) deleteItemMutation.mutate(item.id); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

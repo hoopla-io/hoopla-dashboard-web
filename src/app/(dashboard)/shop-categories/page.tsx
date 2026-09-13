@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
+import { useConfirm } from "@/hooks/use-confirm";
 import { shopCategoriesApi } from "@/lib/api/domains/shop-categories";
 import { partnersApi } from "@/lib/api/domains/partners";
 import type { ShopCategory, CreateShopCategoryRequest } from "@/lib/api/schemas/shop-categories";
@@ -134,6 +135,8 @@ function ShopCategoriesContent() {
     },
     onError: () => toast.error("Failed to update status"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: shopCategoriesApi.delete,
@@ -393,7 +396,7 @@ function ShopCategoriesContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(category.id)}
+                        onClick={async () => { if (await confirmDelete({ title: "Delete shop category?" })) deleteMutation.mutate(category.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -484,12 +487,14 @@ function ShopCategoriesContent() {
                       <button
                         type="button"
                         className="text-muted-foreground transition-colors hover:text-destructive"
-                        onClick={() =>
-                          unlinkPartnerMutation.mutate({
-                            partnerId: partner.id,
-                            categoryId: viewCategory!.id,
-                          })
-                        }
+                        onClick={async () => {
+                          if (await confirmDelete({ title: `Unlink “${partner.name}”?`, description: "The partner will no longer appear in this category.", confirmText: "Unlink" })) {
+                            unlinkPartnerMutation.mutate({
+                              partnerId: partner.id,
+                              categoryId: viewCategory!.id,
+                            });
+                          }
+                        }}
                         aria-label="Unlink partner"
                       >
                         <X className="size-4" />

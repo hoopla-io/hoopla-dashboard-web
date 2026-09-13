@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useConfirm } from "@/hooks/use-confirm";
 import { partnerUsersApi } from "@/lib/api/domains/partner-users";
 import { shopsApi } from "@/lib/api/domains/shops";
 import {
@@ -130,6 +131,8 @@ export function StaffTab({ shopId }: StaffTabProps) {
     onError: () => toast.error("Failed to update staff member"),
   });
 
+  const confirmDelete = useConfirm();
+
   const deleteMutation = useMutation({
     mutationFn: partnerUsersApi.delete,
     onSuccess: () => {
@@ -194,8 +197,8 @@ export function StaffTab({ shopId }: StaffTabProps) {
     }
   }
 
-  function handleDelete(user: PartnerUser) {
-    if (!confirm(`Delete ${user.name ?? `#${user.id}`}?`)) return;
+  async function handleDelete(user: PartnerUser) {
+    if (!(await confirmDelete({ title: `Delete ${user.name ?? `#${user.id}`}?` }))) return;
     deleteMutation.mutate(user.id);
   }
 

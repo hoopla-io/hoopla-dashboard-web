@@ -34,6 +34,7 @@ import { SortableTableHead } from "@/components/data-table/sortable-table-head";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
+import { useConfirm } from "@/hooks/use-confirm";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
 
@@ -114,6 +115,8 @@ function DrinksContent() {
     },
     onError: () => toast.error("Failed to update product"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: drinksApi.delete,
@@ -244,7 +247,7 @@ function DrinksContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => deleteMutation.mutate(drink.id)}
+                        onClick={async () => { if (await confirmDelete({ title: `Delete “${drink.name}”?` })) deleteMutation.mutate(drink.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useConfirm } from "@/hooks/use-confirm";
 import { drinksApi, categoryApi } from "@/lib/api/domains/drinks";
 import { formatSomUZS } from "@/lib/money";
 import type { CreatePartnerDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
@@ -147,6 +148,8 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
     },
     onError: () => toast.error("Failed to update product"),
   });
+
+  const confirmDelete = useConfirm();
 
   const deleteDrinkMutation = useMutation({
     mutationFn: drinksApi.deletePartnerDrink,
@@ -408,7 +411,7 @@ export function DrinksTab({ partnerId }: DrinksTabProps) {
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => deleteDrinkMutation.mutate(pd.id)}
+                          onClick={async () => { if (await confirmDelete({ title: "Delete product?" })) deleteDrinkMutation.mutate(pd.id); }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
