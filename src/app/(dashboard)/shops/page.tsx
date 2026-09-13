@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, Suspense, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Search, MapPin, MoreVertical } from "lucide-react";
+import { Plus, Trash2, Search, MapPin, MoreVertical } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
@@ -41,7 +41,7 @@ import { useTableSort } from "@/hooks/use-table-sort";
 import { ShopForm } from "@/components/forms/shop-form";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { partnersApi } from "@/lib/api/domains/partners";
-import type { Shop, CreateShopRequest } from "@/lib/api/schemas/shops";
+import type { CreateShopRequest } from "@/lib/api/schemas/shops";
 
 function ShopsContent() {
   const queryClient = useQueryClient();
@@ -60,7 +60,6 @@ function ShopsContent() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
-  const [editingShop, setEditingShop] = useState<Shop | null>(null);
 
   useEffect(() => {
     if (searchParams.get("action") === "create") {
@@ -117,7 +116,6 @@ function ShopsContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
       toast.success("Shop updated");
-      setIsCreateOpen(false);
     },
     onError: () => toast.error("Failed to update shop"),
   });
@@ -131,13 +129,7 @@ function ShopsContent() {
     onError: () => toast.error("Failed to delete shop"),
   });
 
-  const handleEdit = (shop: Shop) => {
-    setEditingShop(shop);
-    setIsCreateOpen(true);
-  };
-
   const handleCreateOpen = () => {
-    setEditingShop(null);
     setIsCreateOpen(true);
   };
 
@@ -277,9 +269,6 @@ function ShopsContent() {
                   </TableCell>
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon-sm" onClick={() => handleEdit(shop)}>
-                        <Pencil className="size-4" />
-                      </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon-sm">
@@ -319,36 +308,14 @@ function ShopsContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingShop ? "Edit shop" : "Create shop"}</DialogTitle>
-            <DialogDescription>
-              {editingShop ? "Update shop details." : "Add a new shop location."}
-            </DialogDescription>
+            <DialogTitle>Create shop</DialogTitle>
+            <DialogDescription>Add a new shop location.</DialogDescription>
           </DialogHeader>
           <ShopForm
-            key={editingShop?.id ?? "create"}
             partnerOptions={partners}
-            initialValues={
-              editingShop
-                ? {
-                    partner_id: editingShop.partner?.id || editingShop.partnerId || 0,
-                    name: editingShop.name,
-                    vendor_terminal_id: editingShop.vendor_terminal_id || "",
-                    vendor_login: editingShop.vendor_login || "",
-                    vendor_organization_id: editingShop.vendor_organization_id || "",
-                    location_lat: editingShop.location?.lat ?? editingShop.location_lat ?? 0,
-                    location_long: editingShop.location?.lng ?? editingShop.location_long ?? 0,
-                  }
-                : undefined
-            }
-            isEditing={!!editingShop}
-            isSubmitting={createMutation.isPending || updateMutation.isPending}
-            onSubmit={(data, file) => {
-              if (editingShop) {
-                updateMutation.mutate({ id: editingShop.id, data, file });
-              } else {
-                createMutation.mutate({ data, file });
-              }
-            }}
+            isEditing={false}
+            isSubmitting={createMutation.isPending}
+            onSubmit={(data, file) => createMutation.mutate({ data, file })}
             onCancel={() => setIsCreateOpen(false)}
           />
         </DialogContent>
