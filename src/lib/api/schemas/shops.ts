@@ -22,6 +22,9 @@ export const ShopSchema = z.object({
   vendor_terminal_id: z.string().optional(),
   vendor_login: z.string().optional().nullable(),
   vendor_organization_id: z.string().optional().nullable(),
+  tin_type: z.string().optional().nullable(),
+  tin_num: z.string().optional().nullable(),
+  tin_percent: z.number().optional().nullable(),
   can_accept_orders: z.boolean().optional(),
   phoneNumbers: z.any().optional().nullable(),
   workingHours: z.array(z.object({
@@ -43,6 +46,9 @@ export const CreateShopSchema = z.object({
   vendor_login: z.string().max(255).optional(),
   vendor_password: z.string().min(4).max(255).optional(),
   vendor_organization_id: z.string().max(255).optional(),
+  tin_type: z.enum(["tin", "pinfl"]).optional(),
+  tin_num: z.string().max(50).optional(),
+  tin_percent: z.number().int().min(0).max(100).optional(),
   status: z.boolean().optional(),
 });
 

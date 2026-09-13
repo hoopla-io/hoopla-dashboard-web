@@ -48,6 +48,9 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
     vendor_login: "",
     vendor_password: "",
     vendor_organization_id: "",
+    tin_type: undefined,
+    tin_num: "",
+    tin_percent: 0,
     status: true,
   });
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
@@ -66,6 +69,9 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
         vendor_login: shop.vendor_login || "",
         vendor_password: "",
         vendor_organization_id: shop.vendor_organization_id || "",
+        tin_type: shop.tin_type === "tin" || shop.tin_type === "pinfl" ? shop.tin_type : undefined,
+        tin_num: shop.tin_num || "",
+        tin_percent: shop.tin_percent ?? 0,
         status: shop.status ?? true,
       }));
     }
@@ -96,6 +102,10 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
     }
     if (!formData.partner_id) {
       toast.error("Partner is required");
+      return;
+    }
+    if (formData.tin_num?.trim() && !formData.tin_type) {
+      toast.error("TIN type is required when a TIN number is set");
       return;
     }
     updateMutation.mutate({ data: formData, file: selectedFile });
@@ -208,6 +218,51 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                   placeholder="Organization ID"
                   maxLength={255}
                 />
+              </div>
+
+              <div className="space-y-4 pt-4 border-t">
+                <div className="space-y-0.5">
+                  <Label>Tax</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Leave TIN number empty to use the partner&apos;s TIN on receipts
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tin_type">TIN Type</Label>
+                  <Select
+                    value={formData.tin_type ?? ""}
+                    onValueChange={(val) => setFormData({ ...formData, tin_type: val as "tin" | "pinfl" })}
+                  >
+                    <SelectTrigger id="tin_type">
+                      <SelectValue placeholder="Select Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="tin">TIN</SelectItem>
+                      <SelectItem value="pinfl">PINFL</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tin_num">TIN Number</Label>
+                  <Input
+                    id="tin_num"
+                    value={formData.tin_num || ""}
+                    onChange={(e) => setFormData({ ...formData, tin_num: e.target.value })}
+                    maxLength={50}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tin_percent">TIN Percent</Label>
+                  <Input
+                    id="tin_percent"
+                    type="number"
+                    step="1"
+                    min={0}
+                    max={100}
+                    value={formData.tin_percent ?? 0}
+                    onChange={(e) => setFormData({ ...formData, tin_percent: parseInt(e.target.value, 10) || 0 })}
+                  />
+                </div>
               </div>
 
                <div className="flex items-center justify-between space-x-2 py-4 border-t">

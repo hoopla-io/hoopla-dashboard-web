@@ -35,6 +35,9 @@ export const shopsApi = {
     if (data.vendor_login) formData.append("vendor_login", data.vendor_login);
     if (data.vendor_password) formData.append("vendor_password", data.vendor_password);
     if (data.vendor_organization_id) formData.append("vendor_organization_id", data.vendor_organization_id);
+    if (data.tin_num) formData.append("tin_num", data.tin_num);
+    if (data.tin_type) formData.append("tin_type", data.tin_type);
+    if (data.tin_percent !== undefined) formData.append("tin_percent", String(data.tin_percent));
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<{ id: number; message?: string; image_url?: string }>>("/api/v1/shop/store", formData, {
@@ -53,6 +56,9 @@ export const shopsApi = {
     if (data.vendor_login) formData.append("vendor_login", data.vendor_login);
     if (data.vendor_password) formData.append("vendor_password", data.vendor_password);
     if (data.vendor_organization_id) formData.append("vendor_organization_id", data.vendor_organization_id);
+    if (data.tin_num !== undefined) formData.append("tin_num", data.tin_num);
+    if (data.tin_type) formData.append("tin_type", data.tin_type);
+    if (data.tin_percent !== undefined) formData.append("tin_percent", String(data.tin_percent));
     if (data.status !== undefined) formData.append("status", String(data.status));
     if (file) formData.append("file", file);
 
