@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v7";
 import { useState } from "react";
 
+import { ConfirmProvider } from "@/components/providers/confirm-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 type ProvidersProps = {
@@ -26,7 +27,7 @@ export function Providers({ children }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <NuqsAdapter>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
+          <ConfirmProvider>{children}</ConfirmProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </NuqsAdapter>
