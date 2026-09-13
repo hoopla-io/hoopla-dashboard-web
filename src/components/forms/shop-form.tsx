@@ -9,23 +9,11 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
 import type { CreateShopRequest } from "@/lib/api/schemas/shops";
 
-export interface ShopFormInitialValues {
-  partner_id?: number;
-  name?: string;
-  vendor_terminal_id?: string;
-  vendor_login?: string;
-  vendor_organization_id?: string;
-  location_lat?: number;
-  location_long?: number;
-}
-
 interface ShopFormProps {
   /** Fixed partner id — when set, no partner picker is shown (partner-scoped usage). */
   partnerId?: number;
   /** Required when `partnerId` is omitted, to populate the partner picker. */
   partnerOptions?: { id: number; name: string }[];
-  initialValues?: ShopFormInitialValues;
-  isEditing: boolean;
   isSubmitting: boolean;
   onSubmit: (data: CreateShopRequest, file?: File) => void;
   onCancel: () => void;
@@ -34,21 +22,19 @@ interface ShopFormProps {
 export function ShopForm({
   partnerId,
   partnerOptions = [],
-  initialValues,
-  isEditing,
   isSubmitting,
   onSubmit,
   onCancel,
 }: ShopFormProps) {
   const [formData, setFormData] = useState({
-    partner_id: partnerId ?? initialValues?.partner_id ?? 0,
-    name: initialValues?.name ?? "",
-    vendor_terminal_id: initialValues?.vendor_terminal_id ?? "",
-    vendor_login: initialValues?.vendor_login ?? "",
+    partner_id: partnerId ?? 0,
+    name: "",
+    vendor_terminal_id: "",
+    vendor_login: "",
     vendor_password: "",
-    vendor_organization_id: initialValues?.vendor_organization_id ?? "",
-    location_lat: initialValues?.location_lat ?? 0,
-    location_long: initialValues?.location_long ?? 0,
+    vendor_organization_id: "",
+    location_lat: 0,
+    location_long: 0,
   });
   const [file, setFile] = useState<File | undefined>(undefined);
   const [showVendorPassword, setShowVendorPassword] = useState(false);
@@ -106,16 +92,14 @@ export function ShopForm({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="shop-form-password">
-            {isEditing ? "Vendor password (leave blank to keep)" : "Vendor password"}
-          </Label>
+          <Label htmlFor="shop-form-password">Vendor password</Label>
           <div className="relative">
             <Input
               id="shop-form-password"
               type={showVendorPassword ? "text" : "password"}
               value={formData.vendor_password}
               onChange={(e) => setFormData({ ...formData, vendor_password: e.target.value })}
-              placeholder={isEditing ? "••••••••" : "Cassa password"}
+              placeholder="Cassa password"
               minLength={4}
               maxLength={255}
             />
@@ -177,7 +161,7 @@ export function ShopForm({
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving…" : isEditing ? "Save changes" : "Create shop"}
+          {isSubmitting ? "Saving…" : "Create shop"}
         </Button>
       </DialogFooter>
     </form>

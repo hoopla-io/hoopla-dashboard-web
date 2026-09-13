@@ -144,7 +144,6 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
           </DialogHeader>
           <ShopForm
             partnerId={partnerId}
-            isEditing={false}
             isSubmitting={createShopMutation.isPending}
             onSubmit={(data, file) => createShopMutation.mutate({ data, file })}
             onCancel={() => setIsCreateShopOpen(false)}

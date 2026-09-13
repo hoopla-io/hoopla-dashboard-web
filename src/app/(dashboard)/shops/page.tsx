@@ -313,7 +313,6 @@ function ShopsContent() {
           </DialogHeader>
           <ShopForm
             partnerOptions={partners}
-            isEditing={false}
             isSubmitting={createMutation.isPending}
             onSubmit={(data, file) => createMutation.mutate({ data, file })}
             onCancel={() => setIsCreateOpen(false)}
