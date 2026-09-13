@@ -1,9 +1,18 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import type { Order, ChangeOrderStatusRequest, OrdersSummary } from "@/lib/api/schemas/orders";
 
 
 
-import type { PaginatedResponse, ApiResponse, PaginationParams, SortParams } from "@/lib/api/types";
+import type { PaginatedResponse, ApiResponse, Meta, PaginationParams, SortParams } from "@/lib/api/types";
+
+export interface OrdersListMeta extends Meta {
+  summary?: OrdersSummary;
+}
+
+export interface OrdersListResponse {
+  data: Order[];
+  meta?: OrdersListMeta | null;
+}
 
 export interface OrdersGetAllParams extends PaginationParams, SortParams {
   status?: string;
@@ -22,8 +31,8 @@ export interface OrdersGetAllParams extends PaginationParams, SortParams {
 }
 
 export const ordersApi = {
-  getAll: async (params?: OrdersGetAllParams): Promise<PaginatedResponse<Order>> => {
-    const response = await httpClient.get<ApiResponse<Order[]>>("/api/v1/orders/list", {
+  getAll: async (params?: OrdersGetAllParams): Promise<OrdersListResponse> => {
+    const response = await httpClient.get<OrdersListResponse>("/api/v1/orders/list", {
       params,
     });
     return response.data;

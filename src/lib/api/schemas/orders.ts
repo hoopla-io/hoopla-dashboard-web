@@ -43,7 +43,15 @@ export const OrderSchema = z.object({
     .optional(),
 });
 
+export const OrdersSummarySchema = z.object({
+  revenue_completed: z.number(),
+  completed_count: z.number(),
+  cancelled_count: z.number(),
+  cancelled_sum: z.number(),
+});
+
 export type OrderFeedback = z.infer<typeof OrderFeedbackSchema>;
+export type OrdersSummary = z.infer<typeof OrdersSummarySchema>;
 
 export const OrderFilterSchema = z.object({
   id: z.number().optional(),

@@ -48,6 +48,7 @@ import { shopsApi } from "@/lib/api/domains/shops";
 import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
 import { ORDER_SOURCES, formatOrderSource, orderSourceVariant } from "@/lib/order-source";
+import { OrdersSummaryCards } from "@/app/(dashboard)/orders/components/OrdersSummaryCards";
 
 const statusTone: Record<string, StatusTone> = {
   pending_payment: "pending",
@@ -388,6 +389,8 @@ function OrdersContent() {
           </Button>
         </div>
       </PageToolbar>
+
+      {isError ? null : <OrdersSummaryCards summary={ordersData?.meta?.summary} />}
 
       <DataTableShell>
         <Table>
