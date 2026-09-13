@@ -12,6 +12,7 @@ import {
   Settings,
   ChevronDown,
   Bell,
+  BellRing,
   LayoutPanelTop,
   LayoutGrid,
   BookOpen,
@@ -76,6 +77,12 @@ const sections: NavSection[] = [
       { name: "Banners", href: "/banners", icon: LayoutPanelTop },
       { name: "Shop Categories", href: "/shop-categories", icon: LayoutGrid },
       { name: "Notifications", href: "/notifications", icon: Bell },
+    ],
+  },
+  {
+    label: "Notifications",
+    items: [
+      { name: "Push Notifications", href: "/push-notifications", icon: BellRing },
     ],
   },
   {

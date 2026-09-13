@@ -13,6 +13,7 @@ import {
   LayoutPanelTop,
   LayoutGrid,
   Bell,
+  BellRing,
   TicketPercent,
   Gift,
   Settings,
@@ -222,6 +223,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <CommandItem onSelect={() => runCommand(() => navigate("/notifications"))}>
             <Bell className="size-4 text-muted-foreground" />
             Notifications
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate("/push-notifications"))}>
+            <BellRing className="size-4 text-muted-foreground" />
+            Push notifications
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/app-releases"))}>
             <Rocket className="size-4 text-muted-foreground" />
