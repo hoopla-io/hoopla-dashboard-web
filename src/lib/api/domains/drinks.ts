@@ -3,8 +3,8 @@ import type {
   Drink, CreateDrinkRequest,
 	PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
 	ReorderPartnerDrinksRequest,
-  PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest,
-  ModifierGroup, UpdateModifierGroupRequest,
+  PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest, ReorderModifiersRequest,
+  ModifierGroup, UpdateModifierGroupRequest, ReorderModifierGroupsRequest,
   DrinkCategory, CategoryWithDrinks, CreateCategoryRequest, UpdateCategoryRequest, LinkDrinkRequest, ReorderCategoriesRequest,
 } from "@/lib/api/schemas/drinks";
 
@@ -160,6 +160,10 @@ export const drinksApi = {
     await httpClient.delete(`/api/v1/partner/drink/modifier/delete/${id}`);
   },
 
+  reorderModifiers: async (data: ReorderModifiersRequest): Promise<void> => {
+    await httpClient.post("/api/v1/partner/drink/modifier/reorder", data);
+  },
+
   // --- Modifier Groups (name + min/max selection rules) ---
   listModifierGroups: async (partnerDrinkId: number): Promise<ModifierGroup[]> => {
     const response = await httpClient.get<ApiResponse<ModifierGroup[]>>(
@@ -170,6 +174,10 @@ export const drinksApi = {
 
   updateModifierGroup: async (partnerDrinkId: number, data: UpdateModifierGroupRequest): Promise<void> => {
     await httpClient.put(`/api/v1/partner/drink/modifier/group/update/${partnerDrinkId}`, data);
+  },
+
+  reorderModifierGroups: async (data: ReorderModifierGroupsRequest): Promise<void> => {
+    await httpClient.post("/api/v1/partner/drink/modifier/group/reorder", data);
   },
 };
 

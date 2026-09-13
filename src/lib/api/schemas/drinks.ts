@@ -87,6 +87,7 @@ export type UpdatePartnerDrinkRequest = z.infer<typeof UpdatePartnerDrinkSchema>
 export const PartnerDrinkModifierSchema = z.object({
   id: z.number(),
   partner_drink_id: z.number(),
+  modifier_group_id: z.number(),
   vendor_addon_id: z.string(),
   vendor_addon_key: z.string().optional().nullable(),
   vendor_addon_name: z.string(),
@@ -111,6 +112,7 @@ export type UpdatePartnerDrinkModifierRequest = z.infer<typeof UpdatePartnerDrin
 
 // --- Modifier Groups (name + min/max selection rules) ---
 export const ModifierGroupSchema = z.object({
+  id: z.number(),
   key: z.string(),
   name: z.string(),
   min_select: z.number(),
@@ -125,3 +127,6 @@ export interface UpdateModifierGroupRequest {
   min_select: number;
   max_select?: number | null;
 }
+
+export type ReorderModifierGroupsRequest = { partner_drink_id: number; modifier_group_ids: number[] };
+export type ReorderModifiersRequest = { modifier_group_id: number; modifier_ids: number[] };

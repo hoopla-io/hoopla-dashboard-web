@@ -1,5 +1,5 @@
 
-import { useState, useMemo, Suspense } from "react";
+import { useState, useMemo, Suspense, type ComponentProps, type ReactNode } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,6 +17,8 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { useConfirm } from "@/hooks/use-confirm";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import { formatUZS } from "@/lib/money";
+import { ReorderControls } from "@/app/(dashboard)/partners/[id]/components/ReorderControls";
+import type { PaginatedResponse } from "@/lib/api/types";
 import type { CreatePartnerDrinkModifierRequest, PartnerDrinkModifier, UpdatePartnerDrinkModifierRequest, ModifierGroup, UpdateModifierGroupRequest } from "@/lib/api/schemas/drinks";
 
 const EMPTY_FORM = (partnerDrinkId: number): CreatePartnerDrinkModifierRequest => ({
@@ -32,10 +34,14 @@ function GroupRow({
   group,
   onSave,
   saving,
+  controls,
+  rowProps,
 }: {
   group: ModifierGroup;
   onSave: (d: UpdateModifierGroupRequest) => void;
   saving: boolean;
+  controls: ReactNode;
+  rowProps: ComponentProps<typeof TableRow>;
 }) {
   const [name, setName] = useState(group.name);
   const [min, setMin] = useState<number>(group.min_select);
@@ -45,7 +51,8 @@ function GroupRow({
   const dirty = name !== group.name || min !== group.min_select || max !== maxNorm;
 
   return (
-    <TableRow>
+    <TableRow {...rowProps}>
+      <TableCell className="px-2">{controls}</TableCell>
       <TableCell className="font-mono text-[11px] text-muted-foreground">{group.key}</TableCell>
       <TableCell><Input value={name} onChange={(e) => setName(e.target.value)} /></TableCell>
       <TableCell><Input type="number" min={0} className="w-[80px]" value={min} onChange={(e) => setMin(Number(e.target.value))} /></TableCell>
@@ -66,6 +73,7 @@ function GroupRow({
 
 function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
   const queryClient = useQueryClient();
+  const [draggedGroupId, setDraggedGroupId] = useState<number | null>(null);
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["modifier_groups", partnerDrinkId],
     queryFn: () => drinksApi.listModifierGroups(partnerDrinkId),
@@ -79,6 +87,42 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
     onError: (e: unknown) =>
       toast.error((e as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to update group"),
   });
+
+  const reorderMutation = useMutation({
+    mutationFn: (orderedGroups: ModifierGroup[]) =>
+      drinksApi.reorderModifierGroups({
+        partner_drink_id: partnerDrinkId,
+        modifier_group_ids: orderedGroups.map((group) => group.id),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
+    },
+  });
+
+  const moveGroup = (fromIndex: number, toIndex: number) => {
+    if (
+      reorderMutation.isPending ||
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= groups.length ||
+      toIndex >= groups.length
+    ) return;
+
+    const reordered = [...groups];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    queryClient.setQueryData<ModifierGroup[]>(["modifier_groups", partnerDrinkId], reordered);
+
+    reorderMutation.mutate(reordered, {
+      onError: () => {
+        queryClient.setQueryData<ModifierGroup[]>(["modifier_groups", partnerDrinkId], groups);
+        queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+        toast.error("Failed to save group order");
+      },
+    });
+  };
 
   if (!isLoading && groups.length === 0) return null;
 
@@ -95,6 +139,7 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10"><span className="sr-only">Reorder</span></TableHead>
                 <TableHead>Group</TableHead>
                 <TableHead>Display name</TableHead>
                 <TableHead className="w-[90px]">Min</TableHead>
@@ -105,10 +150,38 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
               ) : (
-                groups.map((g) => (
-                  <GroupRow key={g.key} group={g} saving={updateMutation.isPending} onSave={(d) => updateMutation.mutate(d)} />
+                groups.map((g, index) => (
+                  <GroupRow
+                    key={g.id}
+                    group={g}
+                    saving={updateMutation.isPending}
+                    onSave={(d) => updateMutation.mutate(d)}
+                    rowProps={{
+                      onDragOver: (event) => {
+                        if (draggedGroupId !== null && !reorderMutation.isPending) event.preventDefault();
+                      },
+                      onDrop: (event) => {
+                        event.preventDefault();
+                        moveGroup(groups.findIndex((group) => group.id === draggedGroupId), index);
+                        setDraggedGroupId(null);
+                      },
+                      className: draggedGroupId === g.id ? "opacity-50" : undefined,
+                    }}
+                    controls={
+                      <ReorderControls
+                        label={g.name || g.key}
+                        disabled={reorderMutation.isPending}
+                        canMoveUp={index > 0}
+                        canMoveDown={index < groups.length - 1}
+                        onMoveUp={() => moveGroup(index, index - 1)}
+                        onMoveDown={() => moveGroup(index, index + 1)}
+                        onDragStart={() => setDraggedGroupId(g.id)}
+                        onDragEnd={() => setDraggedGroupId(null)}
+                      />
+                    }
+                  />
                 ))
               )}
             </TableBody>
@@ -130,16 +203,19 @@ function ModifiersContent() {
   const drinkName = searchParams.get("productName") || searchParams.get("drinkName") || "Product";
 
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(10));
+  const [perPage, setPerPage] = useQueryState("perPage", parseAsInteger.withDefault(100));
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingModifier, setEditingModifier] = useState<PartnerDrinkModifier | null>(null);
+  const [draggedModifierId, setDraggedModifierId] = useState<number | null>(null);
 
   const [addForm, setAddForm] = useState<CreatePartnerDrinkModifierRequest>(() => EMPTY_FORM(partnerDrinkId));
   const [editForm, setEditForm] = useState<Partial<UpdatePartnerDrinkModifierRequest>>({});
 
+  const modifiersQueryKey = ["partner_drink_modifiers", partnerDrinkId, currentPage, perPage];
+
   const { data: modifiersData, isLoading } = useQuery({
-    queryKey: ["partner_drink_modifiers", partnerDrinkId, currentPage, perPage],
+    queryKey: modifiersQueryKey,
     queryFn: () => drinksApi.listModifiers(partnerDrinkId, { page: currentPage, limit: perPage }),
     enabled: !!partnerDrinkId,
   });
@@ -147,6 +223,8 @@ function ModifiersContent() {
   const modifiers = useMemo(() => modifiersData?.data || [], [modifiersData]);
   const meta = modifiersData?.meta;
   const totalPages = meta?.totalPages || 1;
+  const isModifierReorderDisabled = totalPages > 1;
+  const draggedModifier = modifiers.find((modifier) => modifier.id === draggedModifierId);
 
   // Suggestions for the (free-text) Vendor Addon Key: a few common defaults plus
   // every key already used on this drink. The field is NOT limited to these — type
@@ -197,6 +275,48 @@ function ModifiersContent() {
     },
     onError: () => toast.error("Failed to update addon"),
   });
+
+  const reorderModifiersMutation = useMutation({
+    mutationFn: ({ groupId, orderedModifiers }: { groupId: number; orderedModifiers: PartnerDrinkModifier[] }) =>
+      drinksApi.reorderModifiers({
+        modifier_group_id: groupId,
+        modifier_ids: orderedModifiers
+          .filter((modifier) => modifier.modifier_group_id === groupId)
+          .map((modifier) => modifier.id),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
+    },
+  });
+
+  const moveModifier = (fromIndex: number, toIndex: number) => {
+    if (
+      isModifierReorderDisabled ||
+      reorderModifiersMutation.isPending ||
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= modifiers.length ||
+      toIndex >= modifiers.length ||
+      modifiers[fromIndex].modifier_group_id !== modifiers[toIndex].modifier_group_id
+    ) return;
+
+    const reordered = [...modifiers];
+    const [moved] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, moved);
+    queryClient.setQueryData<PaginatedResponse<PartnerDrinkModifier>>(
+      modifiersQueryKey,
+      (current) => current && { ...current, data: reordered }
+    );
+
+    reorderModifiersMutation.mutate({ groupId: moved.modifier_group_id, orderedModifiers: reordered }, {
+      onError: () => {
+        queryClient.setQueryData(modifiersQueryKey, modifiersData);
+        queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
+        toast.error("Failed to save addon order");
+      },
+    });
+  };
 
   const confirmDelete = useConfirm();
 
@@ -273,6 +393,7 @@ function ModifiersContent() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10"><span className="sr-only">Reorder</span></TableHead>
                   <TableHead>Addon Name</TableHead>
                   <TableHead>Group</TableHead>
                   <TableHead>Vendor Addon ID</TableHead>
@@ -282,17 +403,41 @@ function ModifiersContent() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
                 ) : modifiers.length === 0 ? (
-                  <TableRow><TableCell colSpan={5} className="p-0">
+                  <TableRow><TableCell colSpan={6} className="p-0">
                     <EmptyState
                       title="No addons found"
                       description="Add an addon to get started."
                     />
                   </TableCell></TableRow>
                 ) : (
-                  modifiers.map((mod) => (
-                    <TableRow key={mod.id}>
+                  modifiers.map((mod, index) => (
+                    <TableRow
+                      key={mod.id}
+                      onDragOver={(event) => {
+                        if (draggedModifier?.modifier_group_id === mod.modifier_group_id && !reorderModifiersMutation.isPending) event.preventDefault();
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        moveModifier(modifiers.findIndex((modifier) => modifier.id === draggedModifierId), index);
+                        setDraggedModifierId(null);
+                      }}
+                      className={draggedModifierId === mod.id ? "opacity-50" : undefined}
+                    >
+                      <TableCell className="px-2">
+                        <ReorderControls
+                          label={mod.vendor_addon_name || "addon"}
+                          disabled={isModifierReorderDisabled || reorderModifiersMutation.isPending}
+                          disabledReason={isModifierReorderDisabled ? "Show all addons on one page to reorder" : undefined}
+                          canMoveUp={index > 0 && modifiers[index - 1].modifier_group_id === mod.modifier_group_id}
+                          canMoveDown={index < modifiers.length - 1 && modifiers[index + 1].modifier_group_id === mod.modifier_group_id}
+                          onMoveUp={() => moveModifier(index, index - 1)}
+                          onMoveDown={() => moveModifier(index, index + 1)}
+                          onDragStart={() => setDraggedModifierId(mod.id)}
+                          onDragEnd={() => setDraggedModifierId(null)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">{mod.vendor_addon_name}</TableCell>
                       <TableCell>
                         {mod.vendor_addon_key ? (
