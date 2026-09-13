@@ -2,7 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Search, Pencil, Sparkles } from "lucide-react";
+import { Plus, Trash2, Search, Sparkles } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 
@@ -65,7 +65,6 @@ function PartnersContent() {
   }, [searchParams, navigate]);
 
   const [formData, setFormData] = useState<CreatePartnerRequest>({ name: "", description: "" });
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -111,10 +110,6 @@ function PartnersContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
       toast.success("Partner updated");
-      setSelectedFile(undefined);
-      setIsCreateOpen(false);
-      setEditingId(null);
-      setFormData({ name: "", description: "" });
     },
     onError: () => toast.error("Failed to update partner"),
   });
@@ -133,11 +128,7 @@ function PartnersContent() {
       toast.error("Name is required");
       return;
     }
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, data: formData, file: selectedFile });
-    } else {
-      createMutation.mutate({ data: formData, file: selectedFile });
-    }
+    createMutation.mutate({ data: formData, file: selectedFile });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,7 +159,6 @@ function PartnersContent() {
             </Button>
             <Button
               onClick={() => {
-                setEditingId(null);
                 setFormData({ name: "", description: "" });
                 setSelectedFile(undefined);
                 setIsCreateOpen(true);
@@ -251,7 +241,6 @@ function PartnersContent() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setEditingId(null);
                             setFormData({ name: "", description: "" });
                             setSelectedFile(undefined);
                             setIsCreateOpen(true);
@@ -337,21 +326,6 @@ function PartnersContent() {
                       <Button
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => {
-                          setEditingId(partner.id);
-                          setFormData({
-                            name: partner.name,
-                            description: partner.description || "",
-                            type: partner.type,
-                          });
-                          setIsCreateOpen(true);
-                        }}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
                         className="text-destructive hover:text-destructive"
                         onClick={() => deleteMutation.mutate(partner.id)}
                       >
@@ -401,10 +375,8 @@ function PartnersContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingId ? "Edit partner" : "Create partner"}</DialogTitle>
-            <DialogDescription>
-              {editingId ? "Update partner details." : "Add a new partner organization."}
-            </DialogDescription>
+            <DialogTitle>Create partner</DialogTitle>
+            <DialogDescription>Add a new partner organization.</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -463,17 +435,8 @@ function PartnersContent() {
               <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
-              >
-                {editingId
-                  ? updateMutation.isPending
-                    ? "Saving…"
-                    : "Save changes"
-                  : createMutation.isPending
-                    ? "Creating…"
-                    : "Create"}
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending ? "Creating…" : "Create"}
               </Button>
             </DialogFooter>
           </form>
