@@ -9,7 +9,6 @@ import PartnerDrinkModifiersPage from "@/app/(dashboard)/partners/[id]/drinks/[d
 import ShopsPage from "@/app/(dashboard)/shops/page";
 import ShopDetailPage from "@/app/(dashboard)/shops/[id]/page";
 import DrinksPage from "@/app/(dashboard)/drinks/page";
-import CategoriesPage from "@/app/(dashboard)/categories/page";
 import OrdersPage from "@/app/(dashboard)/orders/page";
 import UsersPage from "@/app/(dashboard)/users/page";
 import StoriesPage from "@/app/(dashboard)/stories/page";
@@ -51,7 +50,6 @@ export const router = createBrowserRouter([
       { path: "shops/:id", element: <ShopDetailPage /> },
       { path: "products", element: <DrinksPage /> },
       { path: "drinks", element: <DrinksPage /> },
-      { path: "categories", element: <CategoriesPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "stories", element: <StoriesPage /> },
