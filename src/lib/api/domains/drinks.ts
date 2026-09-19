@@ -179,6 +179,10 @@ export const drinksApi = {
   reorderModifierGroups: async (data: ReorderModifierGroupsRequest): Promise<void> => {
     await httpClient.post("/api/v1/partner/drink/modifier/group/reorder", data);
   },
+
+  deleteModifierGroup: async (id: number): Promise<void> => {
+    await httpClient.delete(`/api/v1/partner/drink/modifier/group/delete/${id}`);
+  },
 };
 
 export const categoryApi = {

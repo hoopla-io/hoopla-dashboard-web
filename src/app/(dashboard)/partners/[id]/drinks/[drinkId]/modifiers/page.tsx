@@ -33,13 +33,17 @@ const EMPTY_FORM = (partnerDrinkId: number): CreatePartnerDrinkModifierRequest =
 function GroupRow({
   group,
   onSave,
+  onDelete,
   saving,
+  deleting,
   controls,
   rowProps,
 }: {
   group: ModifierGroup;
   onSave: (d: UpdateModifierGroupRequest) => void;
+  onDelete: () => void;
   saving: boolean;
+  deleting: boolean;
   controls: ReactNode;
   rowProps: ComponentProps<typeof TableRow>;
 }) {
@@ -59,13 +63,24 @@ function GroupRow({
       <TableCell><Input type="number" min={0} className="w-[80px]" placeholder="∞" value={max} onChange={(e) => setMax(e.target.value)} /></TableCell>
       <TableCell className="text-xs text-muted-foreground tabular-nums">{group.option_count}</TableCell>
       <TableCell className="text-right">
-        <Button
-          size="sm"
-          disabled={!dirty || saving}
-          onClick={() => onSave({ key: group.key, name, min_select: min, max_select: max === "" ? null : Number(max) })}
-        >
-          Save
-        </Button>
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            size="sm"
+            disabled={!dirty || saving}
+            onClick={() => onSave({ key: group.key, name, min_select: min, max_select: max === "" ? null : Number(max) })}
+          >
+            Save
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            disabled={deleting}
+            onClick={onDelete}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -73,6 +88,7 @@ function GroupRow({
 
 function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
   const queryClient = useQueryClient();
+  const confirmDelete = useConfirm();
   const [draggedGroupId, setDraggedGroupId] = useState<number | null>(null);
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["modifier_groups", partnerDrinkId],
@@ -86,6 +102,17 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
     },
     onError: (e: unknown) =>
       toast.error((e as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to update group"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => drinksApi.deleteModifierGroup(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
+      queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
+      toast.success("Modifier group deleted");
+    },
+    onError: (e: unknown) =>
+      toast.error((e as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to delete group"),
   });
 
   const reorderMutation = useMutation({
@@ -145,7 +172,7 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
                 <TableHead className="w-[90px]">Min</TableHead>
                 <TableHead className="w-[90px]">Max</TableHead>
                 <TableHead className="w-[80px]">Options</TableHead>
-                <TableHead className="text-right">Save</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -157,7 +184,15 @@ function ModifierGroupsCard({ partnerDrinkId }: { partnerDrinkId: number }) {
                     key={g.id}
                     group={g}
                     saving={updateMutation.isPending}
+                    deleting={deleteMutation.isPending}
                     onSave={(d) => updateMutation.mutate(d)}
+                    onDelete={async () => {
+                      const confirmed = await confirmDelete({
+                        title: "Delete modifier group?",
+                        description: `"${g.name || g.key}" and its ${g.option_count} option(s) will be removed from this product.`,
+                      });
+                      if (confirmed) deleteMutation.mutate(g.id);
+                    }}
                     rowProps={{
                       onDragOver: (event) => {
                         if (draggedGroupId !== null && !reorderMutation.isPending) event.preventDefault();
