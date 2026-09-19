@@ -11,6 +11,7 @@ import ShopDetailPage from "@/app/(dashboard)/shops/[id]/page";
 import DrinksPage from "@/app/(dashboard)/drinks/page";
 import OrdersPage from "@/app/(dashboard)/orders/page";
 import UsersPage from "@/app/(dashboard)/users/page";
+import UserDetailPage from "@/app/(dashboard)/users/[id]/page";
 import StoriesPage from "@/app/(dashboard)/stories/page";
 import StoryDetailPage from "@/app/(dashboard)/stories/[id]/page";
 import BannersPage from "@/app/(dashboard)/banners/page";
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
       { path: "drinks", element: <DrinksPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "users", element: <UsersPage /> },
+      { path: "users/:id", element: <UserDetailPage /> },
       { path: "stories", element: <StoriesPage /> },
       { path: "stories/:id", element: <StoryDetailPage /> },
       { path: "banners", element: <BannersPage /> },

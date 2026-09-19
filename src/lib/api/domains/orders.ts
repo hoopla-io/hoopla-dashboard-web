@@ -24,6 +24,7 @@ export interface OrdersGetAllParams extends PaginationParams, SortParams {
   search?: string;
   partner_id?: number;
   shop_id?: number;
+  user_id?: number;
   source?: string;
   payment?: string;
   // Include orders placed against test-type partners (excluded by default).

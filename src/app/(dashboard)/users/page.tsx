@@ -1,6 +1,6 @@
 
 import { Suspense, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { toast } from "sonner";
@@ -51,6 +51,7 @@ const formatDate = (dateStr?: string) => {
 
 function UsersContent() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage, setPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
   const [nameFilter, setNameFilter] = useQueryState(
@@ -207,7 +208,11 @@ function UsersContent() {
               </TableRow>
             ) : (
               users.map((user: User) => (
-                <TableRow key={user.id}>
+                <TableRow
+                  key={user.id}
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/users/${user.id}`)}
+                >
                   <TableCell className="text-sm font-medium text-foreground">
                     {user.name || "—"}
                   </TableCell>
@@ -226,7 +231,7 @@ function UsersContent() {
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(user.created_at)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
                       {user.phone_number && (
                         <Button variant="ghost" size="icon-sm" asChild>
