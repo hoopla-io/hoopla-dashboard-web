@@ -21,22 +21,10 @@ interface GeneralTabProps {
   user: UserDetail;
 }
 
-interface StatCardProps {
+interface StatCell {
   label: string;
   value: string;
   hint?: string;
-}
-
-function StatCard({ label, value, hint }: StatCardProps) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-semibold">{value}</p>
-        {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
-      </CardContent>
-    </Card>
-  );
 }
 
 export function GeneralTab({ user }: GeneralTabProps) {
@@ -61,32 +49,38 @@ export function GeneralTab({ user }: GeneralTabProps) {
 
   const { stats } = user;
 
+  const cells: StatCell[] = [
+    { label: "Balance", value: formatUZS(user.balance, { suffix: "сум" }) },
+    {
+      label: "Total spent",
+      value: formatSomUZS(stats.total_spent, { suffix: "сум" }),
+      hint: `${stats.completed_orders} completed orders`,
+    },
+    { label: "Orders", value: String(stats.orders_count), hint: `${stats.cancelled_orders} cancelled` },
+    {
+      label: "Last order",
+      value: stats.last_order_at ? new Date(stats.last_order_at).toLocaleDateString() : "—",
+    },
+    { label: "Cashback earned", value: formatUZS(stats.cashback_earned, { suffix: "сум" }) },
+    { label: "Cashback used", value: formatUZS(stats.cashback_used, { suffix: "сум" }) },
+    {
+      label: "Average rating",
+      value: stats.feedbacks_count > 0 ? stats.average_rating.toFixed(1) : "—",
+      hint: `${stats.feedbacks_count} feedbacks`,
+    },
+    { label: "Active sessions", value: String(stats.sessions_count) },
+  ];
+
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Balance" value={formatUZS(user.balance, { suffix: "сум" })} />
-        <StatCard
-          label="Total spent"
-          value={formatSomUZS(stats.total_spent, { suffix: "сум" })}
-          hint={`${stats.completed_orders} completed orders`}
-        />
-        <StatCard
-          label="Orders"
-          value={String(stats.orders_count)}
-          hint={`${stats.cancelled_orders} cancelled`}
-        />
-        <StatCard
-          label="Last order"
-          value={stats.last_order_at ? new Date(stats.last_order_at).toLocaleDateString() : "—"}
-        />
-        <StatCard label="Cashback earned" value={formatUZS(stats.cashback_earned, { suffix: "сум" })} />
-        <StatCard label="Cashback used" value={formatUZS(stats.cashback_used, { suffix: "сум" })} />
-        <StatCard
-          label="Average rating"
-          value={stats.feedbacks_count > 0 ? stats.average_rating.toFixed(1) : "—"}
-          hint={`${stats.feedbacks_count} feedbacks`}
-        />
-        <StatCard label="Active sessions" value={String(stats.sessions_count)} />
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4">
+        {cells.map((cell) => (
+          <div key={cell.label} className="flex flex-col gap-1 bg-card px-4 py-3">
+            <span className="text-xs text-muted-foreground">{cell.label}</span>
+            <span className="font-mono text-xl tabular-nums text-foreground">{cell.value}</span>
+            {cell.hint ? <span className="text-xs text-muted-foreground">{cell.hint}</span> : null}
+          </div>
+        ))}
       </div>
 
       <Card>
