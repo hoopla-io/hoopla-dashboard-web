@@ -97,6 +97,7 @@ export const PartnerDrinkModifierSchema = z.object({
 
 export const CreatePartnerDrinkModifierSchema = z.object({
   partner_drink_id: z.number(),
+  modifier_group_id: z.number().optional(),
   vendor_addon_id: z.string(),
   vendor_addon_key: z.string().optional(),
   vendor_addon_name: z.string(),
@@ -104,7 +105,7 @@ export const CreatePartnerDrinkModifierSchema = z.object({
   vendor_group_id: z.string().optional(),
 });
 
-export const UpdatePartnerDrinkModifierSchema = CreatePartnerDrinkModifierSchema.omit({ partner_drink_id: true });
+export const UpdatePartnerDrinkModifierSchema = CreatePartnerDrinkModifierSchema.omit({ partner_drink_id: true, modifier_group_id: true });
 
 export type PartnerDrinkModifier = z.infer<typeof PartnerDrinkModifierSchema>;
 export type CreatePartnerDrinkModifierRequest = z.infer<typeof CreatePartnerDrinkModifierSchema>;
@@ -127,6 +128,8 @@ export interface UpdateModifierGroupRequest {
   min_select: number;
   max_select?: number | null;
 }
+
+export type CreateModifierGroupRequest = UpdateModifierGroupRequest & { partner_drink_id: number };
 
 export type ReorderModifierGroupsRequest = { partner_drink_id: number; modifier_group_ids: number[] };
 export type ReorderModifiersRequest = { modifier_group_id: number; modifier_ids: number[] };
