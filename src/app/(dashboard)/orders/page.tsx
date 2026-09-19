@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/layout/page-header";
 import { PageToolbar } from "@/components/layout/page-toolbar";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
@@ -47,16 +47,9 @@ import { partnersApi } from "@/lib/api/domains/partners";
 import { shopsApi } from "@/lib/api/domains/shops";
 import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import { orderStatusTone, formatOrderStatus } from "@/lib/order-status";
 import { ORDER_SOURCES, formatOrderSource, orderSourceVariant } from "@/lib/order-source";
 import { OrdersSummaryCards } from "@/app/(dashboard)/orders/components/OrdersSummaryCards";
-
-const statusTone: Record<string, StatusTone> = {
-  pending_payment: "pending",
-  pending: "warning",
-  processing: "processing",
-  completed: "success",
-  cancelled: "danger",
-};
 
 const statusOptions = [
   "pending_payment",
@@ -65,9 +58,6 @@ const statusOptions = [
   "completed",
   "cancelled",
 ];
-
-const formatStatus = (status: string) =>
-  status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
 
 import { formatSomUZS } from "@/lib/money";
 
@@ -340,7 +330,7 @@ function OrdersContent() {
                 <SelectItem value="all">All</SelectItem>
                 {statusOptions.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {formatStatus(status)}
+                    {formatOrderStatus(status)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -530,8 +520,8 @@ function OrdersContent() {
                   </TableCell>
                   <TableCell>
                     <StatusBadge
-                      label={formatStatus(order.status)}
-                      tone={statusTone[order.status] ?? "neutral"}
+                      label={formatOrderStatus(order.status)}
+                      tone={orderStatusTone[order.status] ?? "neutral"}
                     />
                   </TableCell>
                   <TableCell>
@@ -552,7 +542,7 @@ function OrdersContent() {
                         <SelectContent>
                           {statusOptions.map((status) => (
                             <SelectItem key={status} value={status} className="text-xs">
-                              {formatStatus(status)}
+                              {formatOrderStatus(status)}
                             </SelectItem>
                           ))}
                         </SelectContent>

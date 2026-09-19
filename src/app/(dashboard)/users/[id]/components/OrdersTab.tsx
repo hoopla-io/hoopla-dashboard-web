@@ -5,7 +5,7 @@ import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Select,
   SelectContent,
@@ -29,15 +29,13 @@ import { ordersApi } from "@/lib/api/domains/orders";
 import { formatSomUZS } from "@/lib/money";
 import type { Order } from "@/lib/api/schemas/orders";
 import { formatOrderSource } from "@/lib/order-source";
+import { orderStatusTone, formatOrderStatus } from "@/lib/order-status";
 
 interface OrdersTabProps {
   userId: number;
 }
 
 const STATUSES = ["completed", "cancelled", "preparing", "pending_payment", "error"];
-
-const formatStatus = (status: string) =>
-  status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
 
 export function OrdersTab({ userId }: OrdersTabProps) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,7 +81,7 @@ export function OrdersTab({ userId }: OrdersTabProps) {
               <SelectItem value="all">All statuses</SelectItem>
               {STATUSES.map((status) => (
                 <SelectItem key={status} value={status}>
-                  {formatStatus(status)}
+                  {formatOrderStatus(status)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -179,17 +177,10 @@ export function OrdersTab({ userId }: OrdersTabProps) {
                         {formatOrderSource(item.source)}
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            item.status === "completed"
-                              ? "default"
-                              : item.status === "cancelled"
-                                ? "destructive"
-                                : "secondary"
-                          }
-                        >
-                          {formatStatus(item.status)}
-                        </Badge>
+                        <StatusBadge
+                          label={formatOrderStatus(item.status)}
+                          tone={orderStatusTone[item.status] ?? "neutral"}
+                        />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {item.time ? new Date(item.time).toLocaleString() : "-"}
