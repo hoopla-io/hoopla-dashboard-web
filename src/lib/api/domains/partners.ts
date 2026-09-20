@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest, PartnerFeedback } from "@/lib/api/schemas/partners";
+import type { Partner, CreatePartnerRequest, PartnerAttribute, CreatePartnerAttributeRequest, PartnerFeedback, PartnerModifier } from "@/lib/api/schemas/partners";
 
 
 
@@ -88,6 +88,25 @@ export const partnersApi = {
 
   deleteAttribute: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/partner/attributes/delete/${id}`);
+  },
+
+  getModifiers: async (partnerId: number): Promise<PartnerModifier[]> => {
+    const response = await httpClient.get<ApiResponse<PartnerModifier[]>>("/api/v1/partner/modifiers/list", {
+      params: { partner_id: partnerId },
+    });
+    return response.data.data || [];
+  },
+
+  createModifier: async (partnerId: number, name: string): Promise<void> => {
+    await httpClient.post("/api/v1/partner/modifiers/store", { partner_id: partnerId, name });
+  },
+
+  renameModifier: async (id: number, name: string): Promise<void> => {
+    await httpClient.put(`/api/v1/partner/modifiers/edit/${id}`, { name });
+  },
+
+  deleteModifier: async (id: number): Promise<void> => {
+    await httpClient.delete(`/api/v1/partner/modifiers/delete/${id}`);
   },
 
   getFeedbacks: async (partnerId: number): Promise<PartnerFeedback[]> => {

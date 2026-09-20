@@ -58,6 +58,14 @@ export const CreatePartnerAttributeSchema = z.object({
 export type PartnerAttribute = z.infer<typeof PartnerAttributeSchema>;
 export type CreatePartnerAttributeRequest = z.infer<typeof CreatePartnerAttributeSchema>;
 
+export const PartnerModifierSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  products_count: z.number(),
+});
+
+export type PartnerModifier = z.infer<typeof PartnerModifierSchema>;
+
 export const PartnerFeedbackSchema = z.object({
   id: z.number(),
   order_id: z.number(),
