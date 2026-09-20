@@ -1,12 +1,13 @@
 
 import { useState, useMemo, Suspense } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -14,6 +15,7 @@ import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { EmptyState } from "@/components/data-table/empty-state";
 import { useConfirm } from "@/hooks/use-confirm";
 import { drinksApi } from "@/lib/api/domains/drinks";
+import { partnersApi } from "@/lib/api/domains/partners";
 import { formatUZS } from "@/lib/money";
 import { ReorderControls } from "@/app/(dashboard)/partners/[id]/components/ReorderControls";
 import type { PaginatedResponse } from "@/lib/api/types";
@@ -142,10 +144,12 @@ function GroupFormDialog({
 }
 
 function GroupModifiersDialog({
+  partnerId,
   partnerDrinkId,
   group,
   onClose,
 }: {
+  partnerId: number;
   partnerDrinkId: number;
   group: ModifierGroup;
   onClose: () => void;
@@ -171,6 +175,23 @@ function GroupModifiersDialog({
     queryFn: () => drinksApi.listModifiers(partnerDrinkId, { page: 1, limit: 100 }),
   });
   const productModifiers = useMemo(() => productModifiersData?.data || [], [productModifiersData]);
+
+  const { data: partnerModifiersData, isLoading: isLoadingPartnerModifiers } = useQuery({
+    queryKey: ["partner_modifiers", partnerId],
+    queryFn: () => partnersApi.getModifiers(partnerId),
+    enabled: !!partnerId,
+  });
+
+  const nameOptions = useMemo(() => {
+    const names = (partnerModifiersData || []).map((m) => m.name);
+    if (form.vendor_addon_name && !names.includes(form.vendor_addon_name)) names.unshift(form.vendor_addon_name);
+    return names;
+  }, [partnerModifiersData, form.vendor_addon_name]);
+
+  const namesInGroup = useMemo(
+    () => new Set(modifiers.filter((m) => m.id !== editingModifier?.id).map((m) => (m.vendor_addon_name ?? "").toLowerCase())),
+    [modifiers, editingModifier],
+  );
 
   const nextVendorAddonId = useMemo(() => {
     const nums = productModifiers
@@ -273,7 +294,7 @@ function GroupModifiersDialog({
 
   const handleSubmit = () => {
     if (!form.vendor_addon_name || !form.vendor_addon_id) {
-      toast.error("Modifier Name and Vendor Modifier ID are required");
+      toast.error("Modifier and Vendor Modifier ID are required");
       return;
     }
     if (productModifiers.some((m) => m.id !== editingModifier?.id && (m.vendor_addon_id ?? "") === form.vendor_addon_id)) {
@@ -393,13 +414,26 @@ function GroupModifiersDialog({
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="modifier_name">Modifier Name</Label>
-              <Input
-                id="modifier_name"
-                value={form.vendor_addon_name}
-                onChange={(e) => setForm({ ...form, vendor_addon_name: e.target.value })}
-                placeholder="e.g. Extra Sugar"
-              />
+              <Label htmlFor="modifier_name">Modifier</Label>
+              <Select value={form.vendor_addon_name} onValueChange={(value) => setForm({ ...form, vendor_addon_name: value })}>
+                <SelectTrigger id="modifier_name" className="w-full">
+                  <SelectValue placeholder={isLoadingPartnerModifiers ? "Loading…" : "Choose a modifier"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {nameOptions.map((name) => (
+                    <SelectItem key={name} value={name} disabled={namesInGroup.has(name.toLowerCase())}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Missing one? Add it in the partner&apos;s{" "}
+                <Link to={`/partners/${partnerId}?tab=modifiers`} className="underline underline-offset-2">
+                  Modifiers
+                </Link>{" "}
+                tab first.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="modifier_vendor_id">Vendor Modifier ID</Label>
@@ -641,6 +675,7 @@ function ModifiersContent() {
       {openGroup ? (
         <GroupModifiersDialog
           key={openGroup.id}
+          partnerId={partnerId}
           partnerDrinkId={partnerDrinkId}
           group={openGroup}
           onClose={() => setOpenGroupId(null)}
