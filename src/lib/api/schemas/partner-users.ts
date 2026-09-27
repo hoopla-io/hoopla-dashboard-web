@@ -1,7 +1,9 @@
 import { z } from "zod";
 
-// Cassa (shop) staff roles — used by the SHOP-detail Staff tab (vendor_pin login).
-export const PARTNER_USER_ROLES = ["MANAGER", "CASHIER"] as const;
+// Shop staff roles — used by the SHOP-detail Staff tab. MANAGER and CASHIER
+// sign in to cassa with a vendor_pin; KIOSK signs in to kiosk.hoopla.uz with
+// phone + password.
+export const PARTNER_USER_ROLES = ["MANAGER", "CASHIER", "KIOSK"] as const;
 
 // Merchant-portal roles — used by the PARTNER-detail Staff tab (phone+password
 // login to merchant.hoopla.uz). MANAGER is shared (a manager can have both a

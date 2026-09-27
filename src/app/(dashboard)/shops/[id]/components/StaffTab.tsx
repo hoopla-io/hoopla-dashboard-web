@@ -51,18 +51,26 @@ interface StaffFormState {
   name: string;
   role: PartnerUserRole;
   vendor_pin: string;
+  phone_number: string;
+  password: string;
 }
 
 const EMPTY_FORM: StaffFormState = {
   name: "",
   role: "CASHIER",
   vendor_pin: "",
+  phone_number: "",
+  password: "",
 };
 
 const ROLE_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
   MANAGER: "secondary",
   CASHIER: "outline",
+  KIOSK: "default",
 };
+
+const isShopRole = (role: string): role is PartnerUserRole =>
+  (PARTNER_USER_ROLES as readonly string[]).includes(role);
 
 const PAGE_SIZE = 500;
 
@@ -152,8 +160,10 @@ export function StaffTab({ shopId }: StaffTabProps) {
     setEditing(user);
     setForm({
       name: user.name ?? "",
-      role: (user.role === "MANAGER" || user.role === "CASHIER" ? user.role : "CASHIER") as PartnerUserRole,
+      role: isShopRole(user.role) ? user.role : "CASHIER",
       vendor_pin: "",
+      phone_number: user.phone_number ?? "",
+      password: "",
     });
     setIsDialogOpen(true);
   }
@@ -172,6 +182,29 @@ export function StaffTab({ shopId }: StaffTabProps) {
     }
 
     const name = form.name.trim();
+
+    if (form.role === "KIOSK") {
+      const phoneNumber = form.phone_number.replace(/\D/g, "");
+      const password = form.password.trim();
+      if (phoneNumber.length < 9) {
+        return toast.error("Enter the kiosk's phone number");
+      }
+      if ((!editing || password) && password.length < 6) {
+        return toast.error("Password must be at least 6 characters");
+      }
+
+      const kiosk = {
+        partner_id: partnerId,
+        shop_id: shopId,
+        name: name || undefined,
+        role: form.role,
+        phone_number: phoneNumber,
+        password: password || undefined,
+      };
+
+      return editing ? updateMutation.mutate({ id: editing.id, ...kiosk }) : createMutation.mutate(kiosk);
+    }
+
     const vendorPin = form.vendor_pin.trim();
     if (vendorPin && !/^\d{4}$/.test(vendorPin)) {
       return toast.error("PIN must be exactly 4 digits");
@@ -306,9 +339,13 @@ export function StaffTab({ shopId }: StaffTabProps) {
             <DialogHeader>
               <DialogTitle>{editing ? "Edit staff member" : "Add staff member"}</DialogTitle>
               <DialogDescription>
-                {editing
-                  ? "Update staff details. Leave PIN blank to keep the current one."
-                  : `Cashier will be attached to ${shop?.name ?? "this shop"} and signs in with the 4-digit PIN.`}
+                {form.role === "KIOSK"
+                  ? editing
+                    ? "Update the kiosk account. Leave the password blank to keep the current one."
+                    : `The kiosk account is attached to ${shop?.name ?? "this shop"} and signs in to kiosk.hoopla.uz with its phone number and password.`
+                  : editing
+                    ? "Update staff details. Leave PIN blank to keep the current one."
+                    : `Cashier will be attached to ${shop?.name ?? "this shop"} and signs in with the 4-digit PIN.`}
               </DialogDescription>
             </DialogHeader>
 
@@ -342,6 +379,36 @@ export function StaffTab({ shopId }: StaffTabProps) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {form.role === "KIOSK" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="shop-kiosk-phone">Phone number</Label>
+                    <Input
+                      id="shop-kiosk-phone"
+                      value={form.phone_number}
+                      onChange={(e) => setForm({ ...form, phone_number: e.target.value.replace(/[^\d+]/g, "") })}
+                      placeholder="998901234567"
+                      inputMode="tel"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="shop-kiosk-password">Password</Label>
+                    <Input
+                      id="shop-kiosk-password"
+                      type="password"
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      placeholder={editing ? "Leave blank to keep" : "At least 6 characters"}
+                      autoComplete="new-password"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Staff type the phone number and password once on the kiosk iPad at kiosk.hoopla.uz.
+                    </p>
+                  </div>
+                </>
+              )}
 
               {(form.role === "CASHIER" || form.role === "MANAGER") && (
                 <div className="space-y-2">
