@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
 import { drinksApi } from "@/lib/api/domains/drinks";
+import { ofdSpicItems } from "@/lib/ofd-spic";
 import { CreateDrinkSchema } from "@/lib/api/schemas/drinks";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
@@ -53,7 +54,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
 
   const newDrinkForm = useForm<NewDrinkValues>({
     resolver: zodResolver(CreateDrinkSchema),
-    defaultValues: { name: "" },
+    defaultValues: { name: "", ofd_spic: "" },
   });
   const [newDrinkFile, setNewDrinkFile] = useState<File | undefined>(undefined);
 
@@ -65,7 +66,7 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
       setSelectedDrinkId(String(result.drinkId));
       setPendingDrinkName(variables.data.name);
       setShowNewDrinkForm(false);
-      newDrinkForm.reset({ name: "" });
+      newDrinkForm.reset({ name: "", ofd_spic: "" });
       setNewDrinkFile(undefined);
     },
     onError: () => toast.error("Failed to create product"),
@@ -179,6 +180,13 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
             {newDrinkForm.formState.errors.name && (
               <p className="text-xs text-destructive">{newDrinkForm.formState.errors.name.message}</p>
             )}
+            <SearchableSelect
+              value={newDrinkForm.watch("ofd_spic") ?? ""}
+              onValueChange={(v) => newDrinkForm.setValue("ofd_spic", v)}
+              placeholder="Select SPIC code…"
+              searchPlaceholder="Search by code or name…"
+              items={ofdSpicItems}
+            />
             <Input
               type="file"
               accept="image/jpeg,image/png"

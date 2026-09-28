@@ -35,6 +35,8 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { useConfirm } from "@/hooks/use-confirm";
+import { SearchableSelect } from "@/components/pickers/searchable-select";
+import { ofdSpicItems } from "@/lib/ofd-spic";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
 
@@ -65,7 +67,7 @@ function DrinksContent() {
   }, [searchParams, navigate]);
 
   const [editDrink, setEditDrink] = useState<Drink | null>(null);
-  const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "", description: "" });
+  const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "", description: "", ofd_spic: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -92,7 +94,7 @@ function DrinksContent() {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
       toast.success("Product created");
       setIsCreateOpen(false);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", ofd_spic: "" });
       setSelectedFile(null);
     },
     onError: () => toast.error("Failed to create product"),
@@ -237,7 +239,7 @@ function DrinksContent() {
                         size="icon-sm"
                         onClick={() => {
                           setEditDrink(drink);
-                          setFormData({ name: drink.name, description: drink.description ?? "" });
+                          setFormData({ name: drink.name, description: drink.description ?? "", ofd_spic: drink.ofd_spic ?? "" });
                           setSelectedFile(null);
                         }}
                       >
@@ -304,6 +306,16 @@ function DrinksContent() {
                   value={formData.description ?? ""}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Default description shown to customers"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>OFD SPIC</Label>
+                <SearchableSelect
+                  value={formData.ofd_spic ?? ""}
+                  onValueChange={(ofd_spic) => setFormData({ ...formData, ofd_spic })}
+                  placeholder="Select SPIC code…"
+                  searchPlaceholder="Search by code or name…"
+                  items={ofdSpicItems}
                 />
               </div>
               <div className="space-y-1.5">
@@ -397,6 +409,16 @@ function DrinksContent() {
                 <p className="text-xs text-muted-foreground">
                   Leave blank to remove the default description.
                 </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>OFD SPIC</Label>
+                <SearchableSelect
+                  value={formData.ofd_spic ?? ""}
+                  onValueChange={(ofd_spic) => setFormData({ ...formData, ofd_spic })}
+                  placeholder="Select SPIC code…"
+                  searchPlaceholder="Search by code or name…"
+                  items={ofdSpicItems}
+                />
               </div>
 
               <div className="space-y-1.5">

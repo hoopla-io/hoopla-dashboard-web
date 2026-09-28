@@ -38,6 +38,7 @@ export const drinksApi = {
     const formData = new FormData();
     formData.append("name", data.name);
     if (data.description) formData.append("description", data.description);
+    if (data.ofd_spic) formData.append("ofd_spic", data.ofd_spic);
     if (file) formData.append("file", file);
 
     const response = await httpClient.post<ApiResponse<{ drinkId: number }>>("/api/v1/drink/store", formData, {
@@ -50,6 +51,7 @@ export const drinksApi = {
     const formData = new FormData();
     if (data.name) formData.append("name", data.name);
     if (data.description !== undefined) formData.append("description", data.description);
+    if (data.ofd_spic !== undefined) formData.append("ofd_spic", data.ofd_spic);
     if (file) formData.append("file", file);
 
     const response = await httpClient.put<ApiResponse<Drink>>(`/api/v1/drink/edit/${id}`, formData, {
