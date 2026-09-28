@@ -36,7 +36,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { useConfirm } from "@/hooks/use-confirm";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
-import { ofdSpicItems } from "@/lib/ofd-spic";
+import { useOfdSpicItems } from "@/hooks/use-ofd-spic-items";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
 
@@ -66,6 +66,7 @@ function DrinksContent() {
     }
   }, [searchParams, navigate]);
 
+  const ofdSpicItems = useOfdSpicItems();
   const [editDrink, setEditDrink] = useState<Drink | null>(null);
   const [formData, setFormData] = useState<CreateDrinkRequest>({ name: "", description: "", ofd_spic: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

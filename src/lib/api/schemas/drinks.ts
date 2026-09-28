@@ -44,6 +44,8 @@ export const CreateDrinkSchema = z.object({
 
 export const UpdateDrinkSchema = CreateDrinkSchema.partial();
 
+export type OfdSpic = { code: string; name: string };
+
 export type Drink = z.infer<typeof DrinkSchema>;
 export type CreateDrinkRequest = z.infer<typeof CreateDrinkSchema>;
 export type UpdateDrinkRequest = z.infer<typeof UpdateDrinkSchema>;

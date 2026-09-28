@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
 import { drinksApi } from "@/lib/api/domains/drinks";
-import { ofdSpicItems } from "@/lib/ofd-spic";
+import { useOfdSpicItems } from "@/hooks/use-ofd-spic-items";
 import { CreateDrinkSchema } from "@/lib/api/schemas/drinks";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
@@ -40,6 +40,7 @@ interface DrinksStepProps {
 
 export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, onBack }: DrinksStepProps) {
   const queryClient = useQueryClient();
+  const ofdSpicItems = useOfdSpicItems();
   const [selectedDrinkId, setSelectedDrinkId] = useState("");
   const [pendingDrinkName, setPendingDrinkName] = useState<string | undefined>(undefined);
   const [showNewDrinkForm, setShowNewDrinkForm] = useState(false);

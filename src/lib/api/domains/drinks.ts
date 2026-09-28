@@ -1,6 +1,6 @@
 import { httpClient } from "@/lib/api/http-client";
 import type {
-  Drink, CreateDrinkRequest,
+  Drink, CreateDrinkRequest, OfdSpic,
 	PartnerDrink, CreatePartnerDrinkRequest, UpdatePartnerDrinkRequest,
 	ReorderPartnerDrinksRequest,
   PartnerDrinkModifier, CreatePartnerDrinkModifierRequest, UpdatePartnerDrinkModifierRequest, ReorderModifiersRequest,
@@ -62,6 +62,11 @@ export const drinksApi = {
 
   delete: async (id: number): Promise<void> => {
     await httpClient.delete(`/api/v1/drink/delete/${id}`);
+  },
+
+  getOfdSpics: async (): Promise<OfdSpic[]> => {
+    const response = await httpClient.get<ApiResponse<OfdSpic[]>>("/api/v1/drink/ofd-spic/list");
+    return response.data.data ?? [];
   },
 
   getByPartner: async (partnerId: number): Promise<PartnerDrink[]> => {
