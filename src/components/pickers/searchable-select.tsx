@@ -23,7 +23,7 @@ export function SearchableSelect({
   const selected = items.find((i) => i.value === value);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
           <span className="w-0 flex-1 truncate text-left">{selected ? selected.label : placeholder}</span>
