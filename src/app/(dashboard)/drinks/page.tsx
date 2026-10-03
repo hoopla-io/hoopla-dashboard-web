@@ -36,7 +36,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { useConfirm } from "@/hooks/use-confirm";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
-import { useOfdSpicItems } from "@/hooks/use-ofd-spic-items";
+import { isOfdSpic, useOfdSpicItems } from "@/hooks/use-ofd-spic-items";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Drink, CreateDrinkRequest } from "@/lib/api/schemas/drinks";
 
@@ -315,8 +315,10 @@ function DrinksContent() {
                   value={formData.ofd_spic ?? ""}
                   onValueChange={(ofd_spic) => setFormData({ ...formData, ofd_spic })}
                   placeholder="Select SPIC code…"
-                  searchPlaceholder="Search by code or name…"
+                  searchPlaceholder="Search or type a 17-digit code…"
                   items={ofdSpicItems}
+                  isValidCustom={isOfdSpic}
+                  emptyText="No match. Type all 17 digits to use your own code."
                 />
               </div>
               <div className="space-y-1.5">
@@ -417,8 +419,10 @@ function DrinksContent() {
                   value={formData.ofd_spic ?? ""}
                   onValueChange={(ofd_spic) => setFormData({ ...formData, ofd_spic })}
                   placeholder="Select SPIC code…"
-                  searchPlaceholder="Search by code or name…"
+                  searchPlaceholder="Search or type a 17-digit code…"
                   items={ofdSpicItems}
+                  isValidCustom={isOfdSpic}
+                  emptyText="No match. Type all 17 digits to use your own code."
                 />
               </div>
 

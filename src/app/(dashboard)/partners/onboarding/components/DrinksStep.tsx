@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
 import { drinksApi } from "@/lib/api/domains/drinks";
-import { useOfdSpicItems } from "@/hooks/use-ofd-spic-items";
+import { isOfdSpic, useOfdSpicItems } from "@/hooks/use-ofd-spic-items";
 import { CreateDrinkSchema } from "@/lib/api/schemas/drinks";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
@@ -185,8 +185,10 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
               value={newDrinkForm.watch("ofd_spic") ?? ""}
               onValueChange={(v) => newDrinkForm.setValue("ofd_spic", v)}
               placeholder="Select SPIC code…"
-              searchPlaceholder="Search by code or name…"
+              searchPlaceholder="Search or type a 17-digit code…"
               items={ofdSpicItems}
+              isValidCustom={isOfdSpic}
+              emptyText="No match. Type all 17 digits to use your own code."
             />
             <Input
               type="file"
