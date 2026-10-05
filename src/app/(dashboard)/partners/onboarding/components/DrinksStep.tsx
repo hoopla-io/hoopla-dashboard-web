@@ -11,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SearchableSelect } from "@/components/pickers/searchable-select";
+import { OfdSpicInput } from "@/components/pickers/ofd-spic-input";
 import { drinksApi } from "@/lib/api/domains/drinks";
-import { isOfdSpic, useOfdSpicItems } from "@/hooks/use-ofd-spic-items";
 import { CreateDrinkSchema } from "@/lib/api/schemas/drinks";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
@@ -40,7 +40,6 @@ interface DrinksStepProps {
 
 export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, onBack }: DrinksStepProps) {
   const queryClient = useQueryClient();
-  const ofdSpicItems = useOfdSpicItems();
   const [selectedDrinkId, setSelectedDrinkId] = useState("");
   const [pendingDrinkName, setPendingDrinkName] = useState<string | undefined>(undefined);
   const [showNewDrinkForm, setShowNewDrinkForm] = useState(false);
@@ -181,15 +180,13 @@ export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, o
             {newDrinkForm.formState.errors.name && (
               <p className="text-xs text-destructive">{newDrinkForm.formState.errors.name.message}</p>
             )}
-            <SearchableSelect
+            <OfdSpicInput
               value={newDrinkForm.watch("ofd_spic") ?? ""}
               onValueChange={(v) => newDrinkForm.setValue("ofd_spic", v)}
-              placeholder="Select SPIC code…"
-              searchPlaceholder="Search or type a 17-digit code…"
-              items={ofdSpicItems}
-              isValidCustom={isOfdSpic}
-              emptyText="No match. Type all 17 digits to use your own code."
             />
+            {newDrinkForm.formState.errors.ofd_spic && (
+              <p className="text-xs text-destructive">{newDrinkForm.formState.errors.ofd_spic.message}</p>
+            )}
             <Input
               type="file"
               accept="image/jpeg,image/png"

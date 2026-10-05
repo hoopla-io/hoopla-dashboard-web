@@ -39,7 +39,7 @@ export const DrinkSchema = z.object({
 export const CreateDrinkSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
-  ofd_spic: z.string().optional(),
+  ofd_spic: z.string().regex(/^(\d{17})?$/, "SPIC code must be 17 digits").optional(),
 });
 
 export const UpdateDrinkSchema = CreateDrinkSchema.partial();
