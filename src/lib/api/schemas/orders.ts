@@ -20,6 +20,7 @@ export const OrderSchema = z.object({
     name: z.string(),
   }).optional(),
   price: z.number().optional(),
+  promo_code: z.string().optional().nullable(),
   shop: z.object({
     id: z.number(),
     name: z.string(),

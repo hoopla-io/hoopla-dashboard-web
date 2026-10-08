@@ -394,6 +394,7 @@ function OrdersContent() {
               <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
                 Price
               </SortableTableHead>
+              <TableHead>Promo code</TableHead>
               <TableHead>Shop</TableHead>
               <SortableTableHead column="source" sort={sort} order={order} onSort={onSort}>
                 Source
@@ -416,13 +417,13 @@ function OrdersContent() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={13} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={14} className="py-10 text-center text-sm text-muted-foreground">
                   Loading…
                 </TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={13} className="py-10 text-center">
+                <TableCell colSpan={14} className="py-10 text-center">
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Couldn't load orders. Check your connection and try again.
@@ -435,7 +436,7 @@ function OrdersContent() {
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={13} className="p-0">
+                <TableCell colSpan={14} className="p-0">
                   <EmptyState
                     title="No orders found"
                     description={
@@ -474,6 +475,9 @@ function OrdersContent() {
                   <TableCell className="font-mono text-sm tabular-nums">
                     {formatPrice(order.price)}{" "}
                     <span className="text-xs text-muted-foreground">UZS</span>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {order.promo_code || <span className="text-muted-foreground">—</span>}
                   </TableCell>
                   <TableCell className="text-sm">
                     {order.shop ? (
