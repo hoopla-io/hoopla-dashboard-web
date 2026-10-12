@@ -61,6 +61,7 @@ export type CreatePartnerAttributeRequest = z.infer<typeof CreatePartnerAttribut
 export const PartnerModifierSchema = z.object({
   id: z.number(),
   name: z.string(),
+  image_url: z.string().nullable(),
   products_count: z.number(),
 });
 

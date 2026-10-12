@@ -97,12 +97,24 @@ export const partnersApi = {
     return response.data.data || [];
   },
 
-  createModifier: async (partnerId: number, name: string): Promise<void> => {
-    await httpClient.post("/api/v1/partner/modifiers/store", { partner_id: partnerId, name });
+  createModifier: async (partnerId: number, name: string, file?: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append("partner_id", String(partnerId));
+    formData.append("name", name);
+    if (file) formData.append("file", file);
+    await httpClient.post("/api/v1/partner/modifiers/store", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   },
 
-  renameModifier: async (id: number, name: string): Promise<void> => {
-    await httpClient.put(`/api/v1/partner/modifiers/edit/${id}`, { name });
+  updateModifier: async (id: number, name: string, file?: File, removeImage?: boolean): Promise<void> => {
+    const formData = new FormData();
+    formData.append("name", name);
+    if (file) formData.append("file", file);
+    else if (removeImage) formData.append("remove_image", "1");
+    await httpClient.put(`/api/v1/partner/modifiers/edit/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
   },
 
   deleteModifier: async (id: number): Promise<void> => {
