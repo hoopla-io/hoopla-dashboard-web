@@ -24,6 +24,12 @@ interface TransactionsTabProps {
 
 const TYPES = ["system", "payme", "click"];
 
+const TYPE_LABELS: Record<string, string> = {
+  system: "Система",
+  payme: "Payme",
+  click: "Click",
+};
+
 export function TransactionsTab({ userId }: TransactionsTabProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
@@ -63,13 +69,13 @@ export function TransactionsTab({ userId }: TransactionsTabProps) {
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Type" />
+                <SelectValue placeholder="Тип" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="all">Все типы</SelectItem>
                 {TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {TYPE_LABELS[type] ?? type}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -84,19 +90,19 @@ export function TransactionsTab({ userId }: TransactionsTabProps) {
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Direction" />
+                <SelectValue placeholder="Направление" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">In and out</SelectItem>
-                <SelectItem value="debit">Money in</SelectItem>
-                <SelectItem value="credit">Money out</SelectItem>
+                <SelectItem value="all">Приход и расход</SelectItem>
+                <SelectItem value="debit">Приход</SelectItem>
+                <SelectItem value="credit">Расход</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         {totals ? (
           <p className="text-sm text-muted-foreground">
-            In: <span className="font-medium text-foreground">{formatUZS(totals.debit)} сум</span> · Out:{" "}
+            Приход: <span className="font-medium text-foreground">{formatUZS(totals.debit)} сум</span> · Расход:{" "}
             <span className="font-medium text-foreground">{formatUZS(totals.credit)} сум</span>
           </p>
         ) : null}
@@ -104,7 +110,7 @@ export function TransactionsTab({ userId }: TransactionsTabProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Transaction history</CardTitle>
+          <CardTitle>История транзакций</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
@@ -115,35 +121,35 @@ export function TransactionsTab({ userId }: TransactionsTabProps) {
                     ID
                   </SortableTableHead>
                   <SortableTableHead column="transaction_type" sort={sort} order={order} onSort={onSort}>
-                    Type
+                    Тип
                   </SortableTableHead>
                   <SortableTableHead column="payment_type" sort={sort} order={order} onSort={onSort}>
-                    Direction
+                    Направление
                   </SortableTableHead>
                   <SortableTableHead column="amount" sort={sort} order={order} onSort={onSort}>
-                    Amount
+                    Сумма
                   </SortableTableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Reference</TableHead>
+                  <TableHead>Описание</TableHead>
+                  <TableHead>Референс</TableHead>
                   <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                    Date
+                    Дата
                   </SortableTableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-4">Loading transactions...</TableCell>
+                    <TableCell colSpan={7} className="text-center py-4">Загрузка транзакций…</TableCell>
                   </TableRow>
                 ) : transactions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="p-0">
                       <EmptyState
-                        title="No transactions found"
+                        title="Транзакции не найдены"
                         description={
                           hasFilters
-                            ? "Try clearing your filters."
-                            : "Top-ups, cashback and refunds of this user will appear here."
+                            ? "Попробуйте сбросить фильтры."
+                            : "Здесь появятся пополнения, кэшбэк и возвраты этого пользователя."
                         }
                       />
                     </TableCell>
@@ -154,10 +160,10 @@ export function TransactionsTab({ userId }: TransactionsTabProps) {
                     return (
                       <TableRow key={transaction.id}>
                         <TableCell className="font-medium">#{transaction.id}</TableCell>
-                        <TableCell className="text-sm capitalize">{transaction.transaction_type}</TableCell>
+                        <TableCell className="text-sm capitalize">{TYPE_LABELS[transaction.transaction_type] ?? transaction.transaction_type}</TableCell>
                         <TableCell>
                           <StatusBadge
-                            label={isDebit ? "In" : "Out"}
+                            label={isDebit ? "Приход" : "Расход"}
                             tone={isDebit ? "success" : "danger"}
                           />
                         </TableCell>
@@ -170,7 +176,7 @@ export function TransactionsTab({ userId }: TransactionsTabProps) {
                           {transaction.transaction_id || "-"}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {transaction.created_at ? new Date(transaction.created_at).toLocaleString() : "-"}
+                          {transaction.created_at ? new Date(transaction.created_at).toLocaleString("ru-RU") : "-"}
                         </TableCell>
                       </TableRow>
                     );

@@ -2,19 +2,19 @@ import type { OrderDetail } from "@/lib/api/schemas/orders";
 import { formatOrderStatus } from "@/lib/order-status";
 
 const EVENT_LABELS: Record<string, string> = {
-  "order.received": "Received by cassa",
-  "order.accepted": "Accepted",
-  "order.paid": "Paid",
-  "order.completed": "Completed",
-  "order.cancelled": "Cancelled",
-  "order.status_changed": "Status changed",
+  "order.received": "Получен кассой",
+  "order.accepted": "Принят",
+  "order.paid": "Оплачен",
+  "order.completed": "Выполнен",
+  "order.cancelled": "Отменён",
+  "order.status_changed": "Статус изменён",
 };
 
 const REASON_LABELS: Record<string, string> = {
-  out_of_stock: "Out of stock",
-  customer_request: "Customer request",
-  closing_soon: "Closing soon",
-  other: "Other",
+  out_of_stock: "Нет в наличии",
+  customer_request: "По просьбе клиента",
+  closing_soon: "Скоро закрытие",
+  other: "Другое",
 };
 
 interface TimelineEntry {
@@ -24,7 +24,7 @@ interface TimelineEntry {
   lines: string[];
 }
 
-const formatTime = (value: string) => new Date(value).toLocaleString();
+const formatTime = (value: string) => new Date(value).toLocaleString("ru-RU");
 
 const asText = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 
@@ -38,7 +38,7 @@ function describeReason(raw: string): string {
 
 function buildEntries(order: OrderDetail): TimelineEntry[] {
   const entries: TimelineEntry[] = [
-    { key: "placed", at: order.placed_at, title: "Placed by customer", lines: [] },
+    { key: "placed", at: order.placed_at, title: "Оформлен клиентом", lines: [] },
   ];
 
   for (const event of order.timeline) {
@@ -53,9 +53,9 @@ function buildEntries(order: OrderDetail): TimelineEntry[] {
     let title = EVENT_LABELS[event.type] ?? event.type;
     if (by === "dashboard") {
       title = from && to ? `${formatOrderStatus(from)} → ${formatOrderStatus(to)}` : title;
-      lines.push(`By ${admin || "admin"} in the dashboard`);
+      lines.push(`${admin || "Администратор"} в панели управления`);
     } else if (event.staff_name) {
-      lines.push(`By ${event.staff_name}`);
+      lines.push(`Сотрудник: ${event.staff_name}`);
     }
     if (reason) lines.push(describeReason(reason));
 
@@ -64,7 +64,7 @@ function buildEntries(order: OrderDetail): TimelineEntry[] {
 
   const hasCompletedEvent = order.timeline.some((e) => e.type === "order.completed");
   if (order.completed_at && !hasCompletedEvent) {
-    entries.push({ key: "completed", at: order.completed_at, title: "Completed", lines: [] });
+    entries.push({ key: "completed", at: order.completed_at, title: "Выполнен", lines: [] });
   }
 
   return entries.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
@@ -84,7 +84,7 @@ export function OrderTimeline({ order }: { order: OrderDetail }) {
             <div className="flex items-baseline justify-between gap-3">
               <p className="text-sm font-medium">{entry.title}</p>
               <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                {entry.key === "placed" || minutes > 180 ? formatTime(entry.at) : `+${minutes.toFixed(1)} min`}
+                {entry.key === "placed" || minutes > 180 ? formatTime(entry.at) : `+${minutes.toFixed(1)} мин`}
               </span>
             </div>
             {entry.lines.map((line) => (
@@ -97,7 +97,7 @@ export function OrderTimeline({ order }: { order: OrderDetail }) {
       })}
       {order.timeline.length === 0 && (
         <li className="text-xs text-muted-foreground">
-          No cassa events. This order was not routed through the Hoopla cassa.
+          Нет событий кассы. Этот заказ не проходил через кассу Hoopla.
         </li>
       )}
     </ol>

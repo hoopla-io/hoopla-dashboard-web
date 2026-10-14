@@ -4,7 +4,7 @@ export interface BarListItem {
   detail?: string;
 }
 
-export function BarList({ items, emptyText = "No data for this period" }: { items: BarListItem[]; emptyText?: string }) {
+export function BarList({ items, emptyText = "Нет данных за этот период" }: { items: BarListItem[]; emptyText?: string }) {
   if (items.length === 0) {
     return (
       <div className="flex h-[160px] items-center justify-center text-sm text-muted-foreground">
@@ -22,7 +22,7 @@ export function BarList({ items, emptyText = "No data for this period" }: { item
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="truncate font-medium">{item.label}</span>
             <span className="shrink-0 tabular-nums text-muted-foreground">
-              {item.value.toLocaleString()}
+              {item.value.toLocaleString("ru-RU")}
               {item.detail ? ` · ${item.detail}` : ""}
             </span>
           </div>

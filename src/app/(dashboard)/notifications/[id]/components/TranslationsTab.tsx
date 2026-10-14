@@ -25,7 +25,7 @@ import { notificationsApi, translationsApi } from "@/lib/api/domains/notificatio
 import type { NotificationTranslation, CreateTranslationRequest, UpdateTranslationRequest } from "@/lib/api/schemas/notifications";
 
 const ALL_LANGUAGES = ["uz", "ru", "en"] as const;
-const LANGUAGE_LABELS: Record<string, string> = { uz: "Uzbek", ru: "Russian", en: "English" };
+const LANGUAGE_LABELS: Record<string, string> = { uz: "Узбекский", ru: "Русский", en: "Английский" };
 
 export function TranslationsTab({ notificationId }: { notificationId: number }) {
   const queryClient = useQueryClient();
@@ -57,12 +57,12 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
       translationsApi.create(data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Translation created successfully!");
+      toast.success("Перевод создан");
       setIsCreateOpen(false);
       setCreateForm({ notification_id: notificationId, language: "uz", title: "", text: "" });
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to create translation"),
+    onError: () => toast.error("Не удалось создать перевод"),
   });
 
   const updateMutation = useMutation({
@@ -70,11 +70,11 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
       translationsApi.update(id, data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Translation updated successfully!");
+      toast.success("Перевод обновлён");
       setEditTranslation(null);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to update translation"),
+    onError: () => toast.error("Не удалось обновить перевод"),
   });
 
   const confirmDelete = useConfirm();
@@ -83,20 +83,20 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
     mutationFn: translationsApi.delete,
     onSuccess: () => {
       invalidate();
-      toast.success("Translation deleted successfully!");
+      toast.success("Перевод удалён");
     },
-    onError: () => toast.error("Failed to delete translation"),
+    onError: () => toast.error("Не удалось удалить перевод"),
   });
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Загрузка...</div>;
 
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Translations</CardTitle>
-            <CardDescription>Manage notification translations (uz, ru, en)</CardDescription>
+            <CardTitle>Переводы</CardTitle>
+            <CardDescription>Управление переводами уведомления (uz, ru, en)</CardDescription>
           </div>
           <Button
             onClick={() => {
@@ -114,7 +114,7 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
             disabled={availableLanguages.length === 0}
           >
             <Plus className="mr-2 h-4 w-4" />
-            Add Translation
+            Добавить перевод
           </Button>
         </CardHeader>
         <CardContent>
@@ -122,9 +122,9 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Language</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Text</TableHead>
+                  <TableHead>Язык</TableHead>
+                  <TableHead>Заголовок</TableHead>
+                  <TableHead>Текст</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -133,8 +133,8 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
                   <TableRow>
                     <TableCell colSpan={4} className="p-0">
                       <EmptyState
-                        title="No translations yet"
-                        description="Add a translation for uz, ru, or en to get started."
+                        title="Переводов пока нет"
+                        description="Добавьте перевод на uz, ru или en, чтобы начать."
                       />
                     </TableCell>
                   </TableRow>
@@ -174,7 +174,7 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
                             variant="ghost"
                             size="icon"
                             className="text-destructive hover:text-destructive cursor-pointer"
-                            onClick={async () => { if (await confirmDelete({ title: "Delete translation?" })) deleteMutation.mutate(translation.id); }}
+                            onClick={async () => { if (await confirmDelete({ title: "Удалить перевод?" })) deleteMutation.mutate(translation.id); }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -193,8 +193,8 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Translation</DialogTitle>
-            <DialogDescription>Create a new language translation</DialogDescription>
+            <DialogTitle>Добавить перевод</DialogTitle>
+            <DialogDescription>Создайте перевод на новый язык</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -202,7 +202,7 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
           }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Language</Label>
+                <Label>Язык</Label>
                 <Select
                   value={createForm.language}
                   onValueChange={(v) => setCreateForm({ ...createForm, language: v as "uz" | "ru" | "en" })}
@@ -220,25 +220,25 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>Заголовок</Label>
                 <Input
                   value={createForm.title || ""}
                   onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
-                  placeholder="Translated title"
+                  placeholder="Переведённый заголовок"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Text</Label>
+                <Label>Текст</Label>
                 <textarea
                   value={createForm.text || ""}
                   onChange={(e) => setCreateForm({ ...createForm, text: e.target.value })}
-                  placeholder="Translated text"
+                  placeholder="Переведённый текст"
                   rows={4}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Image (Optional)</Label>
+                <Label>Изображение (необязательно)</Label>
                 <Input
                   type="file"
                   accept="image/*"
@@ -249,9 +249,9 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Создание..." : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -267,8 +267,8 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Translation</DialogTitle>
-            <DialogDescription>Update translation content</DialogDescription>
+            <DialogTitle>Редактировать перевод</DialogTitle>
+            <DialogDescription>Измените содержимое перевода</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -278,29 +278,29 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
           }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Language</Label>
+                <Label>Язык</Label>
                 <Input value={LANGUAGE_LABELS[editTranslation?.language || ""] || ""} disabled />
               </div>
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>Заголовок</Label>
                 <Input
                   value={editForm.title || ""}
                   onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                  placeholder="Translated title"
+                  placeholder="Переведённый заголовок"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Text</Label>
+                <Label>Текст</Label>
                 <textarea
                   value={editForm.text || ""}
                   onChange={(e) => setEditForm({ ...editForm, text: e.target.value })}
-                  placeholder="Translated text"
+                  placeholder="Переведённый текст"
                   rows={4}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Image (Optional)</Label>
+                <Label>Изображение (необязательно)</Label>
                 <Input
                   type="file"
                   accept="image/*"
@@ -314,9 +314,9 @@ export function TranslationsTab({ notificationId }: { notificationId: number }) 
               <Button type="button" variant="outline" onClick={() => {
                 setEditTranslation(null);
                 setSelectedFile(null);
-              }}>Cancel</Button>
+              }}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>

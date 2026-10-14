@@ -60,7 +60,7 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All partners</SelectItem>
+              <SelectItem value="all">Все партнёры</SelectItem>
               {partners.map((partner) => (
                 <SelectItem key={partner.id} value={String(partner.id)}>
                   {partner.name}
@@ -79,7 +79,7 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All shops</SelectItem>
+              <SelectItem value="all">Все заведения</SelectItem>
               {partnerShops.map((shop) => (
                 <SelectItem key={shop.id} value={String(shop.id)}>
                   {shop.name}
@@ -93,11 +93,11 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
             onValueChange={(val) => filters.setSource(val === "all" ? null : val)}
           >
             <SelectTrigger size="sm" className="w-44">
-              <span className="text-muted-foreground">Source:</span>
+              <span className="text-muted-foreground">Источник:</span>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="all">Все</SelectItem>
               {ORDER_SOURCES.map((source) => (
                 <SelectItem key={source} value={source}>
                   {formatOrderSource(source)}
@@ -113,11 +113,11 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
                 onValueChange={(val) => filters.setStatus(val === "all" ? null : val)}
               >
                 <SelectTrigger size="sm" className="w-52">
-                  <span className="text-muted-foreground">Status:</span>
+                  <span className="text-muted-foreground">Статус:</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="all">Все</SelectItem>
                   {ORDER_STATUSES.map((status) => (
                     <SelectItem key={status} value={status}>
                       {formatOrderStatus(status)}
@@ -131,13 +131,13 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
                 onValueChange={(val) => filters.setIsPaid(val === "all" ? null : val)}
               >
                 <SelectTrigger size="sm" className="w-48">
-                  <span className="text-muted-foreground">Customer paid:</span>
+                  <span className="text-muted-foreground">Оплачен клиентом:</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="true">Yes</SelectItem>
-                  <SelectItem value="false">No</SelectItem>
+                  <SelectItem value="all">Все</SelectItem>
+                  <SelectItem value="true">Да</SelectItem>
+                  <SelectItem value="false">Нет</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -146,13 +146,13 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
                 onValueChange={(val) => filters.setPayment(val === "all" ? null : val)}
               >
                 <SelectTrigger size="sm" className="w-52">
-                  <span className="text-muted-foreground">Settled:</span>
+                  <span className="text-muted-foreground">Расчёт:</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="paid">Settled</SelectItem>
-                  <SelectItem value="not_paid">Not settled</SelectItem>
+                  <SelectItem value="all">Все</SelectItem>
+                  <SelectItem value="paid">Рассчитан</SelectItem>
+                  <SelectItem value="not_paid">Не рассчитан</SelectItem>
                 </SelectContent>
               </Select>
             </>
@@ -164,13 +164,13 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
             <SearchInput
               value={filters.search}
               onChange={filters.setSearch}
-              placeholder="Customer phone…"
+              placeholder="Телефон клиента…"
               className="w-52"
             />
             <SearchInput
               value={filters.drink}
               onChange={filters.setDrink}
-              placeholder="Search by product…"
+              placeholder="Поиск по товару…"
               className="w-52"
             />
           </div>
@@ -182,10 +182,10 @@ export function OrdersFilters({ filters, showListFilters }: OrdersFiltersProps) 
             checked={filters.includeTest}
             onCheckedChange={(checked) => filters.setIncludeTest(checked === true ? true : null)}
           />
-          Include test partners
+          Включить тестовых партнёров
         </label>
         <Button variant="outline" size="sm" onClick={filters.clear} disabled={!filters.hasFilters}>
-          Clear filters
+          Сбросить фильтры
         </Button>
       </div>
     </PageToolbar>

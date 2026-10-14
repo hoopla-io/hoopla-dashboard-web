@@ -17,7 +17,7 @@ function Row({ label, value, muted = false, strong = false }: {
   );
 }
 
-const som = (value: number) => `${formatSomUZS(Math.round(value))} UZS`;
+const som = (value: number) => `${formatSomUZS(Math.round(value))} сум`;
 
 export function OrderMoneySection({ order }: { order: OrderDetail }) {
   const { money } = order;
@@ -26,30 +26,30 @@ export function OrderMoneySection({ order }: { order: OrderDetail }) {
 
   return (
     <div className="space-y-2">
-      <Row label="Subtotal" value={som(money.subtotal)} />
+      <Row label="Подытог" value={som(money.subtotal)} />
       {money.promo_discount > 0 && (
         <Row
-          label={<>Promo <span className="font-mono text-xs">{order.promo_code}</span></>}
+          label={<>Промокод <span className="font-mono text-xs">{order.promo_code}</span></>}
           value={`− ${som(money.promo_discount)}`}
           muted
         />
       )}
-      <Row label="To pay" value={som(due)} strong />
+      <Row label="К оплате" value={som(due)} strong />
       <div className="my-2 border-t" />
-      <Row label="Paid from wallet" value={som(money.wallet)} muted={money.wallet === 0} />
+      <Row label="Оплачено с кошелька" value={som(money.wallet)} muted={money.wallet === 0} />
       <Row
-        label={<>Card{card && <span className="ml-1 text-xs text-muted-foreground">({card})</span>}</>}
+        label={<>Карта{card && <span className="ml-1 text-xs text-muted-foreground">({card})</span>}</>}
         value={som(money.card)}
         muted={money.card === 0}
       />
-      {money.gift_card > 0 && <Row label="Gift card" value={som(money.gift_card)} />}
-      <Row label="Customer paid" value={som(money.customer_paid)} strong />
+      {money.gift_card > 0 && <Row label="Подарочная карта" value={som(money.gift_card)} />}
+      <Row label="Оплачено клиентом" value={som(money.customer_paid)} strong />
       {money.card_status && money.card_status !== "success" && (
-        <p className="text-xs text-muted-foreground">Last card invoice: {money.card_status}</p>
+        <p className="text-xs text-muted-foreground">Последний счёт по карте: {money.card_status}</p>
       )}
       <div className="my-2 border-t" />
-      <Row label="Cashback earned" value={som(money.cashback_earned)} muted />
-      <Row label="Settled with partner" value={order.settlement_status === "paid" ? "Yes" : "No"} muted />
+      <Row label="Начислен кэшбэк" value={som(money.cashback_earned)} muted />
+      <Row label="Расчёт с партнёром" value={order.settlement_status === "paid" ? "Да" : "Нет"} muted />
     </div>
   );
 }

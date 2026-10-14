@@ -45,11 +45,11 @@ export function PushFilters({
 
         <Select value={kind} onValueChange={onKindChange}>
           <SelectTrigger size="sm" className="w-56">
-            <span className="text-muted-foreground">Kind:</span>
+            <span className="text-muted-foreground">Вид:</span>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="all">Все</SelectItem>
             {PUSH_KINDS.map((value) => (
               <SelectItem key={value} value={value}>
                 {formatPushKind(value)}
@@ -60,11 +60,11 @@ export function PushFilters({
 
         <Select value={status} onValueChange={onStatusChange}>
           <SelectTrigger size="sm" className="w-56">
-            <span className="text-muted-foreground">Status:</span>
+            <span className="text-muted-foreground">Статус:</span>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="all">Все</SelectItem>
             {PUSH_STATUSES.map((value) => (
               <SelectItem key={value} value={value}>
                 {formatPushStatus(value)}
@@ -76,12 +76,12 @@ export function PushFilters({
         <SearchInput
           value={search}
           onChange={onSearchChange}
-          placeholder="Customer phone or name…"
+          placeholder="Телефон или имя клиента…"
           className="w-60"
         />
       </div>
       <Button variant="outline" size="sm" onClick={onClear} disabled={!hasFilters}>
-        Clear filters
+        Сбросить фильтры
       </Button>
     </PageToolbar>
   );

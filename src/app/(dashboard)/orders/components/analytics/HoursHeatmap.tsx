@@ -1,6 +1,6 @@
 import type { HeatmapCell } from "@/lib/api/schemas/analytics";
 
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
 export function HoursHeatmap({ data }: { data: HeatmapCell[] }) {
@@ -10,7 +10,7 @@ export function HoursHeatmap({ data }: { data: HeatmapCell[] }) {
   if (max === 0) {
     return (
       <div className="flex h-[220px] items-center justify-center text-sm text-muted-foreground">
-        No completed orders in this period
+        За этот период выполненных заказов нет
       </div>
     );
   }
@@ -33,7 +33,7 @@ export function HoursHeatmap({ data }: { data: HeatmapCell[] }) {
               return (
                 <div
                   key={h}
-                  title={`${day} ${String(h).padStart(2, "0")}:00 — ${orders} orders`}
+                  title={`${day} ${String(h).padStart(2, "0")}:00 — заказов: ${orders}`}
                   className="h-6 rounded-[3px] bg-muted/50"
                   style={
                     orders > 0
@@ -47,12 +47,12 @@ export function HoursHeatmap({ data }: { data: HeatmapCell[] }) {
         ))}
       </div>
       <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-        <span>Fewer</span>
+        <span>Меньше</span>
         <div
           className="h-2 w-24 rounded-full"
           style={{ background: "linear-gradient(to right, color-mix(in oklch, var(--chart-1) 12%, transparent), var(--chart-1))" }}
         />
-        <span>More ({max} max)</span>
+        <span>Больше (макс. {max})</span>
       </div>
     </div>
   );

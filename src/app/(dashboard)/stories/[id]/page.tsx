@@ -29,7 +29,7 @@ import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { StoryItem, CreateStoryItemRequest } from "@/lib/api/schemas/stories";
 
-const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Product", url: "URL" };
+const LINK_TYPE_LABELS: Record<string, string> = { partner: "Партнёр", drink: "Товар", url: "URL" };
 
 const defaultItemForm: Omit<CreateStoryItemRequest, "story_id"> = {
   title: "",
@@ -78,12 +78,12 @@ function StoryDetailContent() {
     onSuccess: () => {
       invalidate();
       queryClient.invalidateQueries({ queryKey: ["stories"] });
-      toast.success("Slide added successfully!");
+      toast.success("Слайд добавлен");
       setIsCreateOpen(false);
       setFormData(defaultItemForm);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to add slide"),
+    onError: () => toast.error("Не удалось добавить слайд"),
   });
 
   const updateItemMutation = useMutation({
@@ -91,11 +91,11 @@ function StoryDetailContent() {
       storyItemsApi.update(id, data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Slide updated successfully!");
+      toast.success("Слайд обновлён");
       setEditItem(null);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to update slide"),
+    onError: () => toast.error("Не удалось обновить слайд"),
   });
 
   const confirmDelete = useConfirm();
@@ -105,9 +105,9 @@ function StoryDetailContent() {
     onSuccess: () => {
       invalidate();
       queryClient.invalidateQueries({ queryKey: ["stories"] });
-      toast.success("Slide deleted successfully!");
+      toast.success("Слайд удалён");
     },
-    onError: () => toast.error("Failed to delete slide"),
+    onError: () => toast.error("Не удалось удалить слайд"),
   });
 
   function handleSubmitCreate(e: React.FormEvent) {
@@ -146,35 +146,35 @@ function StoryDetailContent() {
   const formFields = (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
-        <Label>Title (Optional)</Label>
+        <Label>Заголовок (необязательно)</Label>
         <Input
           value={formData.title || ""}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Slide title"
+          placeholder="Заголовок слайда"
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Description (Optional)</Label>
+        <Label>Описание (необязательно)</Label>
         <Textarea
           value={formData.description || ""}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Slide description"
+          placeholder="Описание слайда"
           rows={3}
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Link Type (Optional)</Label>
+        <Label>Тип ссылки (необязательно)</Label>
         <Select
           value={formData.link_type || "none"}
           onValueChange={(v) => setFormData({ ...formData, link_type: v === "none" ? "" : v, link_value: "" })}
         >
           <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None</SelectItem>
-            <SelectItem value="partner">Partner</SelectItem>
-            <SelectItem value="drink">Product</SelectItem>
+            <SelectItem value="none">Нет</SelectItem>
+            <SelectItem value="partner">Партнёр</SelectItem>
+            <SelectItem value="drink">Товар</SelectItem>
             <SelectItem value="url">URL</SelectItem>
           </SelectContent>
         </Select>
@@ -182,21 +182,21 @@ function StoryDetailContent() {
 
       {formData.link_type && formData.link_type !== "none" && (
         <div className="space-y-2">
-          <Label>Link Value</Label>
+          <Label>Значение ссылки</Label>
           {formData.link_type === "partner" ? (
             <SearchableSelect
               value={formData.link_value || ""}
               onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-              placeholder="Select partner..."
-              searchPlaceholder="Search partners..."
+              placeholder="Выберите партнёра..."
+              searchPlaceholder="Поиск партнёров..."
               items={partners.map((p) => ({ value: String(p.id), label: p.name }))}
             />
           ) : formData.link_type === "drink" ? (
             <SearchableSelect
               value={formData.link_value || ""}
               onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-              placeholder="Select product..."
-              searchPlaceholder="Search products..."
+              placeholder="Выберите товар..."
+              searchPlaceholder="Поиск товаров..."
               items={drinks.map((d) => ({ value: String(d.id), label: d.name }))}
             />
           ) : (
@@ -211,7 +211,7 @@ function StoryDetailContent() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Sort Order</Label>
+          <Label>Порядок сортировки</Label>
           <Input
             type="number"
             value={formData.sort_order ?? 0}
@@ -219,7 +219,7 @@ function StoryDetailContent() {
           />
         </div>
         <div className="space-y-2">
-          <Label>Duration (seconds)</Label>
+          <Label>Длительность (сек)</Label>
           <Input
             type="number"
             min={1}
@@ -230,7 +230,7 @@ function StoryDetailContent() {
       </div>
 
       <div className="space-y-2">
-        <Label>Slide Image</Label>
+        <Label>Изображение слайда</Label>
         {(selectedFile || editItem?.image_url) && (() => {
           const src = selectedFile ? URL.createObjectURL(selectedFile) : editItem?.image_url || "";
           return (
@@ -240,7 +240,7 @@ function StoryDetailContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
+                <img src={src} alt="Превью" className="max-h-24 w-auto object-contain" />
               </button>
               <button
                 type="button"
@@ -259,17 +259,17 @@ function StoryDetailContent() {
             if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
           }}
         />
-        {editItem && <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>}
+        {editItem && <p className="text-xs text-muted-foreground mt-1">Оставьте пустым, чтобы сохранить текущее изображение</p>}
       </div>
     </div>
   );
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading story...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Загрузка истории...</div>;
   }
 
   if (!story) {
-    return <div className="p-8 text-center text-muted-foreground">Story not found</div>;
+    return <div className="p-8 text-center text-muted-foreground">История не найдена</div>;
   }
 
   return (
@@ -293,10 +293,10 @@ function StoryDetailContent() {
             <h1 className="text-2xl font-bold">{story.title}</h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant={story.is_active ? "default" : "secondary"}>
-                {story.is_active ? "Active" : "Inactive"}
+                {story.is_active ? "Активна" : "Неактивна"}
               </Badge>
               <span className="text-sm text-muted-foreground">
-                {items.length} slide{items.length !== 1 ? "s" : ""}
+                Слайдов: {items.length}
               </span>
             </div>
           </div>
@@ -305,10 +305,10 @@ function StoryDetailContent() {
 
       {/* Items Section */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Slides</h2>
+        <h2 className="text-xl font-semibold">Слайды</h2>
         <Button onClick={() => { setFormData(defaultItemForm); setSelectedFile(null); setIsCreateOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Slide
+          Добавить слайд
         </Button>
       </div>
 
@@ -317,11 +317,11 @@ function StoryDetailContent() {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Link</TableHead>
-              <TableHead>Order</TableHead>
-              <TableHead>Duration</TableHead>
+              <TableHead className="w-[80px]">Изображение</TableHead>
+              <TableHead>Заголовок</TableHead>
+              <TableHead>Ссылка</TableHead>
+              <TableHead>Порядок</TableHead>
+              <TableHead>Длительность</TableHead>
               <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -330,8 +330,8 @@ function StoryDetailContent() {
               <TableRow>
                 <TableCell colSpan={7} className="p-0">
                   <EmptyState
-                    title="No slides yet"
-                    description="Add a slide to get started."
+                    title="Слайдов пока нет"
+                    description="Добавьте слайд, чтобы начать."
                   />
                 </TableCell>
               </TableRow>
@@ -346,7 +346,7 @@ function StoryDetailContent() {
                         className="relative h-10 w-16 overflow-hidden rounded cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => setPreviewImage(item.image_url!)}
                       >
-                        <Image src={item.image_url} alt={item.title || "Slide"} fill className="object-cover" />
+                        <Image src={item.image_url} alt={item.title || "Слайд"} fill className="object-cover" />
                       </button>
                     ) : (
                       <div className="flex h-10 w-16 items-center justify-center rounded bg-muted">
@@ -375,7 +375,7 @@ function StoryDetailContent() {
                     )}
                   </TableCell>
                   <TableCell>{item.sort_order}</TableCell>
-                  <TableCell>{item.duration}s</TableCell>
+                  <TableCell>{item.duration} с</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="icon" className="cursor-pointer" onClick={() => openEdit(item)}>
@@ -385,7 +385,7 @@ function StoryDetailContent() {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive cursor-pointer"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete slide?" })) deleteItemMutation.mutate(item.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить слайд?" })) deleteItemMutation.mutate(item.id); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -402,15 +402,15 @@ function StoryDetailContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add Slide</DialogTitle>
-            <DialogDescription>Add a new slide to this story</DialogDescription>
+            <DialogTitle>Добавить слайд</DialogTitle>
+            <DialogDescription>Добавьте новый слайд в эту историю</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitCreate}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createItemMutation.isPending}>
-                {createItemMutation.isPending ? "Adding..." : "Add Slide"}
+                {createItemMutation.isPending ? "Добавление..." : "Добавить слайд"}
               </Button>
             </DialogFooter>
           </form>
@@ -423,15 +423,15 @@ function StoryDetailContent() {
       }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Slide</DialogTitle>
-            <DialogDescription>Update slide settings</DialogDescription>
+            <DialogTitle>Редактировать слайд</DialogTitle>
+            <DialogDescription>Измените настройки слайда</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitEdit}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setEditItem(null); setSelectedFile(null); }}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => { setEditItem(null); setSelectedFile(null); }}>Отмена</Button>
               <Button type="submit" disabled={updateItemMutation.isPending}>
-                {updateItemMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateItemMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -442,11 +442,11 @@ function StoryDetailContent() {
       <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>Slide image preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Просмотр изображения слайда</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            <img src={previewImage} alt="Slide preview" className="w-full h-auto rounded" />
+            <img src={previewImage} alt="Превью слайда" className="w-full h-auto rounded" />
           )}
         </DialogContent>
       </Dialog>
@@ -456,7 +456,7 @@ function StoryDetailContent() {
 
 export default function StoryDetailPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading story...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка истории...</div>}>
       <StoryDetailContent />
     </Suspense>
   );

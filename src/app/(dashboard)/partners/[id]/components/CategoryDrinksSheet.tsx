@@ -109,7 +109,7 @@ export function CategoryDrinksSheet({
         ...toRemove.map((id) => categoryApi.unlinkDrink(id, category.id)),
       ]);
       const failed = results.filter((r) => r.status === "rejected").length;
-      if (failed > 0) throw new Error(`${failed} of ${results.length} operations failed`);
+      if (failed > 0) throw new Error(`Не выполнено операций: ${failed} из ${results.length}`);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
@@ -117,19 +117,19 @@ export function CategoryDrinksSheet({
       queryClient.invalidateQueries({ queryKey: ["partner_category_detail", category.id] });
     },
     onSuccess: () => {
-      toast.success("Category products updated!");
+      toast.success("Товары категории обновлены!");
       setOverrides(new Map());
       onOpenChange(false);
     },
     onError: (e: Error) => {
-      toast.error(`Some changes failed to apply — list refreshed. ${e.message}`);
+      toast.error(`Часть изменений не применилась — список обновлён. ${e.message}`);
       setOverrides(new Map());
     },
   });
 
   const handleOpenChange = (next: boolean) => {
     if (!next && overrides.size > 0 && !saveMutation.isPending) {
-      if (!window.confirm("Discard unsaved changes?")) return;
+      if (!window.confirm("Отменить несохранённые изменения?")) return;
     }
     if (!next) setOverrides(new Map());
     onOpenChange(next);
@@ -141,7 +141,7 @@ export function CategoryDrinksSheet({
         <SheetHeader className="border-b">
           <SheetTitle>{category.name}</SheetTitle>
           <SheetDescription>
-            {attachedCount} {attachedCount === 1 ? "product" : "products"} attached
+            Привязано товаров: {attachedCount}
           </SheetDescription>
         </SheetHeader>
 
@@ -151,7 +151,7 @@ export function CategoryDrinksSheet({
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products..."
+              placeholder="Поиск товаров…"
               className="pl-8"
             />
           </div>
@@ -166,11 +166,11 @@ export function CategoryDrinksSheet({
             </div>
           ) : partnerDrinks.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No products for this partner yet. Add them in the Products tab.
+              У этого партнёра пока нет товаров. Добавьте их на вкладке «Товары».
             </p>
           ) : visibleDrinks.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              No products match &quot;{search}&quot;
+              Нет товаров по запросу «{search}»
             </p>
           ) : (
             <div className="space-y-2 py-2">
@@ -209,7 +209,7 @@ export function CategoryDrinksSheet({
                       <div className="flex flex-wrap items-center gap-1">
                         {pd.product_price != null && (
                           <span className="text-xs text-muted-foreground">
-                            {formatUZS(pd.product_price)} UZS
+                            {formatUZS(pd.product_price)} сум
                           </span>
                         )}
                         {badgeIds.map((id) => {
@@ -240,13 +240,13 @@ export function CategoryDrinksSheet({
             onClick={() => handleOpenChange(false)}
             disabled={saveMutation.isPending}
           >
-            Cancel
+            Отмена
           </Button>
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={overrides.size === 0 || saveMutation.isPending}
           >
-            {saveMutation.isPending ? "Saving..." : `Save changes (${overrides.size})`}
+            {saveMutation.isPending ? "Сохранение…" : `Сохранить изменения (${overrides.size})`}
           </Button>
         </SheetFooter>
       </SheetContent>

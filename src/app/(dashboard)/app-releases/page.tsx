@@ -7,8 +7,8 @@ export default function AppReleasesPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="App Releases"
-        description="Publish new cassa app builds and control which devices must update."
+        title="Релизы приложения"
+        description="Публикация новых сборок приложения кассы и управление обязательными обновлениями устройств."
       />
 
       <div className="max-w-2xl space-y-4">

@@ -61,7 +61,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
   const createGlobalDrinkMutation = useMutation({
     mutationFn: ({ data, file }: { data: NewDrinkValues; file?: File }) => drinksApi.create(data, file),
     onSuccess: (result, variables) => {
-      toast.success("Product added to catalog!");
+      toast.success("Товар добавлен в каталог!");
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
       setSelectedDrinkId(String(result.drinkId));
       setPendingDrinkName(variables.data.name);
@@ -69,7 +69,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
       newDrinkForm.reset({ name: "", ofd_spic: "" });
       setNewDrinkFile(undefined);
     },
-    onError: () => toast.error("Failed to create product"),
+    onError: () => toast.error("Не удалось создать товар"),
   });
 
   const detailsForm = useForm<DrinkDetailsValues>({
@@ -91,7 +91,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
         file
       ),
     onSuccess: (pd, variables) => {
-      toast.success("Product added to menu!");
+      toast.success("Товар добавлен в меню!");
       const catalogDrink = catalog.find((d) => String(d.id) === selectedDrinkId);
       const label = variables.data.vendor_product_name || pendingDrinkName || catalogDrink?.name || `#${pd.id}`;
       onAdd({ id: pd.id, label });
@@ -101,7 +101,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
       setFile(undefined);
       detailsForm.reset({ vendor_product_name: "", product_price: 0, vendor_product_price: 0 });
     },
-    onError: () => toast.error("Failed to add product"),
+    onError: () => toast.error("Не удалось добавить товар"),
   });
 
   const toggleCategory = (id: number) => {
@@ -110,11 +110,11 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
 
   const handleAssign = detailsForm.handleSubmit((data) => {
     if (!selectedDrinkId) {
-      toast.error("Pick or create a product first");
+      toast.error("Сначала выберите или создайте товар");
       return;
     }
     if (!file) {
-      toast.error("Please select an image");
+      toast.error("Выберите изображение");
       return;
     }
     assignMutation.mutate({ data, file });
@@ -123,9 +123,9 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Products</h2>
+        <h2 className="text-lg font-semibold text-foreground">Товары</h2>
         <p className="text-sm text-muted-foreground">
-          Add menu items for this partner — pick from the global catalog or create a new one. Skip for now if you'd rather finish this later.
+          Добавьте позиции меню для этого партнёра — выберите из общего каталога или создайте новую. Можно пропустить и закончить позже.
         </p>
       </div>
 
@@ -143,7 +143,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
       <div className="space-y-4 rounded-lg border border-dashed border-border p-4">
         {!showNewDrinkForm ? (
           <div className="space-y-1.5">
-            <Label>Product</Label>
+            <Label>Товар</Label>
             <div className="flex gap-2">
               <div className="flex-1">
                 <SearchableSelect
@@ -152,31 +152,31 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
                     setSelectedDrinkId(id);
                     setPendingDrinkName(undefined);
                   }}
-                  placeholder="Select from catalog…"
-                  searchPlaceholder="Search products…"
+                  placeholder="Выберите из каталога…"
+                  searchPlaceholder="Поиск товаров…"
                   items={catalog.map((d) => ({ value: String(d.id), label: d.name }))}
                 />
               </div>
               <Button type="button" variant="outline" onClick={() => setShowNewDrinkForm(true)}>
                 <Plus className="size-4" />
-                New
+                Новый
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>New catalog product</Label>
+              <Label>Новый товар каталога</Label>
               <button
                 type="button"
                 className="text-muted-foreground hover:text-foreground"
                 onClick={() => setShowNewDrinkForm(false)}
-                aria-label="Cancel"
+                aria-label="Отмена"
               >
                 <X className="size-4" />
               </button>
             </div>
-            <Input placeholder="Product name" {...newDrinkForm.register("name")} />
+            <Input placeholder="Название товара" {...newDrinkForm.register("name")} />
             {newDrinkForm.formState.errors.name && (
               <p className="text-xs text-destructive">{newDrinkForm.formState.errors.name.message}</p>
             )}
@@ -198,30 +198,30 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
               disabled={createGlobalDrinkMutation.isPending}
               onClick={newDrinkForm.handleSubmit((data) => {
                 if (!newDrinkFile) {
-                  toast.error("Please select an image");
+                  toast.error("Выберите изображение");
                   return;
                 }
                 createGlobalDrinkMutation.mutate({ data, file: newDrinkFile });
               })}
             >
-              {createGlobalDrinkMutation.isPending ? "Creating…" : "Create product"}
+              {createGlobalDrinkMutation.isPending ? "Создание…" : "Создать товар"}
             </Button>
           </div>
         )}
 
         <form onSubmit={handleAssign} className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="onboarding-drink-vendor-name">Menu name</Label>
+            <Label htmlFor="onboarding-drink-vendor-name">Название в меню</Label>
             <Input
               id="onboarding-drink-vendor-name"
-              placeholder="e.g. Cappuccino 300ml"
+              placeholder="напр. Капучино 300 мл"
               {...detailsForm.register("vendor_product_name")}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="onboarding-drink-price">Price</Label>
+              <Label htmlFor="onboarding-drink-price">Цена</Label>
               <Input
                 id="onboarding-drink-price"
                 type="number"
@@ -229,7 +229,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="onboarding-drink-vendor-price">Vendor price</Label>
+              <Label htmlFor="onboarding-drink-vendor-price">Цена вендора</Label>
               <Input
                 id="onboarding-drink-vendor-price"
                 type="number"
@@ -240,7 +240,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
 
           {categories.length > 0 && (
             <div className="space-y-1.5">
-              <Label>Categories</Label>
+              <Label>Категории</Label>
               <div className="flex flex-wrap gap-2">
                 {categories.map((c) => (
                   <Badge
@@ -257,7 +257,7 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="onboarding-drink-image">Image</Label>
+            <Label htmlFor="onboarding-drink-image">Изображение</Label>
             <Input
               id="onboarding-drink-image"
               type="file"
@@ -269,19 +269,19 @@ export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue,
           <Button type="submit" disabled={assignMutation.isPending}>
             {assignMutation.isPending ? (
               <>
-                <Loader2 className="size-4 animate-spin" /> Adding…
+                <Loader2 className="size-4 animate-spin" /> Добавление…
               </>
             ) : (
-              "Add product to menu"
+              "Добавить товар в меню"
             )}
           </Button>
         </form>
       </div>
 
       <div className="flex justify-between pt-2">
-        <Button type="button" variant="outline" onClick={onBack}>Back</Button>
+        <Button type="button" variant="outline" onClick={onBack}>Назад</Button>
         <Button onClick={onContinue}>
-          {drinks.length === 0 ? "Skip for now" : "Continue"}
+          {drinks.length === 0 ? "Пропустить" : "Продолжить"}
         </Button>
       </div>
     </div>

@@ -37,11 +37,11 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(data);
       setAuth(response.user!);
-      toast.success("Signed in");
+      toast.success("Вход выполнен");
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Invalid credentials. Please try again.");
+      toast.error("Неверный логин или пароль. Попробуйте ещё раз.");
     } finally {
       setIsLoading(false);
     }
@@ -78,22 +78,22 @@ export default function LoginPage() {
 
         <div className="relative max-w-md space-y-5">
           <h2 className="text-4xl font-semibold leading-[1.05] tracking-tight text-white">
-            One subscription.
+            Одна подписка.
             <br />
-            <span className="text-white/70">Every coffee in the city.</span>
+            <span className="text-white/70">Любой кофе в городе.</span>
           </h2>
           <p className="text-sm leading-relaxed text-white/60">
-            Manage partners, products, shops, and stories — every part of the
-            Hoopla platform, from a single dashboard.
+            Управляйте партнёрами, товарами, заведениями и историями — всей
+            платформой Hoopla из одной панели.
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-6 text-[11px] uppercase tracking-[0.18em] text-white/40">
-            <span>Partners</span>
+            <span>Партнёры</span>
             <span aria-hidden className="size-1 rounded-full bg-white/30" />
-            <span>Shops</span>
+            <span>Заведения</span>
             <span aria-hidden className="size-1 rounded-full bg-white/30" />
-            <span>Stories</span>
+            <span>Истории</span>
             <span aria-hidden className="size-1 rounded-full bg-white/30" />
-            <span>Orders</span>
+            <span>Заказы</span>
           </div>
         </div>
       </aside>
@@ -106,21 +106,21 @@ export default function LoginPage() {
 
           <div className="space-y-1.5">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              Sign in
+              Вход
             </h1>
             <p className="text-sm text-muted-foreground">
-              Enter your credentials to access the dashboard.
+              Введите логин и пароль для доступа к панели.
             </p>
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="login" className="text-xs font-medium text-muted-foreground">
-                Login
+                Логин
               </Label>
               <Input
                 id="login"
-                placeholder="your login"
+                placeholder="ваш логин"
                 className="h-10"
                 autoComplete="username"
                 {...form.register("login")}
@@ -134,7 +134,7 @@ export default function LoginPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password" className="text-xs font-medium text-muted-foreground">
-                Password
+                Пароль
               </Label>
               <Input
                 id="password"
@@ -155,10 +155,10 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Signing in…
+                  Вход…
                 </>
               ) : (
-                "Sign in"
+                "Войти"
               )}
             </Button>
           </form>

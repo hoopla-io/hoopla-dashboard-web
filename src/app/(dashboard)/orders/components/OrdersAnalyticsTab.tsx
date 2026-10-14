@@ -16,21 +16,21 @@ import { PromoSection } from "@/app/(dashboard)/orders/components/analytics/Prom
 import { RetentionSection } from "@/app/(dashboard)/orders/components/analytics/RetentionSection";
 
 const REASON_LABELS: Record<string, string> = {
-  out_of_stock: "Out of stock",
-  customer_request: "Customer request",
-  closing_soon: "Closing soon",
-  other: "Other",
-  not_recorded: "No reason recorded",
+  out_of_stock: "Нет в наличии",
+  customer_request: "По просьбе клиента",
+  closing_soon: "Скоро закрытие",
+  other: "Другое",
+  not_recorded: "Причина не указана",
 };
 
 const CHANNEL_LABELS: Record<string, string> = {
-  unknown: "Not recorded",
+  unknown: "Не указано",
   rahmat: "Rahmat",
   eight: "Eight",
-  counter: "At counter",
+  counter: "На кассе",
   hoopla: "Hoopla",
   onecafe: "OneCafe",
-  kiosk: "Kiosk",
+  kiosk: "Киоск",
   poster: "Poster",
   iiko: "iiko",
   loyverse: "Loyverse",
@@ -41,7 +41,7 @@ const channelItems = (rows: ChannelMetric[]) =>
   rows.map((r) => ({
     label: CHANNEL_LABELS[r.label] ?? r.label,
     value: r.orders,
-    detail: `${formatSomUZS(r.revenue)} UZS`,
+    detail: `${formatSomUZS(r.revenue)} сум`,
   }));
 
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
@@ -75,9 +75,9 @@ export function OrdersAnalyticsTab({ params }: { params: OrdersAnalyticsParams }
   if (isError || !data) {
     return (
       <div className="space-y-3 py-10 text-center">
-        <p className="text-sm text-muted-foreground">Couldn't load analytics. Try again.</p>
+        <p className="text-sm text-muted-foreground">Не удалось загрузить аналитику. Попробуйте ещё раз.</p>
         <Button variant="outline" size="sm" onClick={() => refetch()}>
-          Retry
+          Повторить
         </Button>
       </div>
     );
@@ -89,20 +89,20 @@ export function OrdersAnalyticsTab({ params }: { params: OrdersAnalyticsParams }
   return (
     <div className="space-y-6">
       <p className="text-sm text-muted-foreground">
-        {data.from} — {data.to} · compared with {data.previous_from} — {data.previous_to}
+        {data.from} — {data.to} · по сравнению с {data.previous_from} — {data.previous_to}
       </p>
 
       <KpiTiles current={data.current} previous={data.previous} />
 
-      <Section title="Orders per day" description="Completed and cancelled orders. Hover a bar for that day's revenue.">
+      <Section title="Заказы по дням" description="Выполненные и отменённые заказы. Наведите на столбец, чтобы увидеть выручку за день.">
         <DailyStatusChart data={data.daily} />
       </Section>
 
-      <Section title="Promo codes" description="Orders placed with a promo code compared with the rest.">
+      <Section title="Промокоды" description="Заказы с промокодом в сравнении с остальными.">
         <PromoSection split={data.promo_split} discount={data.promo_discount} codes={data.promo_codes} />
       </Section>
 
-      <Section title="Customer retention" description="Who comes back, and how fast.">
+      <Section title="Удержание клиентов" description="Кто возвращается и как быстро.">
         <RetentionSection
           retention={data.retention}
           cohorts={data.cohorts}
@@ -113,52 +113,52 @@ export function OrdersAnalyticsTab({ params }: { params: OrdersAnalyticsParams }
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Section
-          title="Why orders are cancelled"
-          description={`${cancelled.toLocaleString()} cancelled · ${abandoned.toLocaleString()} left unpaid`}
+          title="Причины отмены заказов"
+          description={`Отменено: ${cancelled.toLocaleString("ru-RU")} · Не оплачено: ${abandoned.toLocaleString("ru-RU")}`}
         >
           <BarList
             items={data.cancel_reasons.map((r) => ({
               label: REASON_LABELS[r.reason] ?? r.reason,
               value: r.orders,
             }))}
-            emptyText="No cancellations in this period"
+            emptyText="За этот период отмен нет"
           />
         </Section>
-        <Section title="Shop speed" description="From cassa events: received → accepted → completed.">
+        <Section title="Скорость заведений" description="По событиям кассы: получен → принят → выполнен.">
           <SlaStats sla={data.sla} cancelledBeforeAccept={data.cancelled_before_accept} />
         </Section>
       </div>
 
-      <Section title="Busiest hours" description="Completed orders by weekday and hour, Tashkent time.">
+      <Section title="Часы пик" description="Выполненные заказы по дням недели и часам, время Ташкента.">
         <HoursHeatmap data={data.heatmap} />
       </Section>
 
-      <Section title="Shops" description="Top 20 shops by revenue in this period.">
+      <Section title="Заведения" description="Топ-20 заведений по выручке за период.">
         <ShopsTable shops={data.shops} />
       </Section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Section title="Top products" description="Completed orders containing the product.">
+        <Section title="Популярные товары" description="Выполненные заказы с этим товаром.">
           <BarList
             items={data.top_products.map((p) => ({
               label: p.name,
               value: p.orders,
-              detail: `${formatSomUZS(p.revenue)} UZS`,
+              detail: `${formatSomUZS(p.revenue)} сум`,
             }))}
           />
         </Section>
         <div className="space-y-6">
-          <Section title="Payment provider">
+          <Section title="Платёжный провайдер">
             <BarList items={channelItems(data.payments)} />
           </Section>
-          <Section title="Source and POS">
+          <Section title="Источник и кассовая система">
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Source</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Источник</p>
                 <BarList items={channelItems(data.sources)} />
               </div>
               <div className="space-y-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">POS</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Кассовая система</p>
                 <BarList items={channelItems(data.vendors)} />
               </div>
             </div>

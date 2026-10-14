@@ -42,33 +42,33 @@ export function GeneralTab({ user }: GeneralTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", user.user_id] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User updated");
+      toast.success("Пользователь обновлён");
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to update user")),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Не удалось обновить пользователя")),
   });
 
   const { stats } = user;
 
   const cells: StatCell[] = [
-    { label: "Balance", value: formatUZS(user.balance, { suffix: "сум" }) },
+    { label: "Баланс", value: formatUZS(user.balance, { suffix: "сум" }) },
     {
-      label: "Total spent",
+      label: "Всего потрачено",
       value: formatSomUZS(stats.total_spent, { suffix: "сум" }),
-      hint: `${stats.completed_orders} completed orders`,
+      hint: `Завершённых заказов: ${stats.completed_orders}`,
     },
-    { label: "Orders", value: String(stats.orders_count), hint: `${stats.cancelled_orders} cancelled` },
+    { label: "Заказы", value: String(stats.orders_count), hint: `Отменено: ${stats.cancelled_orders}` },
     {
-      label: "Last order",
-      value: stats.last_order_at ? new Date(stats.last_order_at).toLocaleDateString() : "—",
+      label: "Последний заказ",
+      value: stats.last_order_at ? new Date(stats.last_order_at).toLocaleDateString("ru-RU") : "—",
     },
-    { label: "Cashback earned", value: formatUZS(stats.cashback_earned, { suffix: "сум" }) },
-    { label: "Cashback used", value: formatUZS(stats.cashback_used, { suffix: "сум" }) },
+    { label: "Кэшбэк начислен", value: formatUZS(stats.cashback_earned, { suffix: "сум" }) },
+    { label: "Кэшбэк использован", value: formatUZS(stats.cashback_used, { suffix: "сум" }) },
     {
-      label: "Average rating",
+      label: "Средняя оценка",
       value: stats.feedbacks_count > 0 ? stats.average_rating.toFixed(1) : "—",
-      hint: `${stats.feedbacks_count} feedbacks`,
+      hint: `Отзывов: ${stats.feedbacks_count}`,
     },
-    { label: "Active sessions", value: String(stats.sessions_count) },
+    { label: "Активные сессии", value: String(stats.sessions_count) },
   ];
 
   return (
@@ -85,7 +85,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
+          <CardTitle>Профиль</CardTitle>
         </CardHeader>
         <CardContent>
           <form
@@ -97,59 +97,59 @@ export function GeneralTab({ user }: GeneralTabProps) {
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>Name</Label>
+                <Label>Имя</Label>
                 <Input
                   value={formData.name || ""}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="User name"
+                  placeholder="Имя пользователя"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Phone</Label>
+                <Label>Телефон</Label>
                 <Input
                   value={formData.phone_number || ""}
                   onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                  placeholder="Phone number"
+                  placeholder="Номер телефона"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Gender</Label>
+                <Label>Пол</Label>
                 <Select
                   value={formData.gender || ""}
                   onValueChange={(v) => setFormData({ ...formData, gender: v })}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Gender" />
+                    <SelectValue placeholder="Пол" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="male">Мужской</SelectItem>
+                    <SelectItem value="female">Женский</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Mobile provider</Label>
+                <Label>Мобильный оператор</Label>
                 <Input
                   value={formData.mobile_provider || ""}
                   onChange={(e) => setFormData({ ...formData, mobile_provider: e.target.value })}
-                  placeholder="Mobile provider"
+                  placeholder="Мобильный оператор"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Birth date</Label>
+                <Label>Дата рождения</Label>
                 <Input
                   value={formData.birthday || ""}
                   onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
-                  placeholder="YYYY-MM-DD"
+                  placeholder="ГГГГ-ММ-ДД"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Registered</Label>
-                <Input value={new Date(user.created_at).toLocaleString()} disabled />
+                <Label>Дата регистрации</Label>
+                <Input value={new Date(user.created_at).toLocaleString("ru-RU")} disabled />
               </div>
             </div>
             <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving…" : "Save changes"}
+              {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
             </Button>
           </form>
         </CardContent>

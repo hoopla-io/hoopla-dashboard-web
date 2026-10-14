@@ -75,10 +75,10 @@ export function OrdersTab({ userId }: OrdersTabProps) {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder="Статус" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="all">Все статусы</SelectItem>
               {STATUSES.map((status) => (
                 <SelectItem key={status} value={status}>
                   {formatOrderStatus(status)}
@@ -89,15 +89,15 @@ export function OrdersTab({ userId }: OrdersTabProps) {
         </div>
         {summary ? (
           <p className="text-sm text-muted-foreground">
-            {summary.completed_count} completed · {formatSomUZS(summary.revenue_completed)} сум ·{" "}
-            {summary.cancelled_count} cancelled
+            Завершено: {summary.completed_count} · {formatSomUZS(summary.revenue_completed)} сум ·{" "}
+            Отменено: {summary.cancelled_count}
           </p>
         ) : null}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Order history</CardTitle>
+          <CardTitle>История заказов</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
@@ -107,38 +107,38 @@ export function OrdersTab({ userId }: OrdersTabProps) {
                   <SortableTableHead column="id" sort={sort} order={order} onSort={onSort}>
                     ID
                   </SortableTableHead>
-                  <TableHead>Shop</TableHead>
-                  <TableHead>Product</TableHead>
+                  <TableHead>Заведение</TableHead>
+                  <TableHead>Товар</TableHead>
                   <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
-                    Total
+                    Итого
                   </SortableTableHead>
                   <SortableTableHead column="source" sort={sort} order={order} onSort={onSort}>
-                    Source
+                    Источник
                   </SortableTableHead>
                   <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
-                    Status
+                    Статус
                   </SortableTableHead>
                   <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                    Date
+                    Дата
                   </SortableTableHead>
-                  <TableHead>Feedback</TableHead>
-                  <TableHead className="w-10 text-right">Fiscal</TableHead>
+                  <TableHead>Отзыв</TableHead>
+                  <TableHead className="w-10 text-right">Чек</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-4">Loading orders...</TableCell>
+                    <TableCell colSpan={9} className="text-center py-4">Загрузка заказов…</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="p-0">
                       <EmptyState
-                        title="No orders found"
+                        title="Заказы не найдены"
                         description={
                           statusFilter !== "all"
-                            ? "Try another status."
-                            : "Orders placed by this user will appear here."
+                            ? "Попробуйте другой статус."
+                            : "Здесь появятся заказы этого пользователя."
                         }
                       />
                     </TableCell>
@@ -166,7 +166,7 @@ export function OrdersTab({ userId }: OrdersTabProps) {
                             className="underline-offset-2 hover:underline"
                             onClick={() => setItemsDialogOrder(item)}
                           >
-                            {item.drink?.name || `${item.items.length} items`}
+                            {item.drink?.name || `Позиций: ${item.items.length}`}
                           </button>
                         ) : (
                           item.drink?.name || "-"
@@ -183,7 +183,7 @@ export function OrdersTab({ userId }: OrdersTabProps) {
                         />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {item.time ? new Date(item.time).toLocaleString() : "-"}
+                        {item.time ? new Date(item.time).toLocaleString("ru-RU") : "-"}
                       </TableCell>
                       <TableCell>
                         {item.feedback ? (
@@ -202,12 +202,12 @@ export function OrdersTab({ userId }: OrdersTabProps) {
                       </TableCell>
                       <TableCell className="text-right">
                         {item.fiscal_link?.trim() ? (
-                          <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
+                          <Button asChild variant="outline" size="icon-sm" title="Открыть фискальный чек">
                             <a
                               href={item.fiscal_link.trim()}
                               target="_blank"
                               rel="noopener noreferrer"
-                              aria-label="Open fiscal receipt"
+                              aria-label="Открыть фискальный чек"
                             >
                               <ExternalLink className="size-4" />
                             </a>
@@ -242,8 +242,8 @@ export function OrdersTab({ userId }: OrdersTabProps) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
-            <DialogDescription>Line items for this order.</DialogDescription>
+            <DialogTitle>Позиции заказа #{itemsDialogOrder?.id}</DialogTitle>
+            <DialogDescription>Состав этого заказа.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             {itemsDialogOrder?.items?.map((line) => (

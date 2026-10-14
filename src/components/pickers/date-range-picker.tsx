@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 const toApiDate = (date: Date) => format(date, "yyyy-MM-dd");
 
+const toLabelDate = (value: string) => format(new Date(`${value}T00:00:00`), "dd.MM.yyyy");
+
 const parseApiDate = (value: string) =>
   value ? new Date(`${value}T00:00:00`) : undefined;
 
@@ -17,7 +19,7 @@ export function DateRangePicker({
   from,
   to,
   onChange,
-  emptyLabel = "All time",
+  emptyLabel = "За всё время",
 }: {
   from: string;
   to: string;
@@ -29,7 +31,14 @@ export function DateRangePicker({
   const selected: DateRange | undefined =
     from || to ? { from: parseApiDate(from), to: parseApiDate(to) } : undefined;
 
-  const label = from && to ? `${from} — ${to}` : from || to || emptyLabel;
+  const label =
+    from && to
+      ? `${toLabelDate(from)} — ${toLabelDate(to)}`
+      : from
+        ? toLabelDate(from)
+        : to
+          ? toLabelDate(to)
+          : emptyLabel;
 
   const applyPreset = (start: Date, end: Date) => {
     onChange(toApiDate(start), toApiDate(end));
@@ -80,28 +89,28 @@ export function DateRangePicker({
             size="sm"
             onClick={() => applyPreset(now, now)}
           >
-            Today
+            Сегодня
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => applyPreset(startOfMonth(now), endOfMonth(now))}
           >
-            This month
+            Этот месяц
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => applyPreset(startOfMonth(lastMonth), endOfMonth(lastMonth))}
           >
-            Last month
+            Прошлый месяц
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => applyPreset(subDays(now, 6), now)}
           >
-            Last 7 days
+            Последние 7 дней
           </Button>
           <Button
             variant="ghost"

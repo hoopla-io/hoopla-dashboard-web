@@ -37,11 +37,11 @@ function ShopDetailContent() {
   });
 
   if (isLoadingShop) {
-    return <div className="p-8 text-center text-muted-foreground">Loading shop details...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Загрузка заведения…</div>;
   }
 
   if (!shop) {
-    return <div className="p-8 text-center text-destructive">Shop not found</div>;
+    return <div className="p-8 text-center text-destructive">Заведение не найдено</div>;
   }
 
   return (
@@ -55,7 +55,7 @@ function ShopDetailContent() {
             <img src={shop.image_url} alt={shop.name} className="h-12 w-12 rounded-lg object-cover border" />
           ) : (
             <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center border">
-              <span className="text-xs text-muted-foreground">No Img</span>
+              <span className="text-xs text-muted-foreground">Нет фото</span>
             </div>
           )}
           <div>
@@ -69,7 +69,7 @@ function ShopDetailContent() {
                   {shop.partner.name}
                 </Link>
               ) : (
-                <span>No Partner</span>
+                <span>Без партнёра</span>
               )}
               {shop.location_lat && shop.location_long && (
                 <span className="flex items-center gap-1">
@@ -84,11 +84,11 @@ function ShopDetailContent() {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="pictures">Pictures</TabsTrigger>
-          <TabsTrigger value="hours">Hours</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
+          <TabsTrigger value="general">Основное</TabsTrigger>
+          <TabsTrigger value="pictures">Фотографии</TabsTrigger>
+          <TabsTrigger value="hours">Часы работы</TabsTrigger>
+          <TabsTrigger value="orders">Заказы</TabsTrigger>
+          <TabsTrigger value="staff">Сотрудники</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -117,8 +117,8 @@ function ShopDetailContent() {
 
 export default function ShopDetailPage() {
   return (
-    <ErrorBoundary pageName="Shop Detail">
-      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>
+    <ErrorBoundary pageName="Заведение">
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка…</div>}>
         <ShopDetailContent />
       </Suspense>
     </ErrorBoundary>

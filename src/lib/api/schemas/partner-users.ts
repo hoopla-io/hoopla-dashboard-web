@@ -48,7 +48,7 @@ export const CreatePartnerUserSchema = z.object({
   phone_number: z.string().max(255).optional(),
   password: z.string().max(255).optional(),
   role: z.string().optional(),
-  vendor_pin: z.string().regex(/^\d{4}$/, "PIN must be exactly 4 digits").optional(),
+  vendor_pin: z.string().regex(/^\d{4}$/, "PIN-код должен состоять ровно из 4 цифр").optional(),
 });
 
 export const UpdatePartnerUserSchema = CreatePartnerUserSchema;

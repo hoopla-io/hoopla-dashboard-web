@@ -39,7 +39,7 @@ export const ShopSchema = z.object({
 
 export const CreateShopSchema = z.object({
   partner_id: z.number(),
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "Укажите название"),
   location_lat: z.number(),
   location_long: z.number(),
   vendor_terminal_id: z.string().optional(),
@@ -77,9 +77,9 @@ export const ShopHoursSchema = z.object({
 
 export const CreateShopHoursSchema = z.object({
   shop_id: z.number(),
-  week_day: z.string().min(1, "Week day is required"),
-  open_at: z.string().min(1, "Opening time is required"),
-  close_at: z.string().min(1, "Closing time is required"),
+  week_day: z.string().min(1, "Укажите день недели"),
+  open_at: z.string().min(1, "Укажите время открытия"),
+  close_at: z.string().min(1, "Укажите время закрытия"),
 });
 
 export type ShopHours = z.infer<typeof ShopHoursSchema>;

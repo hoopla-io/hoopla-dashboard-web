@@ -9,7 +9,7 @@ export function TopBarList({ data }: TopBarListProps) {
   if (data.length === 0) {
     return (
       <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-        No data for this period
+        Нет данных за этот период
       </div>
     );
   }
@@ -23,7 +23,7 @@ export function TopBarList({ data }: TopBarListProps) {
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="truncate font-medium">{item.name}</span>
             <span className="shrink-0 text-muted-foreground">
-              {item.orders.toLocaleString()} · {formatSomUZS(item.revenue)} UZS
+              {item.orders.toLocaleString("ru-RU")} · {formatSomUZS(item.revenue)} сум
             </span>
           </div>
           <div className="h-2 w-full rounded-full bg-muted">

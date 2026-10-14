@@ -39,8 +39,8 @@ function PushNotificationsContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Push Log"
-        description="Every push the customer API tried to deliver: order status updates and reminders."
+        title="Журнал push-уведомлений"
+        description="Все push-уведомления, которые клиентский API пытался доставить: обновления статуса заказа и напоминания."
       />
 
       <PushStats
@@ -95,11 +95,11 @@ function PushNotificationsContent() {
 
 export default function PushNotificationsPage() {
   return (
-    <ErrorBoundary pageName="Push Notifications">
+    <ErrorBoundary pageName="Push-уведомления">
       <Suspense
         fallback={
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Loading push notifications…
+            Загрузка push-уведомлений…
           </div>
         }
       >

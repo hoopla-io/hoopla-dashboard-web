@@ -20,7 +20,7 @@ export const PartnerSchema = z.object({
 });
 
 export const CreatePartnerSchema = z.object({
-  name: z.string().min(1, "Name is required").max(255),
+  name: z.string().min(1, "Укажите название").max(255),
   description: z.string().max(1000).optional(),
   vendor: z.enum(["iiko", "poster", "deliveryhub", "loyverse", "hoopla"]).optional(),
   vendor_key: z.string().optional(),
@@ -51,8 +51,8 @@ export const PartnerAttributeSchema = z.object({
 
 export const CreatePartnerAttributeSchema = z.object({
   partner_id: z.number(),
-  attribute_key: z.string().min(1, "Key is required"),
-  attribute_value: z.string().min(1, "Value is required"),
+  attribute_key: z.string().min(1, "Укажите ключ"),
+  attribute_value: z.string().min(1, "Укажите значение"),
 });
 
 export type PartnerAttribute = z.infer<typeof PartnerAttributeSchema>;

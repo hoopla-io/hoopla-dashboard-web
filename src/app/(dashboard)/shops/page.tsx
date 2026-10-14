@@ -98,10 +98,10 @@ function ShopsContent() {
       shopsApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
-      toast.success("Shop created");
+      toast.success("Заведение создано");
       setIsCreateOpen(false);
     },
-    onError: () => toast.error("Failed to create shop"),
+    onError: () => toast.error("Не удалось создать заведение"),
   });
 
   const updateMutation = useMutation({
@@ -116,9 +116,9 @@ function ShopsContent() {
     }) => shopsApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
-      toast.success("Shop updated");
+      toast.success("Заведение обновлено");
     },
-    onError: () => toast.error("Failed to update shop"),
+    onError: () => toast.error("Не удалось обновить заведение"),
   });
 
   const confirmDelete = useConfirm();
@@ -127,9 +127,9 @@ function ShopsContent() {
     mutationFn: shopsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops"] });
-      toast.success("Shop deleted");
+      toast.success("Заведение удалено");
     },
-    onError: () => toast.error("Failed to delete shop"),
+    onError: () => toast.error("Не удалось удалить заведение"),
   });
 
   const handleCreateOpen = () => {
@@ -139,12 +139,12 @@ function ShopsContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Shops"
-        description="Manage shop locations and POS bindings."
+        title="Заведения"
+        description="Управление заведениями и привязками к кассовым системам."
         action={
           <Button onClick={handleCreateOpen}>
             <Plus className="size-4" />
-            Add shop
+            Добавить заведение
           </Button>
         }
       />
@@ -153,7 +153,7 @@ function ShopsContent() {
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search shops"
+            placeholder="Поиск заведений"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -171,40 +171,40 @@ function ShopsContent() {
               <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
                 ID
               </SortableTableHead>
-              <TableHead className="w-[64px]">Image</TableHead>
+              <TableHead className="w-[64px]">Изображение</TableHead>
               <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
-                Name
+                Название
               </SortableTableHead>
-              <TableHead>Partner</TableHead>
-              <TableHead>Location</TableHead>
+              <TableHead>Партнёр</TableHead>
+              <TableHead>Местоположение</TableHead>
               <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
-                Status
+                Статус
               </SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : shops.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="p-0">
                   <EmptyState
-                    title="No shops found"
+                    title="Заведения не найдены"
                     description={
                       search
-                        ? "Try a different search term."
-                        : "Add your first shop to get started."
+                        ? "Попробуйте изменить запрос."
+                        : "Добавьте первое заведение, чтобы начать."
                     }
                     action={
                       !search ? (
                         <Button variant="outline" size="sm" onClick={handleCreateOpen}>
                           <Plus className="size-4" />
-                          Add shop
+                          Добавить заведение
                         </Button>
                       ) : null
                     }
@@ -238,7 +238,7 @@ function ShopsContent() {
                       </button>
                     ) : (
                       <div className="flex size-9 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        N/A
+                        Нет
                       </div>
                     )}
                   </TableCell>
@@ -281,10 +281,10 @@ function ShopsContent() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
-                            onClick={async () => { if (await confirmDelete({ title: `Delete “${shop.name}”?` })) deleteMutation.mutate(shop.id); }}
+                            onClick={async () => { if (await confirmDelete({ title: `Удалить «${shop.name}»?` })) deleteMutation.mutate(shop.id); }}
                           >
                             <Trash2 className="size-4" />
-                            Delete
+                            Удалить
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -311,8 +311,8 @@ function ShopsContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create shop</DialogTitle>
-            <DialogDescription>Add a new shop location.</DialogDescription>
+            <DialogTitle>Новое заведение</DialogTitle>
+            <DialogDescription>Добавьте новое заведение.</DialogDescription>
           </DialogHeader>
           <ShopForm
             partnerOptions={partners}
@@ -325,12 +325,12 @@ function ShopsContent() {
 
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(undefined)}>
         <DialogContent className="max-w-3xl border-none bg-transparent shadow-none">
-          <DialogTitle className="sr-only">Image preview</DialogTitle>
+          <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
           {selectedImage && (
             <div className="relative flex h-[80vh] w-full items-center justify-center">
               <img
                 src={selectedImage}
-                alt="Shop preview"
+                alt="Изображение заведения"
                 className="max-h-full max-w-full rounded-lg object-contain"
               />
             </div>
@@ -343,11 +343,11 @@ function ShopsContent() {
 
 export default function ShopsPage() {
   return (
-    <ErrorBoundary pageName="Shops">
+    <ErrorBoundary pageName="Заведения">
       <Suspense
         fallback={
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Loading shops…
+            Загрузка заведений…
           </div>
         }
       >

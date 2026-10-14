@@ -34,7 +34,7 @@ export function SearchableSelect({
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandEmpty>Ничего не найдено.</CommandEmpty>
             <CommandGroup>
               {items.map((item) => (
                 <CommandItem

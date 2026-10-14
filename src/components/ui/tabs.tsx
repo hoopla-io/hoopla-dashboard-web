@@ -92,7 +92,7 @@ function TabsList({
       {canScrollLeft ? (
         <button
           type="button"
-          aria-label="Scroll tabs left"
+          aria-label="Прокрутить вкладки влево"
           onClick={() => scrollToward("left")}
           className="absolute left-0 top-0 z-10 flex h-full w-10 items-center justify-start rounded-l-lg bg-linear-to-r from-muted via-muted/90 to-transparent pl-2 text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -113,7 +113,7 @@ function TabsList({
       {canScrollRight ? (
         <button
           type="button"
-          aria-label="Scroll tabs right"
+          aria-label="Прокрутить вкладки вправо"
           onClick={() => scrollToward("right")}
           className="absolute right-0 top-0 z-10 flex h-full w-10 items-center justify-end rounded-r-lg bg-linear-to-l from-muted via-muted/90 to-transparent pr-2 text-muted-foreground transition-colors hover:text-foreground"
         >

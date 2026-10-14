@@ -68,10 +68,15 @@ function toISORange(startDate: string, endDate: string) {
   return { start: start.toISOString(), end: endExclusive.toISOString() };
 }
 
-const fmtDate = (s?: string | null) => (s ? new Date(s).toLocaleDateString() : "—");
-const fmtDateTime = (s?: string | null) => (s ? new Date(s).toLocaleString() : "—");
+const fmtDate = (s?: string | null) => (s ? new Date(s).toLocaleDateString("ru-RU") : "—");
+const fmtDateTime = (s?: string | null) => (s ? new Date(s).toLocaleString("ru-RU") : "—");
 
 const statusTone = (status: string): StatusTone => (status === "paid" ? "success" : "warning");
+
+const STATUS_LABELS: Record<string, string> = {
+  pending: "Ожидает",
+  paid: "Оплачено",
+};
 
 interface SettlementsPanelProps {
   partnerId: number;
@@ -167,11 +172,11 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
       invalidate();
       setCreateOpen(false);
       toast.success(
-        `Settlement created: ${res.orders_count} order(s), ${formatSomUZS(res.total_amount)} UZS`
+        `Взаиморасчёт создан: заказов — ${res.orders_count}, ${formatSomUZS(res.total_amount)} сум`
       );
     },
     onError: () =>
-      toast.error("Failed to create settlement (no eligible unsettled completed orders?)"),
+      toast.error("Не удалось создать взаиморасчёт (нет подходящих завершённых заказов без взаиморасчёта?)"),
   });
 
   const payMutation = useMutation({
@@ -179,9 +184,9 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
     onSuccess: () => {
       invalidate();
       queryClient.invalidateQueries({ queryKey: ["settlement_show"] });
-      toast.success("Settlement marked as paid");
+      toast.success("Взаиморасчёт отмечен как оплаченный");
     },
-    onError: () => toast.error("Failed to mark settlement paid"),
+    onError: () => toast.error("Не удалось отметить взаиморасчёт как оплаченный"),
   });
 
   const confirmDelete = useConfirm();
@@ -190,9 +195,9 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
     mutationFn: (id: number) => settlementsApi.remove(id),
     onSuccess: () => {
       invalidate();
-      toast.success("Settlement deleted");
+      toast.success("Взаиморасчёт удалён");
     },
-    onError: () => toast.error("Failed to delete settlement (paid batches cannot be deleted)"),
+    onError: () => toast.error("Не удалось удалить взаиморасчёт (оплаченные пакеты удалить нельзя)"),
   });
 
   const orders = ordersQuery.data?.data ?? [];
@@ -205,7 +210,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
       {/* Toolbar */}
       <div className="flex flex-col gap-3 rounded-lg border p-3 md:flex-row md:flex-wrap md:items-end">
         <div className="space-y-1">
-          <Label className="text-xs">From</Label>
+          <Label className="text-xs">С</Label>
           <Input
             type="date"
             value={startDate}
@@ -214,7 +219,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">To</Label>
+          <Label className="text-xs">По</Label>
           <Input
             type="date"
             value={endDate}
@@ -223,14 +228,14 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Shop</Label>
+          <Label className="text-xs">Заведение</Label>
           <Select
             value={shopFilter === "ALL" ? "ALL" : String(shopFilter)}
             onValueChange={(v) => { setShopFilter(v === "ALL" ? "ALL" : Number(v)); setOrdersPage(1); setBatchesPage(1); }}
           >
-            <SelectTrigger className="md:w-48"><SelectValue placeholder="All shops" /></SelectTrigger>
+            <SelectTrigger className="md:w-48"><SelectValue placeholder="Все заведения" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All shops</SelectItem>
+              <SelectItem value="ALL">Все заведения</SelectItem>
               {shops.map((s) => (
                 <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
               ))}
@@ -240,7 +245,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
         <div className="md:ml-auto">
           <Button onClick={() => setCreateOpen(true)} disabled={!rangeValid}>
             <Wallet className="mr-2 h-4 w-4" />
-            Create settlement
+            Создать взаиморасчёт
           </Button>
         </div>
       </div>
@@ -249,33 +254,33 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
           Payment filter on the Orders tab). */}
       {summary && (
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">Period overview (all orders in range)</p>
+          <p className="text-xs text-muted-foreground">Обзор периода (все заказы в диапазоне)</p>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-          <SummaryStat label="Orders" value={String(summary.orders_count)} />
-          <SummaryStat label="Gross (UZS)" value={formatSomUZS(summary.gross_som)} />
-          <SummaryStat label="Payout (UZS)" value={formatSomUZS(summary.payout_som)} />
-          <SummaryStat label="Paid" value={String(summary.paid_count)} />
-          <SummaryStat label="Unpaid" value={String(summary.unpaid_count)} />
+          <SummaryStat label="Заказы" value={String(summary.orders_count)} />
+          <SummaryStat label="Оборот (сум)" value={formatSomUZS(summary.gross_som)} />
+          <SummaryStat label="Выплата (сум)" value={formatSomUZS(summary.payout_som)} />
+          <SummaryStat label="Оплачено" value={String(summary.paid_count)} />
+          <SummaryStat label="Не оплачено" value={String(summary.unpaid_count)} />
           </div>
         </div>
       )}
 
       <Tabs defaultValue="orders" className="space-y-3">
         <TabsList>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="batches">Settlement batches</TabsTrigger>
+          <TabsTrigger value="orders">Заказы</TabsTrigger>
+          <TabsTrigger value="batches">Пакеты взаиморасчётов</TabsTrigger>
         </TabsList>
 
         {/* Orders */}
         <TabsContent value="orders" className="space-y-3">
           <div className="flex items-center gap-2">
-            <Label className="text-xs">Payment</Label>
+            <Label className="text-xs">Оплата</Label>
             <Select value={payment} onValueChange={(v) => { setPayment(v as SettlementPayment); setOrdersPage(1); }}>
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="paid">Paid by Hoopla</SelectItem>
-                <SelectItem value="unpaid">Not paid yet</SelectItem>
+                <SelectItem value="all">Все</SelectItem>
+                <SelectItem value="paid">Оплачено Hoopla</SelectItem>
+                <SelectItem value="unpaid">Ещё не оплачено</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -285,28 +290,28 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                 <TableHeader>
                   <TableRow>
                     <SortableTableHead column="id" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
-                      Order
+                      Заказ
                     </SortableTableHead>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Shop</TableHead>
-                    <TableHead>Source</TableHead>
+                    <TableHead>Товар</TableHead>
+                    <TableHead>Заведение</TableHead>
+                    <TableHead>Источник</TableHead>
                     <SortableTableHead column="price" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
-                      Price
+                      Цена
                     </SortableTableHead>
-                    <TableHead>Payout</TableHead>
+                    <TableHead>Выплата</TableHead>
                     <SortableTableHead column="created_at" sort={ordersSort.sort} order={ordersSort.order} onSort={ordersSort.onSort}>
-                      Date
+                      Дата
                     </SortableTableHead>
-                    <TableHead>Hoopla paid</TableHead>
+                    <TableHead>Оплата Hoopla</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {!rangeValid ? (
-                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">Pick a valid date range</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">Выберите корректный диапазон дат</TableCell></TableRow>
                   ) : ordersQuery.isLoading ? (
-                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
                   ) : orders.length === 0 ? (
-                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">No completed orders in this range</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="py-6 text-center text-muted-foreground">Нет завершённых заказов в этом диапазоне</TableCell></TableRow>
                   ) : (
                     orders.map((o) => (
                       <TableRow key={o.id}>
@@ -319,7 +324,7 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                         <TableCell className="text-xs text-muted-foreground">{fmtDateTime(o.created_at)}</TableCell>
                         <TableCell>
                           <StatusBadge
-                            label={o.hoopla_paid ? "Paid" : "Not paid"}
+                            label={o.hoopla_paid ? "Оплачено" : "Не оплачено"}
                             tone={o.hoopla_paid ? "success" : "neutral"}
                           />
                         </TableCell>
@@ -343,13 +348,13 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
         {/* Batches */}
         <TabsContent value="batches" className="space-y-3">
           <div className="flex items-center gap-2">
-            <Label className="text-xs">Status</Label>
+            <Label className="text-xs">Статус</Label>
             <Select value={batchStatus} onValueChange={(v) => { setBatchStatus(v as SettlementStatus); setBatchesPage(1); }}>
               <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="all">Все</SelectItem>
+                <SelectItem value="pending">Ожидает</SelectItem>
+                <SelectItem value="paid">Оплачено</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -359,41 +364,41 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                 <TableHeader>
                   <TableRow>
                     <SortableTableHead column="period_start" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
-                      Period
+                      Период
                     </SortableTableHead>
-                    <TableHead>Shop</TableHead>
+                    <TableHead>Заведение</TableHead>
                     <SortableTableHead column="orders_count" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
-                      Orders
+                      Заказы
                     </SortableTableHead>
                     <SortableTableHead column="total_amount" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
-                      Payout
+                      Выплата
                     </SortableTableHead>
                     <SortableTableHead column="status" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
-                      Status
+                      Статус
                     </SortableTableHead>
                     <SortableTableHead column="paid_at" sort={batchesSort.sort} order={batchesSort.order} onSort={batchesSort.onSort}>
-                      Paid at
+                      Дата оплаты
                     </SortableTableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {batchesQuery.isLoading ? (
-                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
                   ) : batches.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">No settlement batches yet</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="py-6 text-center text-muted-foreground">Пакетов взаиморасчётов пока нет</TableCell></TableRow>
                   ) : (
                     batches.map((b) => (
                       <TableRow key={b.id}>
                         <TableCell className="text-sm">{fmtDate(b.period_start)} – {fmtDate(b.period_end)}</TableCell>
-                        <TableCell className="text-sm">{b.shop_name || "All shops"}</TableCell>
+                        <TableCell className="text-sm">{b.shop_name || "Все заведения"}</TableCell>
                         <TableCell className="text-sm tabular-nums">{b.orders_count}</TableCell>
                         <TableCell className="font-mono text-sm tabular-nums">{formatSomUZS(b.total_amount)}</TableCell>
-                        <TableCell><StatusBadge label={b.status} tone={statusTone(b.status)} /></TableCell>
+                        <TableCell><StatusBadge label={STATUS_LABELS[b.status] ?? b.status} tone={statusTone(b.status)} /></TableCell>
                         <TableCell className="text-xs text-muted-foreground">{fmtDate(b.paid_at)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => setViewBatch(b)}>View</Button>
+                            <Button variant="ghost" size="sm" onClick={() => setViewBatch(b)}>Подробнее</Button>
                             {b.status !== "paid" && (
                               <>
                                 <Button
@@ -401,12 +406,12 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                                   size="sm"
                                   disabled={payMutation.isPending}
                                   onClick={() => {
-                                    if (confirm("Mark this settlement as PAID? This records that Hoopla has paid the partner.")) {
+                                    if (confirm("Отметить взаиморасчёт как ОПЛАЧЕННЫЙ? Будет зафиксировано, что Hoopla выплатил партнёру.")) {
                                       payMutation.mutate(b.id);
                                     }
                                   }}
                                 >
-                                  Mark paid
+                                  Отметить оплаченным
                                 </Button>
                                 <Button
                                   variant="ghost"
@@ -414,12 +419,12 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                                   className="text-destructive hover:text-destructive"
                                   disabled={deleteMutation.isPending}
                                   onClick={async () => {
-                                    if (await confirmDelete({ title: "Delete this pending settlement?", description: "Its orders become unsettled again." })) {
+                                    if (await confirmDelete({ title: "Удалить этот ожидающий взаиморасчёт?", description: "Его заказы снова станут нерассчитанными." })) {
                                       deleteMutation.mutate(b.id);
                                     }
                                   }}
                                 >
-                                  Delete
+                                  Удалить
                                 </Button>
                               </>
                             )}
@@ -447,27 +452,27 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create settlement batch</DialogTitle>
+            <DialogTitle>Создать пакет взаиморасчётов</DialogTitle>
             <DialogDescription>
-              Settle all completed, not-yet-settled orders for{" "}
-              {shopId ? shops.find((s) => s.id === shopId)?.name ?? "the selected shop" : "all shops"}{" "}
-              between {startDate} and {endDate}.
+              Рассчитать все завершённые, ещё не рассчитанные заказы для{" "}
+              {shopId ? shops.find((s) => s.id === shopId)?.name ?? "выбранного заведения" : "всех заведений"}{" "}
+              с {startDate} по {endDate}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-2 text-sm text-muted-foreground">
             {summary ? (
               <p>
-                <span className="font-medium text-foreground">{summary.unsettled_count}</span> completed order(s)
-                in this range are not yet in any settlement and will be included. The exact set is recomputed on the server.
+                Завершённых заказов в этом диапазоне без взаиморасчёта:{" "}
+                <span className="font-medium text-foreground">{summary.unsettled_count}</span>. Они будут включены. Точный набор пересчитывается на сервере.
               </p>
             ) : (
-              <p>Eligible orders are computed on the server when you confirm.</p>
+              <p>Подходящие заказы определяются на сервере при подтверждении.</p>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Отмена</Button>
             <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending || !rangeValid}>
-              {createMutation.isPending ? "Creating…" : "Create"}
+              {createMutation.isPending ? "Создание…" : "Создать"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -477,28 +482,28 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
       <Dialog open={!!viewBatch} onOpenChange={(open) => { if (!open) setViewBatch(null); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Settlement #{viewBatch?.id}</DialogTitle>
+            <DialogTitle>Взаиморасчёт #{viewBatch?.id}</DialogTitle>
             <DialogDescription>
-              {viewBatch ? `${fmtDate(viewBatch.period_start)} – ${fmtDate(viewBatch.period_end)} · ${viewBatch.shop_name || "All shops"}` : ""}
+              {viewBatch ? `${fmtDate(viewBatch.period_start)} – ${fmtDate(viewBatch.period_end)} · ${viewBatch.shop_name || "Все заведения"}` : ""}
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Payout</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Заказ</TableHead>
+                  <TableHead>Товар</TableHead>
+                  <TableHead>Цена</TableHead>
+                  <TableHead>Источник</TableHead>
+                  <TableHead>Выплата</TableHead>
+                  <TableHead>Дата</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {viewQuery.isLoading ? (
-                  <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">Загрузка…</TableCell></TableRow>
                 ) : (viewQuery.data?.orders ?? []).length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">No orders</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="py-6 text-center text-muted-foreground">Нет заказов</TableCell></TableRow>
                 ) : (
                   (viewQuery.data?.orders ?? []).map((o) => (
                     <TableRow key={o.id}>
@@ -520,13 +525,13 @@ export function SettlementsPanel({ partnerId }: SettlementsPanelProps) {
                 variant="outline"
                 disabled={payMutation.isPending || viewQuery.isLoading}
                 onClick={() => {
-                  if (confirm("Mark this settlement as PAID?")) payMutation.mutate(viewBatch.id);
+                  if (confirm("Отметить взаиморасчёт как ОПЛАЧЕННЫЙ?")) payMutation.mutate(viewBatch.id);
                 }}
               >
-                Mark paid
+                Отметить оплаченным
               </Button>
             )}
-            <Button onClick={() => setViewBatch(null)}>Close</Button>
+            <Button onClick={() => setViewBatch(null)}>Закрыть</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

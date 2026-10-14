@@ -63,12 +63,12 @@ function NotificationsContent() {
       notificationsApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Notification created successfully!");
+      toast.success("Уведомление создано");
       setIsCreateOpen(false);
       setFormData({ title: "", text: "" });
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to create notification"),
+    onError: () => toast.error("Не удалось создать уведомление"),
   });
 
   const updateMutation = useMutation({
@@ -76,11 +76,11 @@ function NotificationsContent() {
       notificationsApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Notification updated successfully!");
+      toast.success("Уведомление обновлено");
       setEditNotification(null);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to update notification"),
+    onError: () => toast.error("Не удалось обновить уведомление"),
   });
 
   const confirmDelete = useConfirm();
@@ -89,20 +89,20 @@ function NotificationsContent() {
     mutationFn: notificationsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Notification deleted successfully!");
+      toast.success("Уведомление удалено");
     },
-    onError: () => toast.error("Failed to delete notification"),
+    onError: () => toast.error("Не удалось удалить уведомление"),
   });
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="In-app Notifications"
-        description="Announcements shown in the app's notification feed. They are not sent as push."
+        title="Уведомления в приложении"
+        description="Объявления в ленте уведомлений приложения. Они не отправляются как push."
         action={
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="size-4" />
-            Add notification
+            Добавить уведомление
           </Button>
         }
       />
@@ -111,7 +111,7 @@ function NotificationsContent() {
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search notifications"
+            placeholder="Поиск уведомлений"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -129,34 +129,34 @@ function NotificationsContent() {
               <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
                 ID
               </SortableTableHead>
-              <TableHead className="w-[64px]">Image</TableHead>
+              <TableHead className="w-[64px]">Изображение</TableHead>
               <SortableTableHead column="title" sort={sort} order={order} onSort={onSort}>
-                Title
+                Заголовок
               </SortableTableHead>
-              <TableHead>Text</TableHead>
+              <TableHead>Текст</TableHead>
               <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                Created
+                Создано
               </SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : notifications.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="p-0">
                   <EmptyState
-                    title="No notifications yet"
-                    description="Send your first push notification to reach app users."
+                    title="Уведомлений пока нет"
+                    description="Создайте первое уведомление для пользователей приложения."
                     action={
                       <Button variant="outline" size="sm" onClick={() => setIsCreateOpen(true)}>
                         <Plus className="size-4" />
-                        Add notification
+                        Добавить уведомление
                       </Button>
                     }
                   />
@@ -188,7 +188,7 @@ function NotificationsContent() {
                       </button>
                     ) : (
                       <div className="flex size-10 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        N/A
+                        Нет
                       </div>
                     )}
                   </TableCell>
@@ -201,7 +201,7 @@ function NotificationsContent() {
                     </span>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {new Date(notification.created_at).toLocaleDateString()}
+                    {new Date(notification.created_at).toLocaleDateString("ru-RU")}
                   </TableCell>
                   <TableCell className="text-right">
                     <div
@@ -227,7 +227,7 @@ function NotificationsContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete notification?" })) deleteMutation.mutate(notification.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить уведомление?" })) deleteMutation.mutate(notification.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -255,8 +255,8 @@ function NotificationsContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Notification</DialogTitle>
-            <DialogDescription>Send a new push notification</DialogDescription>
+            <DialogTitle>Создать уведомление</DialogTitle>
+            <DialogDescription>Создайте новое уведомление в приложении</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -264,28 +264,28 @@ function NotificationsContent() {
           }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>Заголовок</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Notification title"
+                  placeholder="Заголовок уведомления"
                   maxLength={100}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label>Text</Label>
+                <Label>Текст</Label>
                 <textarea
                   value={formData.text}
                   onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-                  placeholder="Notification text"
+                  placeholder="Текст уведомления"
                   required
                   rows={4}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
               <div className="space-y-2">
-                <Label>URL (Optional)</Label>
+                <Label>URL (необязательно)</Label>
                 <Input
                   value={formData.url || ""}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -293,7 +293,7 @@ function NotificationsContent() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Image (Optional)</Label>
+                <Label>Изображение (необязательно)</Label>
                 <Input
                   type="file"
                   accept="image/*"
@@ -304,9 +304,9 @@ function NotificationsContent() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Создание..." : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -317,11 +317,11 @@ function NotificationsContent() {
       <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>Notification image preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Просмотр изображения уведомления</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            <img src={previewImage} alt="Notification preview" className="w-full h-auto rounded" />
+            <img src={previewImage} alt="Превью уведомления" className="w-full h-auto rounded" />
           )}
         </DialogContent>
       </Dialog>
@@ -335,8 +335,8 @@ function NotificationsContent() {
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Notification</DialogTitle>
-            <DialogDescription>Update notification content</DialogDescription>
+            <DialogTitle>Редактировать уведомление</DialogTitle>
+            <DialogDescription>Измените содержимое уведомления</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -350,26 +350,26 @@ function NotificationsContent() {
           }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>Заголовок</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Notification title"
+                  placeholder="Заголовок уведомления"
                   maxLength={100}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Text</Label>
+                <Label>Текст</Label>
                 <textarea
                   value={formData.text}
                   onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-                  placeholder="Notification text"
+                  placeholder="Текст уведомления"
                   rows={4}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
               <div className="space-y-2">
-                <Label>URL (Optional)</Label>
+                <Label>URL (необязательно)</Label>
                 <Input
                   value={formData.url || ""}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -377,14 +377,14 @@ function NotificationsContent() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Image</Label>
+                <Label>Изображение</Label>
                 <div className="flex items-center gap-4">
                   {editNotification && (
                     <div className="relative h-16 w-16 overflow-hidden rounded-lg border">
                       {selectedFile ? (
                         <Image
                           src={URL.createObjectURL(selectedFile)}
-                          alt="New preview"
+                          alt="Новое превью"
                           fill
                           className="object-cover"
                         />
@@ -397,7 +397,7 @@ function NotificationsContent() {
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-medium text-muted-foreground">
-                          N/A
+                          Нет
                         </div>
                       )}
                     </div>
@@ -410,7 +410,7 @@ function NotificationsContent() {
                         if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
                       }}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>
+                    <p className="text-xs text-muted-foreground mt-1">Оставьте пустым, чтобы сохранить текущее изображение</p>
                   </div>
                 </div>
               </div>
@@ -419,9 +419,9 @@ function NotificationsContent() {
               <Button type="button" variant="outline" onClick={() => {
                 setEditNotification(null);
                 setSelectedFile(null);
-              }}>Cancel</Button>
+              }}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -433,7 +433,7 @@ function NotificationsContent() {
 
 export default function NotificationsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading notifications...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка уведомлений...</div>}>
       <NotificationsContent />
     </Suspense>
   );

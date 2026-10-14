@@ -50,7 +50,7 @@ export function OrderDetailSheet({ orderId, onClose }: OrderDetailSheetProps) {
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
           <SheetTitle className="flex flex-wrap items-center gap-2">
-            Order #{orderId}
+            Заказ #{orderId}
             {order && (
               <>
                 <StatusBadge label={formatOrderStatus(order.status)} tone={orderStatusTone[order.status] ?? "neutral"} />
@@ -59,25 +59,25 @@ export function OrderDetailSheet({ orderId, onClose }: OrderDetailSheetProps) {
             )}
           </SheetTitle>
           <SheetDescription>
-            {order ? `Placed ${new Date(order.placed_at).toLocaleString()}` : "Loading order…"}
+            {order ? `Оформлен ${new Date(order.placed_at).toLocaleString("ru-RU")}` : "Загрузка заказа…"}
           </SheetDescription>
         </SheetHeader>
 
-        {isLoading && <p className="px-4 text-sm text-muted-foreground">Loading…</p>}
-        {isError && <p className="px-4 text-sm text-destructive">Couldn't load this order.</p>}
+        {isLoading && <p className="px-4 text-sm text-muted-foreground">Загрузка…</p>}
+        {isError && <p className="px-4 text-sm text-destructive">Не удалось загрузить заказ.</p>}
 
         {order && (
           <div className="space-y-8 px-4 pb-8">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-xs text-muted-foreground">Customer</p>
+                <p className="text-xs text-muted-foreground">Клиент</p>
                 <Link to={`/users/${order.user.id}`} className="underline-offset-2 hover:underline">
                   {order.user.name || "—"}
                 </Link>
                 <p className="text-xs text-muted-foreground">{order.user.phone_number}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Shop</p>
+                <p className="text-xs text-muted-foreground">Заведение</p>
                 <Link to={`/shops/${order.shop.id}`} className="underline-offset-2 hover:underline">
                   {order.shop.name}
                 </Link>
@@ -89,19 +89,19 @@ export function OrderDetailSheet({ orderId, onClose }: OrderDetailSheetProps) {
               </div>
               {order.table && (
                 <div>
-                  <p className="text-xs text-muted-foreground">Table</p>
+                  <p className="text-xs text-muted-foreground">Стол</p>
                   <p>{order.table}</p>
                 </div>
               )}
               {order.pickup_time && (
                 <div>
-                  <p className="text-xs text-muted-foreground">Scheduled pickup</p>
-                  <p>{new Date(order.pickup_time).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Запланированное время получения</p>
+                  <p>{new Date(order.pickup_time).toLocaleString("ru-RU")}</p>
                 </div>
               )}
               {order.vendor && (
                 <div>
-                  <p className="text-xs text-muted-foreground">POS</p>
+                  <p className="text-xs text-muted-foreground">Кассовая система</p>
                   <p>
                     {order.vendor}
                     {order.vendor_order_id && order.vendor_order_id !== String(order.id) && (
@@ -112,10 +112,10 @@ export function OrderDetailSheet({ orderId, onClose }: OrderDetailSheetProps) {
               )}
               {order.fiscal_link?.trim() && (
                 <div>
-                  <p className="text-xs text-muted-foreground">Fiscal receipt</p>
+                  <p className="text-xs text-muted-foreground">Фискальный чек</p>
                   <Button asChild variant="link" size="sm" className="h-auto px-0">
                     <a href={order.fiscal_link.trim()} target="_blank" rel="noopener noreferrer">
-                      Open <ExternalLink className="size-3.5" />
+                      Открыть <ExternalLink className="size-3.5" />
                     </a>
                   </Button>
                 </div>
@@ -126,7 +126,7 @@ export function OrderDetailSheet({ orderId, onClose }: OrderDetailSheetProps) {
               <p className="rounded-md bg-muted p-3 text-sm">“{order.comment}”</p>
             )}
 
-            <Section title="Items">
+            <Section title="Позиции">
               <div className="space-y-3">
                 {order.items.map((item) => {
                   const modifiersTotal = item.modifiers.reduce((sum, m) => sum + m.price * m.quantity, 0);
@@ -152,16 +152,16 @@ export function OrderDetailSheet({ orderId, onClose }: OrderDetailSheetProps) {
               </div>
             </Section>
 
-            <Section title="Payment">
+            <Section title="Оплата">
               <OrderMoneySection order={order} />
             </Section>
 
-            <Section title="Timeline">
+            <Section title="Хронология">
               <OrderTimeline order={order} />
             </Section>
 
             {order.feedbacks.length > 0 && (
-              <Section title="Feedback">
+              <Section title="Отзывы">
                 <div className="space-y-3">
                   {order.feedbacks.map((f) => (
                     <div key={f.id} className="space-y-0.5 text-sm">
@@ -179,7 +179,7 @@ export function OrderDetailSheet({ orderId, onClose }: OrderDetailSheetProps) {
               </Section>
             )}
 
-            <Section title="Change status">
+            <Section title="Изменить статус">
               <OrderStatusChange key={`${order.id}-${order.status}`} order={order} />
             </Section>
           </div>

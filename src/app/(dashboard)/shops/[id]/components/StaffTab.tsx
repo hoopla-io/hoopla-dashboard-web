@@ -69,6 +69,12 @@ const ROLE_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
   KIOSK: "default",
 };
 
+const ROLE_LABELS: Record<string, string> = {
+  MANAGER: "Менеджер",
+  CASHIER: "Кассир",
+  KIOSK: "Киоск",
+};
+
 const isShopRole = (role: string): role is PartnerUserRole =>
   (PARTNER_USER_ROLES as readonly string[]).includes(role);
 
@@ -122,10 +128,10 @@ export function StaffTab({ shopId }: StaffTabProps) {
     mutationFn: partnerUsersApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("Staff member created");
+      toast.success("Сотрудник добавлен");
       closeDialog();
     },
-    onError: () => toast.error("Failed to create staff member"),
+    onError: () => toast.error("Не удалось добавить сотрудника"),
   });
 
   const updateMutation = useMutation({
@@ -133,10 +139,10 @@ export function StaffTab({ shopId }: StaffTabProps) {
       partnerUsersApi.update(id, rest),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("Staff member updated");
+      toast.success("Сотрудник обновлён");
       closeDialog();
     },
-    onError: () => toast.error("Failed to update staff member"),
+    onError: () => toast.error("Не удалось обновить сотрудника"),
   });
 
   const confirmDelete = useConfirm();
@@ -145,9 +151,9 @@ export function StaffTab({ shopId }: StaffTabProps) {
     mutationFn: partnerUsersApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("Staff member deleted");
+      toast.success("Сотрудник удалён");
     },
-    onError: () => toast.error("Failed to delete staff member"),
+    onError: () => toast.error("Не удалось удалить сотрудника"),
   });
 
   function openCreate() {
@@ -178,7 +184,7 @@ export function StaffTab({ shopId }: StaffTabProps) {
     e.preventDefault();
 
     if (!partnerId) {
-      return toast.error("Shop is missing a partner — cannot create staff");
+      return toast.error("У заведения нет партнёра — нельзя добавить сотрудника");
     }
 
     const name = form.name.trim();
@@ -187,10 +193,10 @@ export function StaffTab({ shopId }: StaffTabProps) {
       const phoneNumber = form.phone_number.replace(/\D/g, "");
       const password = form.password.trim();
       if (phoneNumber.length < 9) {
-        return toast.error("Enter the kiosk's phone number");
+        return toast.error("Введите номер телефона киоска");
       }
       if ((!editing || password) && password.length < 6) {
-        return toast.error("Password must be at least 6 characters");
+        return toast.error("Пароль должен содержать не менее 6 символов");
       }
 
       const kiosk = {
@@ -207,7 +213,7 @@ export function StaffTab({ shopId }: StaffTabProps) {
 
     const vendorPin = form.vendor_pin.trim();
     if (vendorPin && !/^\d{4}$/.test(vendorPin)) {
-      return toast.error("PIN must be exactly 4 digits");
+      return toast.error("PIN-код должен состоять ровно из 4 цифр");
     }
 
     if (editing) {
@@ -231,7 +237,7 @@ export function StaffTab({ shopId }: StaffTabProps) {
   }
 
   async function handleDelete(user: PartnerUser) {
-    if (!(await confirmDelete({ title: `Delete ${user.name ?? `#${user.id}`}?` }))) return;
+    if (!(await confirmDelete({ title: `Удалить ${user.name ?? `#${user.id}`}?` }))) return;
     deleteMutation.mutate(user.id);
   }
 
@@ -242,20 +248,20 @@ export function StaffTab({ shopId }: StaffTabProps) {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <Input
-            placeholder="Search by name"
+            placeholder="Поиск по имени"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="md:w-64"
           />
           <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as RoleFilter)}>
             <SelectTrigger className="md:w-40">
-              <SelectValue placeholder="Role" />
+              <SelectValue placeholder="Роль" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All roles</SelectItem>
+              <SelectItem value="ALL">Все роли</SelectItem>
               {PARTNER_USER_ROLES.map((r) => (
                 <SelectItem key={r} value={r}>
-                  {r}
+                  {ROLE_LABELS[r] ?? r}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -263,43 +269,43 @@ export function StaffTab({ shopId }: StaffTabProps) {
         </div>
         <Button onClick={openCreate} disabled={!partnerId}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Staff
+          Добавить сотрудника
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Staff</CardTitle>
+          <CardTitle>Сотрудники</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="w-[100px] text-right">Actions</TableHead>
+                  <TableHead>Имя</TableHead>
+                  <TableHead>Роль</TableHead>
+                  <TableHead className="w-[100px] text-right">Действия</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={3} className="py-10 text-center text-sm text-muted-foreground">
-                      Loading staff...
+                      Загрузка сотрудников…
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center py-6 text-destructive">
-                      Failed to load staff
+                      Не удалось загрузить сотрудников
                     </TableCell>
                   </TableRow>
                 ) : filteredStaff.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} className="p-0">
                       <EmptyState
-                        title="No staff members"
-                        description="Staff added for this shop will appear here."
+                        title="Нет сотрудников"
+                        description="Здесь появятся сотрудники этого заведения."
                       />
                     </TableCell>
                   </TableRow>
@@ -308,7 +314,7 @@ export function StaffTab({ shopId }: StaffTabProps) {
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.name ?? "-"}</TableCell>
                       <TableCell>
-                        <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
+                        <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{ROLE_LABELS[user.role] ?? user.role}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" onClick={() => openEdit(user)}>
@@ -337,32 +343,32 @@ export function StaffTab({ shopId }: StaffTabProps) {
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{editing ? "Edit staff member" : "Add staff member"}</DialogTitle>
+              <DialogTitle>{editing ? "Редактировать сотрудника" : "Добавить сотрудника"}</DialogTitle>
               <DialogDescription>
                 {form.role === "KIOSK"
                   ? editing
-                    ? "Update the kiosk account. Leave the password blank to keep the current one."
-                    : `The kiosk account is attached to ${shop?.name ?? "this shop"} and signs in to kiosk.hoopla.uz with its phone number and password.`
+                    ? "Обновите аккаунт киоска. Оставьте пароль пустым, чтобы сохранить текущий."
+                    : `Аккаунт киоска привязан к заведению «${shop?.name ?? "это заведение"}» и входит на kiosk.hoopla.uz по номеру телефона и паролю.`
                   : editing
-                    ? "Update staff details. Leave PIN blank to keep the current one."
-                    : `Cashier will be attached to ${shop?.name ?? "this shop"} and signs in with the 4-digit PIN.`}
+                    ? "Обновите данные сотрудника. Оставьте PIN-код пустым, чтобы сохранить текущий."
+                    : `Кассир будет привязан к заведению «${shop?.name ?? "это заведение"}» и будет входить по 4-значному PIN-коду.`}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="shop-staff-name">Name</Label>
+                <Label htmlFor="shop-staff-name">Имя</Label>
                 <Input
                   id="shop-staff-name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Full name (optional)"
+                  placeholder="Полное имя (необязательно)"
                   maxLength={100}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="shop-staff-role">Role</Label>
+                <Label htmlFor="shop-staff-role">Роль</Label>
                 <Select
                   value={form.role}
                   onValueChange={(v) => setForm({ ...form, role: v as PartnerUserRole })}
@@ -373,7 +379,7 @@ export function StaffTab({ shopId }: StaffTabProps) {
                   <SelectContent>
                     {PARTNER_USER_ROLES.map((r) => (
                       <SelectItem key={r} value={r}>
-                        {r}
+                        {ROLE_LABELS[r] ?? r}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -383,7 +389,7 @@ export function StaffTab({ shopId }: StaffTabProps) {
               {form.role === "KIOSK" && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="shop-kiosk-phone">Phone number</Label>
+                    <Label htmlFor="shop-kiosk-phone">Номер телефона</Label>
                     <Input
                       id="shop-kiosk-phone"
                       value={form.phone_number}
@@ -394,17 +400,17 @@ export function StaffTab({ shopId }: StaffTabProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="shop-kiosk-password">Password</Label>
+                    <Label htmlFor="shop-kiosk-password">Пароль</Label>
                     <Input
                       id="shop-kiosk-password"
                       type="password"
                       value={form.password}
                       onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      placeholder={editing ? "Leave blank to keep" : "At least 6 characters"}
+                      placeholder={editing ? "Оставьте пустым, чтобы не менять" : "Не менее 6 символов"}
                       autoComplete="new-password"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Staff type the phone number and password once on the kiosk iPad at kiosk.hoopla.uz.
+                      Сотрудники один раз вводят номер телефона и пароль на iPad киоска на kiosk.hoopla.uz.
                     </p>
                   </div>
                 </>
@@ -412,21 +418,21 @@ export function StaffTab({ shopId }: StaffTabProps) {
 
               {(form.role === "CASHIER" || form.role === "MANAGER") && (
                 <div className="space-y-2">
-                  <Label htmlFor="shop-staff-pin">Cassa PIN (4 digits)</Label>
+                  <Label htmlFor="shop-staff-pin">PIN-код кассы (4 цифры)</Label>
                   <Input
                     id="shop-staff-pin"
                     value={form.vendor_pin}
                     onChange={(e) =>
                       setForm({ ...form, vendor_pin: e.target.value.replace(/\D/g, "").slice(0, 4) })
                     }
-                    placeholder={editing ? "Leave blank to keep" : "e.g. 1234"}
+                    placeholder={editing ? "Оставьте пустым, чтобы не менять" : "например, 1234"}
                     inputMode="numeric"
                     pattern="\d{4}"
                     maxLength={4}
                     autoComplete="off"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Cashier types this after picking themselves on cassa.hoopla.uz.
+                    Кассир вводит его после выбора себя на cassa.hoopla.uz.
                   </p>
                 </div>
               )}
@@ -434,10 +440,10 @@ export function StaffTab({ shopId }: StaffTabProps) {
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isSaving}>
-                {isSaving ? "Saving..." : editing ? "Save changes" : "Create staff"}
+                {isSaving ? "Сохранение…" : editing ? "Сохранить изменения" : "Добавить сотрудника"}
               </Button>
             </DialogFooter>
           </form>

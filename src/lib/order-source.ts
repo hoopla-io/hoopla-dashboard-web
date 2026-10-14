@@ -10,7 +10,7 @@ export function formatOrderSource(source?: string): string {
     case "onecafe":
       return "OneCafe";
     case "kiosk":
-      return "Kiosk";
+      return "Киоск";
     default:
       return value
         .replace(/[_-]+/g, " ")

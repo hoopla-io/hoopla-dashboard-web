@@ -25,6 +25,7 @@ import { getApiErrorMessage } from "@/lib/api/error";
 import { formatSomUZS } from "@/lib/money";
 import type { Order } from "@/lib/api/schemas/orders";
 import { formatOrderSource } from "@/lib/order-source";
+import { formatOrderStatus } from "@/lib/order-status";
 
 interface OrdersTabProps {
   partnerId: number;
@@ -59,9 +60,9 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
     mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_orders", partnerId] });
-      toast.success("Fiscalization requested");
+      toast.success("Фискализация запрошена");
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to fiscalize order")),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Не удалось фискализировать заказ")),
   });
 
   return (
@@ -70,7 +71,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
         <div className="max-w-sm w-full relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Filter orders..."
+            placeholder="Фильтр заказов…"
             value={ordersFilter}
             onChange={(e) => {
               setOrdersFilter(e.target.value);
@@ -83,7 +84,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Orders</CardTitle>
+          <CardTitle>Заказы</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
@@ -93,39 +94,39 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                   <SortableTableHead column="id" sort={sort} order={order} onSort={onSort}>
                     ID
                   </SortableTableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Shop</TableHead>
-                  <TableHead>Product</TableHead>
+                  <TableHead>Пользователь</TableHead>
+                  <TableHead>Заведение</TableHead>
+                  <TableHead>Товар</TableHead>
                   <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
-                    Total
+                    Итого
                   </SortableTableHead>
                   <SortableTableHead column="source" sort={sort} order={order} onSort={onSort}>
-                    Source
+                    Источник
                   </SortableTableHead>
                   <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
-                    Status
+                    Статус
                   </SortableTableHead>
                   <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                    Date
+                    Дата
                   </SortableTableHead>
-                  <TableHead>Feedback</TableHead>
-                  <TableHead className="w-10 text-right">Fiscal</TableHead>
+                  <TableHead>Отзыв</TableHead>
+                  <TableHead className="w-10 text-right">Чек</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingOrders ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-4">Loading orders...</TableCell>
+                    <TableCell colSpan={10} className="text-center py-4">Загрузка заказов…</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="p-0">
                       <EmptyState
-                        title="No orders found"
+                        title="Заказы не найдены"
                         description={
                           ordersFilter
-                            ? "Try adjusting or clearing your search."
-                            : "Orders placed with this partner will appear here."
+                            ? "Попробуйте изменить или очистить поисковый запрос."
+                            : "Здесь появятся заказы этого партнёра."
                         }
                       />
                     </TableCell>
@@ -154,7 +155,7 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                             className="underline-offset-2 hover:underline"
                             onClick={() => setItemsDialogOrder(order)}
                           >
-                            {order.drink?.name || `${order.items.length} items`}
+                            {order.drink?.name || `Позиций: ${order.items.length}`}
                           </button>
                         ) : (
                           order.drink?.name || "-"
@@ -170,10 +171,10 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                             order.status === "cancelled" ? "destructive" :
                               "secondary"
                         }>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
+                          {formatOrderStatus(order.status)}
                         </Badge>
                       </TableCell>
-                      <TableCell>{order.time ? new Date(order.time).toLocaleDateString() : "-"}</TableCell>
+                      <TableCell>{order.time ? new Date(order.time).toLocaleDateString("ru-RU") : "-"}</TableCell>
                       <TableCell>
                         {order.feedback ? (
                           <div className="flex flex-col gap-0.5">
@@ -188,12 +189,12 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                       </TableCell>
                       <TableCell className="text-right">
                         {order.status === "completed" && (order.fiscal_link?.trim() ? (
-                          <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
+                          <Button asChild variant="outline" size="icon-sm" title="Открыть фискальный чек">
                             <a
                               href={order.fiscal_link.trim()}
                               target="_blank"
                               rel="noopener noreferrer"
-                              aria-label="Open fiscal receipt"
+                              aria-label="Открыть фискальный чек"
                             >
                               <ExternalLink className="size-4" />
                             </a>
@@ -204,8 +205,8 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
                             size="icon-sm"
                             onClick={() => fiscalizeMutation.mutate(order.id)}
                             disabled={fiscalizeMutation.isPending}
-                            title="Fiscalize order"
-                            aria-label="Fiscalize order"
+                            title="Фискализировать заказ"
+                            aria-label="Фискализировать заказ"
                           >
                             <ReceiptText className="size-4" />
                           </Button>
@@ -239,8 +240,8 @@ export function OrdersTab({ partnerId }: OrdersTabProps) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
-            <DialogDescription>Line items for this order.</DialogDescription>
+            <DialogTitle>Позиции заказа #{itemsDialogOrder?.id}</DialogTitle>
+            <DialogDescription>Состав этого заказа.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             {itemsDialogOrder?.items?.map((item) => (

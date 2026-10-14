@@ -120,7 +120,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
       onError: () => {
         queryClient.setQueryData<PartnerDrink[]>(["partner_drinks", partnerId], current);
 		queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
-        toast.error("Failed to save product order");
+        toast.error("Не удалось сохранить порядок товаров");
       },
     });
   };
@@ -131,10 +131,10 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Product assigned successfully");
+      toast.success("Товар назначен");
       setIsDrinkDialogOpen(false);
     },
-    onError: () => toast.error("Failed to assign product"),
+    onError: () => toast.error("Не удалось назначить товар"),
   });
 
   const updateDrinkMutation = useMutation({
@@ -143,10 +143,10 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Product updated successfully");
+      toast.success("Товар обновлён");
       setIsDrinkDialogOpen(false);
     },
-    onError: () => toast.error("Failed to update product"),
+    onError: () => toast.error("Не удалось обновить товар"),
   });
 
   const confirmDelete = useConfirm();
@@ -155,9 +155,9 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
     mutationFn: drinksApi.deletePartnerDrink,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
-      toast.success("Product removed successfully");
+      toast.success("Товар убран");
     },
-    onError: () => toast.error("Failed to remove product"),
+    onError: () => toast.error("Не удалось убрать товар"),
   });
 
   const toggleActiveMutation = useMutation({
@@ -165,9 +165,9 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
       drinksApi.toggleActive(id, isActive),
     onSuccess: (_data, { isActive }) => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
-      toast.success(isActive ? "Product shown in app" : "Product hidden from app");
+      toast.success(isActive ? "Товар показан в приложении" : "Товар скрыт из приложения");
     },
-    onError: () => toast.error("Failed to update product status"),
+    onError: () => toast.error("Не удалось обновить статус товара"),
   });
 
   const availabilityMutation = useMutation({
@@ -189,11 +189,11 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
     },
     onSuccess: (_data, { field, available }) => {
       const channel = field === "available_in_hoopla" ? "Hoopla" : "OneCafe";
-      toast.success(`${channel} availability ${available ? "enabled" : "disabled"}`);
+      toast.success(`Доступность в ${channel} ${available ? "включена" : "выключена"}`);
     },
     onError: (_error, _variables, context) => {
       queryClient.setQueryData(["partner_drinks", partnerId], context?.previous);
-      toast.error("Failed to update product availability");
+      toast.error("Не удалось обновить доступность товара");
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_drinks", partnerId] });
@@ -205,13 +205,13 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
       updateDrinkMutation.mutate({ id: drinkEditId, data: drinkFormData, file: drinkFile });
     } else {
       if (!drinkFormData.drink_id) {
-        toast.error("Please select a product");
+        toast.error("Выберите товар");
         return;
       }
       if (!drinkFile) {
         // The backend requires an image on create (the upload is unconditional);
         // guard here so the admin gets a clear message instead of a 500.
-        toast.error("Please select an image");
+        toast.error("Выберите изображение");
         return;
       }
       createDrinkMutation.mutate({ data: { ...drinkFormData, partner_id: partnerId }, file: drinkFile });
@@ -219,7 +219,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
   };
 
   const handleNavigateToModifiers = (pd: PartnerDrink) => {
-    const drinkName = encodeURIComponent(pd.vendor_product_name || pd.name || pd.drink?.name || "Product");
+    const drinkName = encodeURIComponent(pd.vendor_product_name || pd.name || pd.drink?.name || "Товар");
     navigate(`/partners/${partnerId}/products/${pd.id}/modifiers?productName=${drinkName}`);
   };
 
@@ -229,7 +229,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
         <div className="max-w-sm w-full relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Filter products..."
+            placeholder="Фильтр товаров…"
             value={drinksFilter}
             onChange={(e) => setDrinksFilter(e.target.value)}
             className="pl-10"
@@ -242,35 +242,35 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
           setIsDrinkDialogOpen(true);
         }}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Product
+          Добавить товар
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Products</CardTitle>
+          <CardTitle>Товары</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-				<TableHead className="w-10"><span className="sr-only">Reorder</span></TableHead>
-                <TableHead>Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Vendor Name</TableHead>
-                <TableHead>Vendor ID</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Vendor Price</TableHead>
-                <TableHead>Status</TableHead>
-				<TableHead>Availability</TableHead>
+				<TableHead className="w-10"><span className="sr-only">Порядок</span></TableHead>
+                <TableHead>Изображение</TableHead>
+                <TableHead>Название</TableHead>
+                <TableHead>Название у вендора</TableHead>
+                <TableHead>ID у вендора</TableHead>
+                <TableHead>Цена</TableHead>
+                <TableHead>Цена вендора</TableHead>
+                <TableHead>Статус</TableHead>
+				<TableHead>Доступность</TableHead>
 				<TableHead className="w-[132px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingPartnerDrinks ? (
-                <TableRow><TableCell colSpan={10} className="text-center py-4">Loading products...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-4">Загрузка товаров…</TableCell></TableRow>
               ) : filteredDrinks.length === 0 ? (
-                <TableRow><TableCell colSpan={10} className="text-center py-4 text-muted-foreground">No products found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-4 text-muted-foreground">Товары не найдены</TableCell></TableRow>
               ) : (
                 filteredDrinks.map(pd => {
                   const drinkIndex = (partnerDrinks ?? []).findIndex((drink) => drink.id === pd.id);
@@ -297,14 +297,14 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
 								onDragStart={() => setDraggedDrinkId(pd.id)}
 								onDragEnd={() => setDraggedDrinkId(null)}
 								className="cursor-grab rounded p-1 text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 active:cursor-grabbing"
-								aria-label={isReorderDisabled ? "Clear the filter to reorder products" : `Drag ${pd.vendor_product_name || pd.name || "product"} to reorder`}
-								title={isReorderDisabled ? "Clear the filter to reorder products" : "Drag to reorder"}
+								aria-label={isReorderDisabled ? "Очистите фильтр, чтобы изменить порядок товаров" : `Перетащите «${pd.vendor_product_name || pd.name || "товар"}», чтобы изменить порядок`}
+								title={isReorderDisabled ? "Очистите фильтр, чтобы изменить порядок товаров" : "Перетащите, чтобы изменить порядок"}
 							>
 								<GripVertical className="h-4 w-4" />
 							</button>
 							<div className="flex flex-col">
-								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex - 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === 0} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "product"} up`}><ChevronUp className="h-3 w-3" /></button>
-								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex + 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === (partnerDrinks?.length ?? 0) - 1} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Move ${pd.vendor_product_name || pd.name || "product"} down`}><ChevronDown className="h-3 w-3" /></button>
+								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex - 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === 0} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Переместить «${pd.vendor_product_name || pd.name || "товар"}» вверх`}><ChevronUp className="h-3 w-3" /></button>
+								<button type="button" onClick={() => moveDrink(drinkIndex, drinkIndex + 1)} disabled={isReorderDisabled || reorderDrinksMutation.isPending || drinkIndex === (partnerDrinks?.length ?? 0) - 1} className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30" aria-label={`Переместить «${pd.vendor_product_name || pd.name || "товар"}» вниз`}><ChevronDown className="h-3 w-3" /></button>
 							</div>
 						</div>
 					</TableCell>
@@ -315,7 +315,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                           className="h-10 w-10 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => setPreviewImage(pd.image_url || pd.imageUrl || "")}
                         >
-                          <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Product"} className="h-10 w-10 rounded-md object-cover" />
+                          <img src={pd.image_url || pd.imageUrl || ""} alt={pd.vendor_product_name || "Товар"} className="h-10 w-10 rounded-md object-cover" />
                         </button>
                       ) : pd.drink?.image_url ? (
                         <button
@@ -326,7 +326,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                           <img src={pd.drink.image_url} alt={pd.drink.name} className="h-10 w-10 rounded-md object-cover opacity-50" />
                         </button>
                       ) : (
-                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">No Img</div>
+                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">Нет фото</div>
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{pd.name || pd.drink?.name || "-"}</TableCell>
@@ -340,10 +340,10 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                           checked={pd.is_active !== false}
                           onCheckedChange={(checked) => toggleActiveMutation.mutate({ id: pd.id, isActive: checked })}
                           disabled={toggleActiveMutation.isPending}
-                          aria-label={pd.is_active !== false ? "Hide product from app" : "Show product in app"}
+                          aria-label={pd.is_active !== false ? "Скрыть товар из приложения" : "Показать товар в приложении"}
                         />
                         <span className="text-xs text-muted-foreground">
-                          {pd.is_active !== false ? "Active" : "Hidden"}
+                          {pd.is_active !== false ? "Активен" : "Скрыт"}
                         </span>
                       </div>
                     </TableCell>
@@ -358,7 +358,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                               available,
                             })}
                             disabled={availabilityMutation.isPending}
-                            aria-label={`${pd.available_in_hoopla ? "Disable" : "Enable"} product in Hoopla`}
+                            aria-label={`${pd.available_in_hoopla ? "Выключить" : "Включить"} товар в Hoopla`}
                           />
                           <span className="text-xs text-muted-foreground">Hoopla</span>
                         </div>
@@ -371,7 +371,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                               available,
                             })}
                             disabled={availabilityMutation.isPending}
-                            aria-label={`${pd.available_in_onecafe ? "Disable" : "Enable"} product in OneCafe`}
+                            aria-label={`${pd.available_in_onecafe ? "Выключить" : "Включить"} товар в OneCafe`}
                           />
                           <span className="text-xs text-muted-foreground">OneCafe</span>
                         </div>
@@ -384,7 +384,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                           size="sm"
                           onClick={() => handleNavigateToModifiers(pd)}
                         >
-                          Add addons
+                          Добавки
                         </Button>
                         <Button
                           variant="ghost"
@@ -411,7 +411,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={async () => { if (await confirmDelete({ title: "Delete product?" })) deleteDrinkMutation.mutate(pd.id); }}
+                          onClick={async () => { if (await confirmDelete({ title: "Удалить товар?" })) deleteDrinkMutation.mutate(pd.id); }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -430,11 +430,11 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
       <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>Product image preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Просмотр изображения товара</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            <img src={previewImage} alt="Product preview" className="w-full h-auto rounded" />
+            <img src={previewImage} alt="Изображение товара" className="w-full h-auto rounded" />
           )}
         </DialogContent>
       </Dialog>
@@ -442,13 +442,13 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
       <Dialog open={isDrinkDialogOpen} onOpenChange={setIsDrinkDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{drinkEditId ? "Edit Product" : "Add Product"}</DialogTitle>
-            <DialogDescription>{drinkEditId ? "Update product details" : "Assign a new product to this partner"}</DialogDescription>
+            <DialogTitle>{drinkEditId ? "Редактирование товара" : "Новый товар"}</DialogTitle>
+            <DialogDescription>{drinkEditId ? "Обновите данные товара" : "Назначьте новый товар этому партнёру"}</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleSaveDrink(); }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="drink-select">Select Product</Label>
+                <Label htmlFor="drink-select">Товар</Label>
                 <Select
                   value={drinkFormData.drink_id ? String(drinkFormData.drink_id) : undefined}
                   onValueChange={(val) => {
@@ -462,7 +462,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a product" />
+                    <SelectValue placeholder="Выберите товар" />
                   </SelectTrigger>
                   <SelectContent>
                     {allDrinks.map(d => (
@@ -472,19 +472,19 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Описание</Label>
                 <Textarea
                   id="description"
                   value={drinkFormData.description ?? ""}
                   onChange={(e) => setDrinkFormData({ ...drinkFormData, description: e.target.value })}
-                  placeholder="Description shown to customers"
+                  placeholder="Описание, которое видят клиенты"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Applies to this partner&apos;s product only. Leave blank to remove it.
+                  Применяется только к товару этого партнёра. Оставьте пустым, чтобы удалить описание.
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="vendor_product_name">Vendor Product Name</Label>
+                <Label htmlFor="vendor_product_name">Название товара у вендора</Label>
                 <Input
                   id="vendor_product_name"
                   value={drinkFormData.vendor_product_name || ""}
@@ -492,7 +492,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="vendor_product_id">Vendor Product ID</Label>
+                <Label htmlFor="vendor_product_id">ID товара у вендора</Label>
                 <Input
                   id="vendor_product_id"
                   value={drinkFormData.vendor_product_id || ""}
@@ -501,7 +501,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="product_price">Price</Label>
+                  <Label htmlFor="product_price">Цена</Label>
                   <Input
                     id="product_price"
                     type="number"
@@ -510,7 +510,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="vendor_product_price">Vendor Price</Label>
+                  <Label htmlFor="vendor_product_price">Цена вендора</Label>
                   <Input
                     id="vendor_product_price"
                     type="number"
@@ -520,9 +520,9 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Categories</Label>
+                <Label>Категории</Label>
                 {categories.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No categories yet. Create them in the Categories tab.</p>
+                  <p className="text-xs text-muted-foreground">Категорий пока нет. Создайте их на вкладке «Категории».</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {categories.map((c) => {
@@ -542,7 +542,7 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="drink-file">Image</Label>
+                <Label htmlFor="drink-file">Изображение</Label>
                 <Input
                   id="drink-file"
                   type="file"
@@ -554,9 +554,9 @@ export function ProductsTab({ partnerId }: ProductsTabProps) {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDrinkDialogOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsDrinkDialogOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createDrinkMutation.isPending || updateDrinkMutation.isPending}>
-                {createDrinkMutation.isPending || updateDrinkMutation.isPending ? "Saving..." : "Save"}
+                {createDrinkMutation.isPending || updateDrinkMutation.isPending ? "Сохранение…" : "Сохранить"}
               </Button>
             </DialogFooter>
           </form>

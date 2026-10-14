@@ -34,10 +34,10 @@ export function ShopStep({ partnerId, createdShop, onCreated, onContinue, onBack
     mutationFn: ({ data, file }: { data: ShopFormValues; file?: File }) =>
       shopsApi.create({ ...data, partner_id: partnerId }, file),
     onSuccess: (result, variables) => {
-      toast.success("Shop created!");
+      toast.success("Заведение создано!");
       onCreated({ id: result.id, name: variables.data.name });
     },
-    onError: () => toast.error("Failed to create shop"),
+    onError: () => toast.error("Не удалось создать заведение"),
   });
 
   if (createdShop) {
@@ -47,12 +47,12 @@ export function ShopStep({ partnerId, createdShop, onCreated, onContinue, onBack
           <Check className="size-5 shrink-0 text-primary" />
           <div>
             <p className="text-sm font-medium text-foreground">{createdShop.name}</p>
-            <p className="text-xs text-muted-foreground">First shop created</p>
+            <p className="text-xs text-muted-foreground">Первое заведение создано</p>
           </div>
         </div>
         <div className="flex justify-between">
-          <Button variant="outline" onClick={onBack}>Back</Button>
-          <Button onClick={onContinue}>Continue</Button>
+          <Button variant="outline" onClick={onBack}>Назад</Button>
+          <Button onClick={onContinue}>Продолжить</Button>
         </div>
       </div>
     );
@@ -64,13 +64,13 @@ export function ShopStep({ partnerId, createdShop, onCreated, onContinue, onBack
       className="space-y-4"
     >
       <div>
-        <h2 className="text-lg font-semibold text-foreground">First shop</h2>
-        <p className="text-sm text-muted-foreground">Add the first physical location for this partner.</p>
+        <h2 className="text-lg font-semibold text-foreground">Первое заведение</h2>
+        <p className="text-sm text-muted-foreground">Добавьте первую точку этого партнёра.</p>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="onboarding-shop-name">Name</Label>
-        <Input id="onboarding-shop-name" placeholder="e.g. Morselle — Amir Temur" {...form.register("name")} />
+        <Label htmlFor="onboarding-shop-name">Название</Label>
+        <Input id="onboarding-shop-name" placeholder="напр. Morselle — Amir Temur" {...form.register("name")} />
         {form.formState.errors.name && (
           <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
         )}
@@ -78,7 +78,7 @@ export function ShopStep({ partnerId, createdShop, onCreated, onContinue, onBack
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="onboarding-shop-lat">Latitude</Label>
+          <Label htmlFor="onboarding-shop-lat">Широта</Label>
           <Input
             id="onboarding-shop-lat"
             type="number"
@@ -90,7 +90,7 @@ export function ShopStep({ partnerId, createdShop, onCreated, onContinue, onBack
           )}
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="onboarding-shop-long">Longitude</Label>
+          <Label htmlFor="onboarding-shop-long">Долгота</Label>
           <Input
             id="onboarding-shop-long"
             type="number"
@@ -104,7 +104,7 @@ export function ShopStep({ partnerId, createdShop, onCreated, onContinue, onBack
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="onboarding-shop-image">Image</Label>
+        <Label htmlFor="onboarding-shop-image">Изображение</Label>
         <Input
           id="onboarding-shop-image"
           type="file"
@@ -114,14 +114,14 @@ export function ShopStep({ partnerId, createdShop, onCreated, onContinue, onBack
       </div>
 
       <div className="flex justify-between pt-2">
-        <Button type="button" variant="outline" onClick={onBack}>Back</Button>
+        <Button type="button" variant="outline" onClick={onBack}>Назад</Button>
         <Button type="submit" disabled={createMutation.isPending}>
           {createMutation.isPending ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Creating…
+              <Loader2 className="size-4 animate-spin" /> Создание…
             </>
           ) : (
-            "Create shop & continue"
+            "Создать заведение и продолжить"
           )}
         </Button>
       </div>

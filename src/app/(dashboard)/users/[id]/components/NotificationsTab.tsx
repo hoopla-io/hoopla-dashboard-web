@@ -36,7 +36,7 @@ export function NotificationsTab({ userId }: NotificationsTabProps) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Push notifications</CardTitle>
+          <CardTitle>Push-уведомления</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>

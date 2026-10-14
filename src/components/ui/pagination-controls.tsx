@@ -51,7 +51,7 @@ export function PaginationControls({
   return (
     <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/30 px-4 py-2.5">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>Rows</span>
+        <span>Строк</span>
         <Select
           value={String(perPage)}
           onValueChange={(v) => onPerPageChange(Number(v))}
@@ -68,7 +68,7 @@ export function PaginationControls({
           </SelectContent>
         </Select>
         <span className="hidden sm:inline">
-          Page <span className="font-mono tabular-nums text-foreground">{currentPage}</span> of{" "}
+          Стр. <span className="font-mono tabular-nums text-foreground">{currentPage}</span> из{" "}
           <span className="font-mono tabular-nums text-foreground">{totalPages || 1}</span>
         </span>
       </div>
@@ -81,7 +81,7 @@ export function PaginationControls({
           disabled={currentPage === 1 || isLoading}
           className="size-7"
         >
-          <span className="sr-only">Previous page</span>
+          <span className="sr-only">Назад</span>
           <ChevronLeft className="size-4" />
         </Button>
 
@@ -117,7 +117,7 @@ export function PaginationControls({
           disabled={currentPage === totalPages || isLoading}
           className="size-7"
         >
-          <span className="sr-only">Next page</span>
+          <span className="sr-only">Вперёд</span>
           <ChevronRight className="size-4" />
         </Button>
       </div>

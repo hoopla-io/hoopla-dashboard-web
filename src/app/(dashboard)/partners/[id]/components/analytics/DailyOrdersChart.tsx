@@ -10,7 +10,7 @@ export function DailyOrdersChart({ data }: DailyOrdersChartProps) {
   if (total === 0) {
     return (
       <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-        No orders in this period
+        Нет заказов за этот период
       </div>
     );
   }
@@ -22,7 +22,7 @@ export function DailyOrdersChart({ data }: DailyOrdersChartProps) {
         <XAxis dataKey="day" fontSize={11} minTickGap={24} />
         <YAxis allowDecimals={false} fontSize={12} width={32} />
         <Tooltip />
-        <Area type="monotone" dataKey="orders" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} />
+        <Area type="monotone" dataKey="orders" name="Заказы" stroke="#6366f1" fill="#6366f1" fillOpacity={0.15} strokeWidth={2} />
       </AreaChart>
     </ResponsiveContainer>
   );

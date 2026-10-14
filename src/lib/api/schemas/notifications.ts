@@ -20,8 +20,8 @@ export const NotificationSchema = z.object({
 });
 
 export const CreateNotificationSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100),
-  text: z.string().min(1, "Text is required"),
+  title: z.string().min(1, "Укажите заголовок").max(100),
+  text: z.string().min(1, "Укажите текст"),
   url: z.string().optional(),
 });
 

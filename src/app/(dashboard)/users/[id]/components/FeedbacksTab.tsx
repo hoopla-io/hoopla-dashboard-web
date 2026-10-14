@@ -52,7 +52,7 @@ export function FeedbacksTab({ userId }: FeedbacksTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Feedbacks</CardTitle>
+        <CardTitle>Отзывы</CardTitle>
       </CardHeader>
       <CardContent>
         <DataTableShell>
@@ -63,30 +63,30 @@ export function FeedbacksTab({ userId }: FeedbacksTabProps) {
                   ID
                 </SortableTableHead>
                 <SortableTableHead column="order_id" sort={sort} order={order} onSort={onSort}>
-                  Order
+                  Заказ
                 </SortableTableHead>
-                <TableHead>Partner</TableHead>
-                <TableHead>Shop</TableHead>
+                <TableHead>Партнёр</TableHead>
+                <TableHead>Заведение</TableHead>
                 <SortableTableHead column="rating" sort={sort} order={order} onSort={onSort}>
-                  Rating
+                  Оценка
                 </SortableTableHead>
-                <TableHead>Comment</TableHead>
+                <TableHead>Комментарий</TableHead>
                 <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                  Date
+                  Дата
                 </SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">Loading feedbacks...</TableCell>
+                  <TableCell colSpan={7} className="text-center py-4">Загрузка отзывов…</TableCell>
                 </TableRow>
               ) : feedbacks.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="p-0">
                     <EmptyState
-                      title="No feedbacks yet"
-                      description="Ratings this user leaves on orders will appear here."
+                      title="Отзывов пока нет"
+                      description="Здесь появятся оценки, которые пользователь оставляет заказам."
                     />
                   </TableCell>
                 </TableRow>
@@ -122,7 +122,7 @@ export function FeedbacksTab({ userId }: FeedbacksTabProps) {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
-                      {new Date(feedback.created_at).toLocaleString()}
+                      {new Date(feedback.created_at).toLocaleString("ru-RU")}
                     </TableCell>
                   </TableRow>
                 ))

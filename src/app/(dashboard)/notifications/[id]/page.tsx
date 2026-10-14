@@ -34,11 +34,11 @@ function NotificationDetailContent() {
   });
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading notification details...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Загрузка уведомления...</div>;
   }
 
   if (!notification) {
-    return <div className="p-8 text-center text-destructive">Notification not found</div>;
+    return <div className="p-8 text-center text-destructive">Уведомление не найдено</div>;
   }
 
   return (
@@ -64,15 +64,15 @@ function NotificationDetailContent() {
           )}
           <div>
             <h1 className="text-2xl font-bold">{notification.title}</h1>
-            <p className="text-sm text-muted-foreground">Manage notification details and translations</p>
+            <p className="text-sm text-muted-foreground">Управление данными и переводами уведомления</p>
           </div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="translations">Translations</TabsTrigger>
+          <TabsTrigger value="general">Основное</TabsTrigger>
+          <TabsTrigger value="translations">Переводы</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -89,7 +89,7 @@ function NotificationDetailContent() {
 
 export default function NotificationDetailPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 text-center">Загрузка...</div>}>
       <NotificationDetailContent />
     </Suspense>
   );

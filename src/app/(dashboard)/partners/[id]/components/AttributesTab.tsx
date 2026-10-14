@@ -36,11 +36,11 @@ export function AttributesTab({ partnerId }: AttributesTabProps) {
     mutationFn: (data: CreatePartnerAttributeRequest) => partnersApi.createAttribute(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_attributes", partnerId] });
-      toast.success("Attribute added successfully");
+      toast.success("Атрибут добавлен");
       setIsCreateAttributeOpen(false);
       setAttributeFormData({ partner_id: partnerId, attribute_key: "", attribute_value: "" });
     },
-    onError: () => toast.error("Failed to add attribute"),
+    onError: () => toast.error("Не удалось добавить атрибут"),
   });
 
   const confirmDelete = useConfirm();
@@ -49,14 +49,14 @@ export function AttributesTab({ partnerId }: AttributesTabProps) {
     mutationFn: partnersApi.deleteAttribute,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_attributes", partnerId] });
-      toast.success("Attribute deleted successfully");
+      toast.success("Атрибут удалён");
     },
-    onError: () => toast.error("Failed to delete attribute"),
+    onError: () => toast.error("Не удалось удалить атрибут"),
   });
 
   const handleCreateAttribute = () => {
     if (!attributeFormData.attribute_key || !attributeFormData.attribute_value) {
-      toast.error("Key and Value are required");
+      toast.error("Укажите ключ и значение");
       return;
     }
     createAttributeMutation.mutate({ ...attributeFormData, partner_id: partnerId });
@@ -67,28 +67,28 @@ export function AttributesTab({ partnerId }: AttributesTabProps) {
       <div className="flex justify-end">
         <Button onClick={() => setIsCreateAttributeOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Attribute
+          Добавить атрибут
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Attributes</CardTitle>
+          <CardTitle>Атрибуты</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Key</TableHead>
-                <TableHead>Value</TableHead>
+                <TableHead>Ключ</TableHead>
+                <TableHead>Значение</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingAttributes ? (
-                <TableRow><TableCell colSpan={3} className="text-center py-4">Loading attributes...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center py-4">Загрузка атрибутов…</TableCell></TableRow>
               ) : attributes.length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">No attributes found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center py-4 text-muted-foreground">Атрибуты не найдены</TableCell></TableRow>
               ) : (
                 attributes.map(attr => (
                   <TableRow key={attr.id}>
@@ -99,7 +99,7 @@ export function AttributesTab({ partnerId }: AttributesTabProps) {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={async () => { if (await confirmDelete({ title: `Delete “${attr.attribute_key}”?` })) deleteAttributeMutation.mutate(attr.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: `Удалить «${attr.attribute_key}»?` })) deleteAttributeMutation.mutate(attr.id); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -115,34 +115,34 @@ export function AttributesTab({ partnerId }: AttributesTabProps) {
       <Dialog open={isCreateAttributeOpen} onOpenChange={setIsCreateAttributeOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Attribute</DialogTitle>
-            <DialogDescription>Add a new key-value attribute for this partner</DialogDescription>
+            <DialogTitle>Добавление атрибута</DialogTitle>
+            <DialogDescription>Добавьте новый атрибут «ключ — значение» для этого партнёра</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleCreateAttribute(); }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="attr-key">Key</Label>
+                <Label htmlFor="attr-key">Ключ</Label>
                 <Input
                   id="attr-key"
                   value={attributeFormData.attribute_key}
                   onChange={(e) => setAttributeFormData({ ...attributeFormData, attribute_key: e.target.value })}
-                  placeholder="e.g., delivery_zone"
+                  placeholder="напр. delivery_zone"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="attr-value">Value</Label>
+                <Label htmlFor="attr-value">Значение</Label>
                 <Input
                   id="attr-value"
                   value={attributeFormData.attribute_value}
                   onChange={(e) => setAttributeFormData({ ...attributeFormData, attribute_value: e.target.value })}
-                  placeholder="e.g., zone_1"
+                  placeholder="напр. zone_1"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateAttributeOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateAttributeOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createAttributeMutation.isPending}>
-                {createAttributeMutation.isPending ? "Adding..." : "Add Attribute"}
+                {createAttributeMutation.isPending ? "Добавление…" : "Добавить атрибут"}
               </Button>
             </DialogFooter>
           </form>

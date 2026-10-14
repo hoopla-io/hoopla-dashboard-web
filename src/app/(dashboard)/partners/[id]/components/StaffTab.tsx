@@ -69,6 +69,12 @@ const ROLE_VARIANTS: Record<string, "default" | "secondary" | "outline"> = {
   MANAGER: "outline",
 };
 
+const ROLE_LABELS: Record<string, string> = {
+  OWNER: "Владелец",
+  ACCOUNTANT: "Бухгалтер",
+  MANAGER: "Менеджер",
+};
+
 const PAGE_SIZE = 500;
 const isPortalRole = (role: string): role is PortalUserRole =>
   (PORTAL_ROLES as readonly string[]).includes(role);
@@ -127,10 +133,10 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     mutationFn: partnerUsersApi.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("User created");
+      toast.success("Пользователь создан");
       closeDialog();
     },
-    onError: () => toast.error("Failed to create user"),
+    onError: () => toast.error("Не удалось создать пользователя"),
   });
 
   const updateMutation = useMutation({
@@ -138,10 +144,10 @@ export function StaffTab({ partnerId }: StaffTabProps) {
       partnerUsersApi.update(id, rest),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("User updated");
+      toast.success("Пользователь обновлён");
       closeDialog();
     },
-    onError: () => toast.error("Failed to update user"),
+    onError: () => toast.error("Не удалось обновить пользователя"),
   });
 
   const confirmDelete = useConfirm();
@@ -150,9 +156,9 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     mutationFn: partnerUsersApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner-users"] });
-      toast.success("User deleted");
+      toast.success("Пользователь удалён");
     },
-    onError: () => toast.error("Failed to delete user"),
+    onError: () => toast.error("Не удалось удалить пользователя"),
   });
 
   function openCreate() {
@@ -189,15 +195,15 @@ export function StaffTab({ partnerId }: StaffTabProps) {
     const password = form.password.trim();
 
     if (!phone) {
-      return toast.error("Phone number is required");
+      return toast.error("Укажите номер телефона");
     }
     if (!editing && !password) {
-      return toast.error("Password is required for a new user");
+      return toast.error("Для нового пользователя нужен пароль");
     }
     // MANAGER is shop-scoped; OWNER / ACCOUNTANT are partner-wide.
     const isManager = form.role === "MANAGER";
     if (isManager && !form.shop_id) {
-      return toast.error("Select a shop for a Manager");
+      return toast.error("Выберите заведение для менеджера");
     }
 
     const payload = {
@@ -218,7 +224,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
   }
 
   async function handleDelete(user: PartnerUser) {
-    if (!(await confirmDelete({ title: `Delete ${user.name ?? user.phone_number ?? `#${user.id}`}?` }))) return;
+    if (!(await confirmDelete({ title: `Удалить ${user.name ?? user.phone_number ?? `#${user.id}`}?` }))) return;
     deleteMutation.mutate(user.id);
   }
 
@@ -229,20 +235,20 @@ export function StaffTab({ partnerId }: StaffTabProps) {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <Input
-            placeholder="Search by name or phone"
+            placeholder="Поиск по имени или телефону"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="md:w-64"
           />
           <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as RoleFilter)}>
             <SelectTrigger className="md:w-40">
-              <SelectValue placeholder="Role" />
+              <SelectValue placeholder="Роль" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All roles</SelectItem>
+              <SelectItem value="ALL">Все роли</SelectItem>
               {PORTAL_ROLES.map((r) => (
                 <SelectItem key={r} value={r}>
-                  {r}
+                  {ROLE_LABELS[r] ?? r}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -250,45 +256,45 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Add User
+          Добавить пользователя
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Merchant users</CardTitle>
+          <CardTitle>Пользователи кабинета партнёра</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Shop</TableHead>
-                  <TableHead className="w-[100px] text-right">Actions</TableHead>
+                  <TableHead>Имя</TableHead>
+                  <TableHead>Телефон</TableHead>
+                  <TableHead>Роль</TableHead>
+                  <TableHead>Заведение</TableHead>
+                  <TableHead className="w-[100px] text-right">Действия</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                      Loading users...
+                      Загрузка пользователей…
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-6 text-destructive">
-                      Failed to load users
+                      Не удалось загрузить пользователей
                     </TableCell>
                   </TableRow>
                 ) : filteredStaff.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="p-0">
                       <EmptyState
-                        title="No merchant users"
-                        description="Merchant-portal users added for this partner will appear here."
+                        title="Нет пользователей кабинета"
+                        description="Здесь появятся пользователи кабинета партнёра, добавленные для этого партнёра."
                       />
                     </TableCell>
                   </TableRow>
@@ -302,7 +308,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                           {user.phone_number ?? "-"}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{user.role}</Badge>
+                          <Badge variant={ROLE_VARIANTS[user.role] ?? "outline"}>{ROLE_LABELS[user.role] ?? user.role}</Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {user.role === "MANAGER" && shopId
@@ -337,29 +343,29 @@ export function StaffTab({ partnerId }: StaffTabProps) {
         <DialogContent>
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{editing ? "Edit merchant user" : "Add merchant user"}</DialogTitle>
+              <DialogTitle>{editing ? "Редактирование пользователя кабинета" : "Новый пользователь кабинета"}</DialogTitle>
               <DialogDescription>
                 {editing
-                  ? "Update details. Leave password blank to keep the current one."
-                  : "Merchant-portal user (merchant.hoopla.uz). They sign in with phone + password."}
+                  ? "Обновите данные. Оставьте пароль пустым, чтобы сохранить текущий."
+                  : "Пользователь кабинета партнёра (merchant.hoopla.uz). Вход по телефону и паролю."}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="portal-name">Name</Label>
+                <Label htmlFor="portal-name">Имя</Label>
                 <Input
                   id="portal-name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Full name (optional)"
+                  placeholder="Полное имя (необязательно)"
                   maxLength={100}
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="portal-phone">Phone number</Label>
+                  <Label htmlFor="portal-phone">Номер телефона</Label>
                   <Input
                     id="portal-phone"
                     value={form.phone_number}
@@ -370,13 +376,13 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="portal-password">Password</Label>
+                  <Label htmlFor="portal-password">Пароль</Label>
                   <Input
                     id="portal-password"
                     type="password"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    placeholder={editing ? "Leave blank to keep" : "Set a password"}
+                    placeholder={editing ? "Оставьте пустым, чтобы не менять" : "Задайте пароль"}
                     maxLength={255}
                     autoComplete="new-password"
                   />
@@ -385,7 +391,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="portal-role">Role</Label>
+                  <Label htmlFor="portal-role">Роль</Label>
                   <Select
                     value={form.role}
                     onValueChange={(v) => setForm({ ...form, role: v as PortalUserRole })}
@@ -396,7 +402,7 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                     <SelectContent>
                       {PORTAL_ROLES.map((r) => (
                         <SelectItem key={r} value={r}>
-                          {r}
+                          {ROLE_LABELS[r] ?? r}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -404,13 +410,13 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                 </div>
                 {form.role === "MANAGER" && (
                   <div className="space-y-2">
-                    <Label htmlFor="portal-shop">Shop (required)</Label>
+                    <Label htmlFor="portal-shop">Заведение (обязательно)</Label>
                     <Select
                       value={form.shop_id ? String(form.shop_id) : undefined}
                       onValueChange={(v) => setForm({ ...form, shop_id: Number(v) })}
                     >
                       <SelectTrigger id="portal-shop">
-                        <SelectValue placeholder="Select shop" />
+                        <SelectValue placeholder="Выберите заведение" />
                       </SelectTrigger>
                       <SelectContent>
                         {shopsList.map((s) => (
@@ -424,17 +430,17 @@ export function StaffTab({ partnerId }: StaffTabProps) {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Owners and Accountants see the whole partner; a Manager is limited to one shop.
-                Cassa cashier PINs are managed in the shop's Staff tab.
+                Владельцы и бухгалтеры видят всего партнёра; менеджер ограничен одним заведением.
+                PIN-коды кассиров управляются на вкладке «Сотрудники» заведения.
               </p>
             </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialog}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={isSaving}>
-                {isSaving ? "Saving..." : editing ? "Save changes" : "Create user"}
+                {isSaving ? "Сохранение…" : editing ? "Сохранить изменения" : "Создать пользователя"}
               </Button>
             </DialogFooter>
           </form>

@@ -15,8 +15,8 @@ import type { AppRelease, AppReleasePlatform } from "@/lib/api/schemas/app-relea
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 function formatFileSize(bytes: number): string {
-  if (bytes <= 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
+  if (bytes <= 0) return "0 Б";
+  const units = ["Б", "КБ", "МБ", "ГБ"];
   const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   const value = bytes / Math.pow(1024, exponent);
   return `${value.toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`;
@@ -59,13 +59,13 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["app-releases", platform] });
-      toast.success(`${label} release uploaded`);
+      toast.success(`Релиз ${label} загружен`);
       setVersion("");
       setForceUpdate(false);
       setFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     },
-    onError: (err) => toast.error(extractError(err, `Failed to upload ${label} release`)),
+    onError: (err) => toast.error(extractError(err, `Не удалось загрузить релиз ${label}`)),
     onSettled: () => setUploadProgress(null),
   });
 
@@ -75,21 +75,21 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
     mutationFn: appReleasesApi.remove,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["app-releases", platform] });
-      toast.success("Release deleted");
+      toast.success("Релиз удалён");
     },
-    onError: () => toast.error("Failed to delete release"),
+    onError: () => toast.error("Не удалось удалить релиз"),
   });
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0];
     if (!selected) return;
     if (!selected.name.toLowerCase().endsWith(`.${fileExt}`)) {
-      toast.error(`Only ${accept} files are allowed`);
+      toast.error(`Допускаются только файлы ${accept}`);
       e.target.value = "";
       return;
     }
     if (selected.size > MAX_FILE_SIZE) {
-      toast.error("File size must be less than 500MB");
+      toast.error("Размер файла должен быть меньше 500 МБ");
       e.target.value = "";
       return;
     }
@@ -99,18 +99,18 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!version.trim()) {
-      toast.error("Version is required");
+      toast.error("Укажите версию");
       return;
     }
     if (!file) {
-      toast.error("Select a file to upload");
+      toast.error("Выберите файл для загрузки");
       return;
     }
     createMutation.mutate({ platform, version: version.trim(), forceUpdate, file });
   }
 
   async function handleDelete(release: AppRelease) {
-    if (!(await confirmDelete({ title: `Delete ${label} version ${release.version}?` }))) return;
+    if (!(await confirmDelete({ title: `Удалить версию ${release.version} для ${label}?` }))) return;
     deleteMutation.mutate(release.id);
   }
 
@@ -123,39 +123,39 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
         </div>
         {latest ? (
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Current: v{latest.version} · uploaded {new Date(latest.created_at).toLocaleDateString()}
+            Текущая: v{latest.version} · загружена {new Date(latest.created_at).toLocaleDateString("ru-RU")}
             {latest.file_size ? ` · ${formatFileSize(latest.file_size)}` : ""}
-            {latest.force_update ? " · force update" : ""}
+            {latest.force_update ? " · принудительное обновление" : ""}
           </p>
         ) : (
-          <p className="mt-0.5 text-xs text-muted-foreground">No release uploaded yet.</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Релиз ещё не загружен.</p>
         )}
       </header>
 
       <div className="space-y-4 px-5 py-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor={`${platform}-version`}>Version</Label>
+            <Label htmlFor={`${platform}-version`}>Версия</Label>
             <Input
               id={`${platform}-version`}
               value={version}
               onChange={(e) => setVersion(e.target.value)}
-              placeholder="e.g. 1.4.2"
+              placeholder="напр. 1.4.2"
             />
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-border p-3">
             <div className="space-y-0.5">
-              <Label htmlFor={`${platform}-force`}>Force update</Label>
+              <Label htmlFor={`${platform}-force`}>Принудительное обновление</Label>
               <p className="text-xs text-muted-foreground">
-                Blocks the app with a full-screen update prompt instead of a dismissible banner.
+                Блокирует приложение полноэкранным запросом на обновление вместо закрываемого баннера.
               </p>
             </div>
             <Switch id={`${platform}-force`} checked={forceUpdate} onCheckedChange={setForceUpdate} />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor={`${platform}-file`}>Package ({accept})</Label>
+            <Label htmlFor={`${platform}-file`}>Пакет ({accept})</Label>
             <Input
               id={`${platform}-file`}
               type="file"
@@ -174,21 +174,21 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Uploading… {uploadProgress}%</p>
+              <p className="text-xs text-muted-foreground">Загрузка… {uploadProgress}%</p>
             </div>
           ) : null}
 
           <Button type="submit" disabled={createMutation.isPending} className="w-full sm:w-auto">
-            {createMutation.isPending ? "Uploading…" : "Upload release"}
+            {createMutation.isPending ? "Загрузка…" : "Загрузить релиз"}
           </Button>
         </form>
 
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">History</p>
+          <p className="text-xs font-medium text-muted-foreground">История</p>
           {isLoading ? (
-            <p className="text-xs text-muted-foreground">Loading…</p>
+            <p className="text-xs text-muted-foreground">Загрузка…</p>
           ) : releases.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No uploads yet.</p>
+            <p className="text-xs text-muted-foreground">Загрузок пока нет.</p>
           ) : (
             <ul className="divide-y divide-border rounded-lg border border-border">
               {releases.map((release) => (
@@ -201,12 +201,12 @@ export function ReleaseCard({ platform, label, fileExt, accept, icon: Icon }: Re
                       v{release.version}
                       {release.force_update ? (
                         <Badge variant="outline" className="text-[10px]">
-                          Force
+                          Принудительно
                         </Badge>
                       ) : null}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {new Date(release.created_at).toLocaleString()}
+                      {new Date(release.created_at).toLocaleString("ru-RU")}
                       {release.file_size ? ` · ${formatFileSize(release.file_size)}` : ""}
                       {release.original_name ? ` · ${release.original_name}` : ""}
                     </p>

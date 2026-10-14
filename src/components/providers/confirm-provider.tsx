@@ -40,14 +40,14 @@ export function ConfirmProvider({ children }: ConfirmProviderProps) {
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{options?.title}</DialogTitle>
-            <DialogDescription>{options?.description ?? "This action cannot be undone."}</DialogDescription>
+            <DialogDescription>{options?.description ?? "Это действие нельзя отменить."}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => settle(false)}>
-              Cancel
+              Отмена
             </Button>
             <Button variant="destructive" onClick={() => settle(true)}>
-              {options?.confirmText ?? "Delete"}
+              {options?.confirmText ?? "Удалить"}
             </Button>
           </DialogFooter>
         </DialogContent>

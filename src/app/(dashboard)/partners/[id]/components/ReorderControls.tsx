@@ -32,8 +32,8 @@ export function ReorderControls({
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         className="cursor-grab rounded p-1 text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 active:cursor-grabbing"
-        aria-label={disabledReason ?? `Drag ${label} to reorder`}
-        title={disabledReason ?? "Drag to reorder"}
+        aria-label={disabledReason ?? `Перетащите «${label}», чтобы изменить порядок`}
+        title={disabledReason ?? "Перетащите, чтобы изменить порядок"}
       >
         <GripVertical className="h-4 w-4" />
       </button>
@@ -43,7 +43,7 @@ export function ReorderControls({
           onClick={onMoveUp}
           disabled={disabled || !canMoveUp}
           className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
-          aria-label={`Move ${label} up`}
+          aria-label={`Переместить «${label}» вверх`}
         >
           <ChevronUp className="h-3 w-3" />
         </button>
@@ -52,7 +52,7 @@ export function ReorderControls({
           onClick={onMoveDown}
           disabled={disabled || !canMoveDown}
           className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
-          aria-label={`Move ${label} down`}
+          aria-label={`Переместить «${label}» вниз`}
         >
           <ChevronDown className="h-3 w-3" />
         </button>

@@ -39,9 +39,9 @@ export function OfdSpicInput({
             }}
           >
             <Input
-              placeholder="17-digit code, or search the list by name"
+              placeholder="17-значный код или поиск по названию"
               pattern="\d{17}"
-              title="SPIC code must be 17 digits"
+              title="Код SPIC должен состоять из 17 цифр"
               aria-invalid={!showList && value !== "" && !/^\d{17}$/.test(value)}
               onFocus={() => setOpen(true)}
               onClick={() => setOpen(true)}

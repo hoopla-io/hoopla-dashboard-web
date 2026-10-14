@@ -92,16 +92,16 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput
-        placeholder="Type a command or search…"
+        placeholder="Введите команду или запрос…"
         value={search}
         onValueChange={setSearch}
       />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>Ничего не найдено.</CommandEmpty>
 
         {hasResults && (
           <>
-            <CommandGroup heading="Results">
+            <CommandGroup heading="Результаты">
               {searchResults!.partners.map((partner) => (
                 <CommandItem
                   key={`partner-${partner.id}`}
@@ -110,7 +110,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 >
                   <Building2 className="size-4 text-muted-foreground" />
                   {partner.name}
-                  <span className="ml-auto text-xs text-muted-foreground">Partner</span>
+                  <span className="ml-auto text-xs text-muted-foreground">Партнёр</span>
                 </CommandItem>
               ))}
               {searchResults!.shops.map((shop) => (
@@ -121,7 +121,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 >
                   <Store className="size-4 text-muted-foreground" />
                   {shop.name}
-                  <span className="ml-auto text-xs text-muted-foreground">Shop</span>
+                  <span className="ml-auto text-xs text-muted-foreground">Заведение</span>
                 </CommandItem>
               ))}
               {searchResults!.drinks.map((drink) => (
@@ -132,7 +132,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 >
                   <Coffee className="size-4 text-muted-foreground" />
                   {drink.name}
-                  <span className="ml-auto text-xs text-muted-foreground">Product</span>
+                  <span className="ml-auto text-xs text-muted-foreground">Товар</span>
                 </CommandItem>
               ))}
               {searchResults!.users.map((user) => (
@@ -147,7 +147,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                 >
                   <Users className="size-4 text-muted-foreground" />
                   {user.name || user.phone_number}
-                  <span className="ml-auto text-xs text-muted-foreground">User</span>
+                  <span className="ml-auto text-xs text-muted-foreground">Пользователь</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -155,91 +155,91 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           </>
         )}
 
-        <CommandGroup heading="Quick actions">
+        <CommandGroup heading="Быстрые действия">
           <CommandItem onSelect={() => runCommand(() => navigate("/partners/onboarding"))}>
             <Sparkles className="size-4 text-muted-foreground" />
-            Onboard new partner
+            Подключить нового партнёра
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/partners?action=create"))}>
             <Plus className="size-4 text-muted-foreground" />
-            Add partner
+            Добавить партнёра
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/shops?action=create"))}>
             <Plus className="size-4 text-muted-foreground" />
-            Add shop
+            Добавить заведение
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/products?action=create"))}>
             <Plus className="size-4 text-muted-foreground" />
-            Add product
+            Добавить товар
           </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
-        <CommandGroup heading="Navigate">
+        <CommandGroup heading="Переход">
           <CommandItem onSelect={() => runCommand(() => navigate("/"))}>
             <LayoutDashboard className="size-4 text-muted-foreground" />
-            Dashboard
+            Главная
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/partners"))}>
             <Building2 className="size-4 text-muted-foreground" />
-            Partners
+            Партнёры
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/shops"))}>
             <Store className="size-4 text-muted-foreground" />
-            Shops
+            Заведения
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/products"))}>
             <Coffee className="size-4 text-muted-foreground" />
-            Products
+            Товары
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/orders"))}>
             <ShoppingCart className="size-4 text-muted-foreground" />
-            Orders
+            Заказы
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/promocodes"))}>
             <TicketPercent className="size-4 text-muted-foreground" />
-            Promocodes
+            Промокоды
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/gift-cards"))}>
             <Gift className="size-4 text-muted-foreground" />
-            Gift cards
+            Подарочные карты
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/settlements"))}>
             <Wallet className="size-4 text-muted-foreground" />
-            Settlements
+            Взаиморасчёты
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/users"))}>
             <Users className="size-4 text-muted-foreground" />
-            Users
+            Пользователи
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/stories"))}>
             <BookOpen className="size-4 text-muted-foreground" />
-            Stories
+            Истории
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/banners"))}>
             <LayoutPanelTop className="size-4 text-muted-foreground" />
-            Banners
+            Баннеры
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/shop-categories"))}>
             <LayoutGrid className="size-4 text-muted-foreground" />
-            Shop categories
+            Категории заведений
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/notifications"))}>
             <Bell className="size-4 text-muted-foreground" />
-            In-app notifications
+            Уведомления в приложении
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/push-notifications"))}>
             <BellRing className="size-4 text-muted-foreground" />
-            Push log
+            Журнал push-уведомлений
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/app-releases"))}>
             <Rocket className="size-4 text-muted-foreground" />
-            App Releases
+            Релизы приложения
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/settings"))}>
             <Settings className="size-4 text-muted-foreground" />
-            Settings
+            Настройки
           </CommandItem>
         </CommandGroup>
       </CommandList>

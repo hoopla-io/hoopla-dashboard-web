@@ -33,14 +33,14 @@ function OrdersContent() {
       a.remove();
       URL.revokeObjectURL(url);
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to export orders")),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Не удалось экспортировать заказы")),
   });
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Orders"
-        description="Track orders and how they perform across partners and shops."
+        title="Заказы"
+        description="Отслеживайте заказы и их показатели по партнёрам и заведениям."
         action={
           view === "list" ? (
             <Button
@@ -49,7 +49,7 @@ function OrdersContent() {
               disabled={exportMutation.isPending}
             >
               <Download className="size-4" />
-              {exportMutation.isPending ? "Exporting…" : "Export Excel"}
+              {exportMutation.isPending ? "Экспорт…" : "Экспорт в Excel"}
             </Button>
           ) : undefined
         }
@@ -61,8 +61,8 @@ function OrdersContent() {
         className="space-y-2"
       >
         <TabsList>
-          <TabsTrigger value="list">Orders</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="list">Заказы</TabsTrigger>
+          <TabsTrigger value="analytics">Аналитика</TabsTrigger>
         </TabsList>
 
         <OrdersFilters filters={filters} showListFilters={view === "list"} />
@@ -80,11 +80,11 @@ function OrdersContent() {
 
 export default function OrdersPage() {
   return (
-    <ErrorBoundary pageName="Orders">
+    <ErrorBoundary pageName="Заказы">
       <Suspense
         fallback={
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Loading orders…
+            Загрузка заказов…
           </div>
         }
       >

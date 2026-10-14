@@ -39,11 +39,11 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
     mutationFn: (file: File) => shopsApi.uploadPicture(shopId, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop-pictures", shopId] });
-      toast.success("Picture added successfully!");
+      toast.success("Фотография добавлена");
       setIsAddOpen(false);
       setSelectedFile(undefined);
     },
-    onError: () => toast.error("Failed to upload picture"),
+    onError: () => toast.error("Не удалось загрузить фотографию"),
   });
 
   const confirmDelete = useConfirm();
@@ -52,16 +52,16 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
     mutationFn: (id: number) => shopsApi.deletePicture(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop-pictures", shopId] });
-      toast.success("Picture deleted successfully!");
+      toast.success("Фотография удалена");
     },
-    onError: () => toast.error("Failed to delete picture"),
+    onError: () => toast.error("Не удалось удалить фотографию"),
   });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!["image/jpeg", "image/png"].includes(file.type)) {
-        toast.error("Only JPG and PNG files are allowed");
+        toast.error("Допускаются только файлы JPG и PNG");
         return;
       }
       setSelectedFile(file);
@@ -72,7 +72,7 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
     if (selectedFile) {
       uploadMutation.mutate(selectedFile);
     } else {
-      toast.error("Please select a file");
+      toast.error("Выберите файл");
     }
   };
 
@@ -81,26 +81,26 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Shop Pictures</CardTitle>
-            <CardDescription>Manage your shop&apos;s gallery</CardDescription>
+            <CardTitle>Фотографии заведения</CardTitle>
+            <CardDescription>Управление галереей заведения</CardDescription>
           </div>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="mr-2 h-4 w-4" />
-                Add Picture
+                Добавить фото
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add Shop Picture</DialogTitle>
+                <DialogTitle>Добавить фото заведения</DialogTitle>
                 <DialogDescription>
-                  Upload a new picture for your shop. Recommended size: 800x600px.
+                  Загрузите новое фото заведения. Рекомендуемый размер: 800×600 px.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="picture">Select Image (JPG/PNG)</Label>
+                  <Label htmlFor="picture">Выберите изображение (JPG/PNG)</Label>
                   <Input
                     id="picture"
                     type="file"
@@ -111,10 +111,10 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsAddOpen(false)}>
-                  Cancel
+                  Отмена
                 </Button>
                 <Button onClick={handleUpload} disabled={uploadMutation.isPending}>
-                  {uploadMutation.isPending ? "Uploading..." : "Upload"}
+                  {uploadMutation.isPending ? "Загрузка…" : "Загрузить"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -122,11 +122,11 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="py-8 text-center text-muted-foreground">Loading pictures...</div>
+            <div className="py-8 text-center text-muted-foreground">Загрузка фотографий…</div>
           ) : !pictures || pictures.length === 0 ? (
             <div className="py-12 text-center border-2 border-dashed rounded-lg">
               <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <p className="mt-2 text-sm text-muted-foreground">No pictures yet</p>
+              <p className="mt-2 text-sm text-muted-foreground">Фотографий пока нет</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -134,7 +134,7 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
                 <div key={pic.id} className="group relative aspect-square rounded-lg border overflow-hidden bg-muted">
                   <img
                     src={pic.image_url}
-                    alt="Shop"
+                    alt="Фото заведения"
                     className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -142,7 +142,7 @@ export function PicturesTab({ shopId }: PicturesTabProps) {
                       variant="destructive"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={async () => { if (await confirmDelete({ title: "Delete picture?" })) deleteMutation.mutate(pic.id); }}
+                      onClick={async () => { if (await confirmDelete({ title: "Удалить фотографию?" })) deleteMutation.mutate(pic.id); }}
                       disabled={deleteMutation.isPending}
                     >
                       <Trash2 className="h-4 w-4" />

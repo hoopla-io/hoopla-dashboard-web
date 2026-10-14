@@ -52,50 +52,50 @@ type NavSection = {
 
 const sections: NavSection[] = [
   {
-    label: "Overview",
-    items: [{ name: "Dashboard", href: "/", icon: LayoutDashboard }],
+    label: "Обзор",
+    items: [{ name: "Главная", href: "/", icon: LayoutDashboard }],
   },
   {
-    label: "Operations",
+    label: "Операции",
     items: [
-      { name: "Orders", href: "/orders", icon: ShoppingCart },
-      { name: "Shops", href: "/shops", icon: Store },
+      { name: "Заказы", href: "/orders", icon: ShoppingCart },
+      { name: "Заведения", href: "/shops", icon: Store },
     ],
   },
   {
-    label: "Catalog",
+    label: "Каталог",
     items: [
-      { name: "Partners", href: "/partners", icon: Building2 },
-      { name: "Products", href: "/products", icon: Coffee },
-      { name: "Shop Categories", href: "/shop-categories", icon: LayoutGrid },
+      { name: "Партнёры", href: "/partners", icon: Building2 },
+      { name: "Товары", href: "/products", icon: Coffee },
+      { name: "Категории заведений", href: "/shop-categories", icon: LayoutGrid },
     ],
   },
   {
-    label: "Finance",
+    label: "Финансы",
     items: [
-      { name: "Settlements", href: "/settlements", icon: Wallet },
-      { name: "Promocodes", href: "/promocodes", icon: TicketPercent },
-      { name: "Gift Cards", href: "/gift-cards", icon: Gift },
+      { name: "Взаиморасчёты", href: "/settlements", icon: Wallet },
+      { name: "Промокоды", href: "/promocodes", icon: TicketPercent },
+      { name: "Подарочные карты", href: "/gift-cards", icon: Gift },
     ],
   },
   {
-    label: "Customers",
-    items: [{ name: "Users", href: "/users", icon: Users }],
+    label: "Клиенты",
+    items: [{ name: "Пользователи", href: "/users", icon: Users }],
   },
   {
-    label: "Marketing",
+    label: "Маркетинг",
     items: [
-      { name: "Stories", href: "/stories", icon: BookOpen },
-      { name: "Banners", href: "/banners", icon: LayoutPanelTop },
-      { name: "In-app Notifications", href: "/notifications", icon: Bell },
-      { name: "Push Log", href: "/push-notifications", icon: BellRing },
+      { name: "Истории", href: "/stories", icon: BookOpen },
+      { name: "Баннеры", href: "/banners", icon: LayoutPanelTop },
+      { name: "Уведомления в приложении", href: "/notifications", icon: Bell },
+      { name: "Журнал push-уведомлений", href: "/push-notifications", icon: BellRing },
     ],
   },
   {
-    label: "System",
+    label: "Система",
     items: [
-      { name: "App Releases", href: "/app-releases", icon: Rocket },
-      { name: "Settings", href: "/settings", icon: Settings },
+      { name: "Релизы приложения", href: "/app-releases", icon: Rocket },
+      { name: "Настройки", href: "/settings", icon: Settings },
     ],
   },
 ];
@@ -217,7 +217,7 @@ export function SidebarContent() {
               </Avatar>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-foreground">
-                  {user?.name || "Admin"}
+                  {user?.name || "Администратор"}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
                   {user?.login || "—"}
@@ -233,14 +233,14 @@ export function SidebarContent() {
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{user?.name || "Admin"}</p>
+                <p className="truncate text-sm font-medium">{user?.name || "Администратор"}</p>
                 <p className="truncate text-xs text-muted-foreground">{user?.login}</p>
               </div>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-destructive">
               <LogOut className="size-4" />
-              Log out
+              Выйти
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

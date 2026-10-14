@@ -54,46 +54,46 @@ export function KpiTiles({ current, previous }: { current: OrdersKpi; previous: 
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <Tile
-        label="Revenue (completed)"
-        value={`${formatSomUZS(cur.revenue)} UZS`}
+        label="Выручка (выполненные)"
+        value={`${formatSomUZS(cur.revenue)} сум`}
         delta={<Delta current={cur.revenue} previous={prev.revenue} />}
       />
       <Tile
-        label="Completed orders"
-        value={cur.completed.toLocaleString()}
+        label="Выполненные заказы"
+        value={cur.completed.toLocaleString("ru-RU")}
         delta={<Delta current={cur.completed} previous={prev.completed} />}
       />
       <Tile
-        label="Avg order value"
-        value={`${formatSomUZS(Math.round(cur.avgOrder))} UZS`}
+        label="Средний чек"
+        value={`${formatSomUZS(Math.round(cur.avgOrder))} сум`}
         delta={<Delta current={cur.avgOrder} previous={prev.avgOrder} />}
       />
       <Tile
-        label="Cancel rate"
+        label="Доля отмен"
         value={`${cur.cancelRate.toFixed(1)}%`}
         delta={<Delta current={cur.cancelRate} previous={prev.cancelRate} inverse points />}
-        hint={`${cur.cancelled.toLocaleString()} cancelled`}
+        hint={`Отменено: ${cur.cancelled.toLocaleString("ru-RU")}`}
       />
       <Tile
-        label="Customers"
-        value={current.unique_customers.toLocaleString()}
+        label="Клиенты"
+        value={current.unique_customers.toLocaleString("ru-RU")}
         delta={<Delta current={current.unique_customers} previous={previous.unique_customers} />}
-        hint={`${newCustomers.toLocaleString()} new · ${current.returning_customers.toLocaleString()} returning`}
+        hint={`Новые: ${newCustomers.toLocaleString("ru-RU")} · Вернувшиеся: ${current.returning_customers.toLocaleString("ru-RU")}`}
       />
       <Tile
-        label="Avg rating"
+        label="Средняя оценка"
         value={current.avg_rating != null ? `${current.avg_rating.toFixed(2)} / 5` : "—"}
-        hint={`${current.feedback_count.toLocaleString()} reviews`}
+        hint={`Отзывов: ${current.feedback_count.toLocaleString("ru-RU")}`}
       />
       <Tile
-        label="Paid from wallet"
-        value={`${formatSomUZS(Math.round(current.cashback_used))} UZS`}
-        hint={`${walletShare.toFixed(1)}% of revenue`}
+        label="Оплачено с кошелька"
+        value={`${formatSomUZS(Math.round(current.cashback_used))} сум`}
+        hint={`${walletShare.toFixed(1)}% от выручки`}
       />
       <Tile
-        label="Cashback earned"
-        value={`${formatSomUZS(Math.round(current.cashback_earned))} UZS`}
-        hint={`${current.promo_orders.toLocaleString()} orders with promo`}
+        label="Начислен кэшбэк"
+        value={`${formatSomUZS(Math.round(current.cashback_earned))} сум`}
+        hint={`Заказов с промокодом: ${current.promo_orders.toLocaleString("ru-RU")}`}
       />
     </div>
   );

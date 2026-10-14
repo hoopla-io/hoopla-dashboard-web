@@ -44,21 +44,21 @@ function PartnerDetailContent() {
   });
 
   if (isLoadingPartner) {
-    return <div className="p-8 text-center text-muted-foreground">Loading partner details...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Загрузка данных партнёра…</div>;
   }
 
   if (!partner) {
-    return <div className="p-8 text-center text-destructive">Partner not found</div>;
+    return <div className="p-8 text-center text-destructive">Партнёр не найден</div>;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title={partner.name} description="Manage partner details and settings." />
+      <PageHeader title={partner.name} description="Управление данными и настройками партнёра." />
 
       <div className="flex items-center gap-3">
         <Button variant="outline" size="sm" onClick={() => navigate("/partners")}>
           <ArrowLeft className="size-4" />
-          Back
+          Назад
         </Button>
         {partner.image_url ? (
           <img
@@ -71,17 +71,17 @@ function PartnerDetailContent() {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="shops">Shops</TabsTrigger>
-          <TabsTrigger value="products">Products</TabsTrigger>
-          <TabsTrigger value="modifiers">Modifiers</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="attributes">Attributes</TabsTrigger>
-          <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
-          <TabsTrigger value="settlements">Settlements</TabsTrigger>
+          <TabsTrigger value="general">Общее</TabsTrigger>
+          <TabsTrigger value="shops">Заведения</TabsTrigger>
+          <TabsTrigger value="products">Товары</TabsTrigger>
+          <TabsTrigger value="modifiers">Модификаторы</TabsTrigger>
+          <TabsTrigger value="orders">Заказы</TabsTrigger>
+          <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+          <TabsTrigger value="attributes">Атрибуты</TabsTrigger>
+          <TabsTrigger value="feedbacks">Отзывы</TabsTrigger>
+          <TabsTrigger value="categories">Категории</TabsTrigger>
+          <TabsTrigger value="staff">Сотрудники</TabsTrigger>
+          <TabsTrigger value="settlements">Взаиморасчёты</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -134,7 +134,7 @@ function PartnerDetailContent() {
 
 export default function PartnerDetailPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 text-center">Загрузка…</div>}>
       <PartnerDetailContent />
     </Suspense>
   );

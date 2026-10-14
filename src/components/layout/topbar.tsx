@@ -31,7 +31,7 @@ export function TopBar() {
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon-sm" className="md:hidden">
               <Menu className="size-4" />
-              <span className="sr-only">Toggle menu</span>
+              <span className="sr-only">Открыть меню</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0">
@@ -60,7 +60,7 @@ export function TopBar() {
           className="hidden h-8 items-center gap-2 rounded-md border border-border bg-muted/40 px-3 text-xs text-muted-foreground transition-colors hover:bg-muted md:flex md:w-72"
         >
           <Search className="size-3.5" />
-          <span>Search…</span>
+          <span>Поиск…</span>
           <kbd className="ml-auto inline-flex h-5 items-center gap-0.5 rounded border border-border bg-background px-1.5 font-mono text-[10px] text-muted-foreground">
             <span className="text-[11px]">⌘</span>K
           </kbd>

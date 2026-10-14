@@ -31,7 +31,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { AccountPicker } from "@/components/pickers/account-picker";
 import { giftCardsApi } from "@/lib/api/domains/gift-cards";
-import type { GiftCard, CreateGiftCardRequest, BulkGiftCardRequest, BulkGiftCardResult } from "@/lib/api/schemas/gift-cards";
+import type { GiftCard, GiftCardTransaction, CreateGiftCardRequest, BulkGiftCardRequest, BulkGiftCardResult } from "@/lib/api/schemas/gift-cards";
 
 function isoToApi(iso: string): string {
   if (!iso) return "";
@@ -42,6 +42,12 @@ function isoToApi(iso: string): string {
 }
 
 function sum(n: number) { return n.toLocaleString("ru-RU"); }
+
+const TRANSACTION_TYPE_LABELS: Record<GiftCardTransaction["type"], string> = {
+  load: "Пополнение",
+  redeem: "Списание",
+  refund: "Возврат",
+};
 
 function extractError(err: unknown, fallback: string): string {
   const e = err as { response?: { data?: { message?: string } } };
@@ -99,7 +105,7 @@ function DatePicker({ value, onChange, onClear }: { value: string; onChange: (is
       <PopoverTrigger asChild>
         <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !hasValue && "text-muted-foreground")}>
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {hasValue ? format(date!, "dd/MM/yyyy") : "No expiry"}
+          {hasValue ? format(date!, "dd/MM/yyyy") : "Без срока"}
           {hasValue && (
             <span role="button" tabIndex={0} className="ml-auto"
               onClick={(e) => { e.stopPropagation(); onClear(); }}
@@ -160,40 +166,40 @@ function GiftCardsContent() {
 
   const createMutation = useMutation({
     mutationFn: (data: CreateGiftCardRequest) => giftCardsApi.create(data),
-    onSuccess: () => { invalidate(); toast.success("Gift card created!"); setIsCreateOpen(false); setFormData(defaultForm); },
-    onError: (err: unknown) => toast.error(extractError(err, "Failed to create gift card")),
+    onSuccess: () => { invalidate(); toast.success("Подарочная карта создана"); setIsCreateOpen(false); setFormData(defaultForm); },
+    onError: (err: unknown) => toast.error(extractError(err, "Не удалось создать подарочную карту")),
   });
 
   const bulkMutation = useMutation({
     mutationFn: (data: BulkGiftCardRequest) => giftCardsApi.bulkCreate(data),
     onSuccess: (res) => {
       invalidate();
-      toast.success(`${res.count} gift cards created`);
+      toast.success(`Создано подарочных карт: ${res.count}`);
       downloadFile(`gift-cards-${res.count}.csv`, buildBulkCsv(res));
       setIsBulkOpen(false);
       setBulkForm(defaultBulkForm);
     },
-    onError: (err: unknown) => toast.error(extractError(err, "Failed to create gift cards")),
+    onError: (err: unknown) => toast.error(extractError(err, "Не удалось создать подарочные карты")),
   });
 
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) => giftCardsApi.update(id, { is_active }),
-    onSuccess: () => { invalidate(); toast.success("Status updated!"); },
-    onError: () => toast.error("Failed to update status"),
+    onSuccess: () => { invalidate(); toast.success("Статус обновлён"); },
+    onError: () => toast.error("Не удалось обновить статус"),
   });
 
   const topUpMutation = useMutation({
     mutationFn: ({ id, amount }: { id: number; amount: number }) => giftCardsApi.topUp(id, amount),
-    onSuccess: () => { invalidate(); toast.success("Balance topped up!"); setTopUpCard(null); setTopUpAmount(0); },
-    onError: (err: unknown) => toast.error(extractError(err, "Failed to top up")),
+    onSuccess: () => { invalidate(); toast.success("Баланс пополнен"); setTopUpCard(null); setTopUpAmount(0); },
+    onError: (err: unknown) => toast.error(extractError(err, "Не удалось пополнить")),
   });
 
   const confirmDelete = useConfirm();
 
   const deleteMutation = useMutation({
     mutationFn: giftCardsApi.delete,
-    onSuccess: () => { invalidate(); toast.success("Gift card deleted!"); },
-    onError: () => toast.error("Failed to delete gift card"),
+    onSuccess: () => { invalidate(); toast.success("Подарочная карта удалена"); },
+    onError: () => toast.error("Не удалось удалить подарочную карту"),
   });
 
   function handleSubmitCreate(e: React.FormEvent) {
@@ -221,7 +227,7 @@ function GiftCardsContent() {
       });
       downloadFile("gift-cards.csv", blob);
     } catch {
-      toast.error("Failed to export gift cards");
+      toast.error("Не удалось экспортировать подарочные карты");
     } finally {
       setExporting(false);
     }
@@ -230,35 +236,35 @@ function GiftCardsContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Gift Cards"
-        description="Issue gift cards customers redeem once to top up their wallet balance."
+        title="Подарочные карты"
+        description="Выпуск подарочных карт, которые клиенты активируют один раз для пополнения баланса кошелька."
         action={
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handleExportCsv} disabled={exporting}>
               <Download className="size-4" />
-              {exporting ? "Exporting…" : "Export CSV"}
+              {exporting ? "Экспорт…" : "Экспорт CSV"}
             </Button>
             <Button variant="outline" onClick={() => { setBulkForm(defaultBulkForm); setIsBulkOpen(true); }}>
               <Layers className="size-4" />
-              Bulk create
+              Массовое создание
             </Button>
             <Button onClick={() => { setFormData(defaultForm); setIsCreateOpen(true); }}>
               <Plus className="size-4" />
-              Issue gift card
+              Выпустить карту
             </Button>
           </div>
         }
       />
 
       <PageToolbar>
-        <Input placeholder="Search by code…" className="w-[220px]" value={codeFilter}
+        <Input placeholder="Поиск по коду…" className="w-[220px]" value={codeFilter}
           onChange={(e) => { setCodeFilter(e.target.value || null); setCurrentPage(1); }} />
         <Select value={activeFilter || "all"} onValueChange={(v) => { setActiveFilter(v === "all" ? null : v); setCurrentPage(1); }}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Статус" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="true">Active</SelectItem>
-            <SelectItem value="false">Inactive</SelectItem>
+            <SelectItem value="all">Все статусы</SelectItem>
+            <SelectItem value="true">Активные</SelectItem>
+            <SelectItem value="false">Неактивные</SelectItem>
           </SelectContent>
         </Select>
       </PageToolbar>
@@ -271,31 +277,31 @@ function GiftCardsContent() {
                 ID
               </SortableTableHead>
               <SortableTableHead column="code" sort={sort} order={order} onSort={onSort}>
-                Code
+                Код
               </SortableTableHead>
               <SortableTableHead column="balance" sort={sort} order={order} onSort={onSort}>
-                Balance
+                Баланс
               </SortableTableHead>
-              <TableHead>Redeemed</TableHead>
-              <TableHead>Account</TableHead>
+              <TableHead>Активирована</TableHead>
+              <TableHead>Аккаунт</TableHead>
               <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
-                Active
+                Активна
               </SortableTableHead>
               <SortableTableHead column="expires_at" sort={sort} order={order} onSort={onSort}>
-                Expires
+                Действует до
               </SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">Загрузка…</TableCell></TableRow>
             ) : cards.length === 0 ? (
               <TableRow><TableCell colSpan={8} className="p-0">
-                <EmptyState title="No gift cards yet"
-                  description="Prepaid gift cards you issue will appear here."
+                <EmptyState title="Подарочных карт пока нет"
+                  description="Здесь появятся выпущенные вами подарочные карты."
                   action={<Button variant="outline" size="sm" onClick={() => { setFormData(defaultForm); setIsCreateOpen(true); }}>
-                    <Plus className="size-4" />Issue gift card</Button>} />
+                    <Plus className="size-4" />Выпустить карту</Button>} />
               </TableCell></TableRow>
             ) : (
               cards.map((card) => (
@@ -305,18 +311,18 @@ function GiftCardsContent() {
                   <TableCell>
                     <div className="flex flex-col gap-0.5">
                       <span className="num-tabular text-sm font-semibold text-foreground">{sum(card.balance)} <span className="text-xs font-normal uppercase text-muted-foreground">{card.currency}</span></span>
-                      <span className="text-[11px] text-muted-foreground">of {sum(card.initial_balance)} issued</span>
+                      <span className="text-[11px] text-muted-foreground">из {sum(card.initial_balance)} выпущено</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {card.is_redeemed ? (
                       <span className="inline-flex flex-col gap-0.5">
-                        <span className="w-fit rounded bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">Redeemed</span>
+                        <span className="w-fit rounded bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">Активирована</span>
                         {card.redeemed_at && <span className="text-[11px]">{new Date(card.redeemed_at).toLocaleDateString("ru-RU")}{card.redeemed_by_user_id ? ` · #${card.redeemed_by_user_id}` : ""}</span>}
                       </span>
                     ) : "—"}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{card.user_id ? `#${card.user_id}` : "Anyone"}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{card.user_id ? `#${card.user_id}` : "Любой"}</TableCell>
                   <TableCell>
                     <Switch checked={card.is_active} onCheckedChange={(v) => toggleActiveMutation.mutate({ id: card.id, is_active: v })} />
                   </TableCell>
@@ -325,15 +331,15 @@ function GiftCardsContent() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon-sm" title={card.is_redeemed ? "Already redeemed" : "Top up"} disabled={card.is_redeemed}
+                      <Button variant="ghost" size="icon-sm" title={card.is_redeemed ? "Уже активирована" : "Пополнить"} disabled={card.is_redeemed}
                         onClick={() => { setTopUpCard(card); setTopUpAmount(0); }}>
                         <Wallet className="size-4" />
                       </Button>
-                      <Button variant="ghost" size="icon-sm" title="History" onClick={() => setHistoryCardId(card.id)}>
+                      <Button variant="ghost" size="icon-sm" title="История" onClick={() => setHistoryCardId(card.id)}>
                         <History className="size-4" />
                       </Button>
-                      <Button variant="ghost" size="icon-sm" className="text-destructive hover:text-destructive" title="Delete"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete gift card?" })) deleteMutation.mutate(card.id); }}>
+                      <Button variant="ghost" size="icon-sm" className="text-destructive hover:text-destructive" title="Удалить"
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить подарочную карту?" })) deleteMutation.mutate(card.id); }}>
                         <Trash2 className="size-4" />
                       </Button>
                     </div>
@@ -351,44 +357,44 @@ function GiftCardsContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Issue Gift Card</DialogTitle>
-            <DialogDescription>Create a voucher customers redeem once to top up their wallet balance</DialogDescription>
+            <DialogTitle>Выпустить подарочную карту</DialogTitle>
+            <DialogDescription>Создайте ваучер, который клиент активирует один раз для пополнения баланса кошелька</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitCreate}>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Code</Label>
+                  <Label>Код</Label>
                   <Input value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })} placeholder="GIFT-A1B2C3" />
                 </div>
                 <div className="flex items-end gap-3 pb-1">
                   <Switch checked={formData.is_active ?? true} onCheckedChange={(v) => setFormData({ ...formData, is_active: v })} />
-                  <Label>Active</Label>
+                  <Label>Активна</Label>
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Value (sum)</Label>
+                  <Label>Номинал (сум)</Label>
                   <Input type="number" value={formData.initial_balance ?? 0}
                     onChange={(e) => setFormData({ ...formData, initial_balance: Number(e.target.value) })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Currency</Label>
+                  <Label>Валюта</Label>
                   <Input value={formData.currency || "uzs"} onChange={(e) => setFormData({ ...formData, currency: e.target.value })} />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Specific account (Optional — reserve for one user)</Label>
+                <Label>Конкретный аккаунт (необязательно — только для одного пользователя)</Label>
                 <AccountPicker value={formData.user_id} onChange={(id) => setFormData({ ...formData, user_id: id })} />
               </div>
               <div className="space-y-2">
-                <Label>Expires (Optional)</Label>
+                <Label>Действует до (необязательно)</Label>
                 <DatePicker value={formData.expires_at || ""} onChange={(v) => setFormData({ ...formData, expires_at: v })} onClear={() => setFormData({ ...formData, expires_at: "" })} />
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? "Creating..." : "Issue"}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
+              <Button type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? "Создание…" : "Выпустить"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -398,55 +404,55 @@ function GiftCardsContent() {
       <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Bulk create gift cards</DialogTitle>
-            <DialogDescription>Generate up to 10,000 cards with unique random codes and download them as CSV.</DialogDescription>
+            <DialogTitle>Массовое создание подарочных карт</DialogTitle>
+            <DialogDescription>Сгенерируйте до 10 000 карт с уникальными случайными кодами и скачайте их в CSV.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitBulk}>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
-                  <Label>How many</Label>
+                  <Label>Количество</Label>
                   <Input type="number" min={1} max={10000} value={bulkForm.count}
                     onChange={(e) => setBulkForm({ ...bulkForm, count: Number(e.target.value) })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Code prefix</Label>
+                  <Label>Префикс кода</Label>
                   <Input value={bulkForm.code_prefix ?? ""} placeholder="GIFT-"
                     onChange={(e) => setBulkForm({ ...bulkForm, code_prefix: e.target.value.toUpperCase() })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Random length</Label>
+                  <Label>Длина случайной части</Label>
                   <Input type="number" min={4} max={24} value={bulkForm.code_length ?? 10}
                     onChange={(e) => setBulkForm({ ...bulkForm, code_length: Number(e.target.value) })} />
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Value each (sum)</Label>
+                  <Label>Номинал каждой (сум)</Label>
                   <Input type="number" value={bulkForm.initial_balance ?? 0}
                     onChange={(e) => setBulkForm({ ...bulkForm, initial_balance: Number(e.target.value) })} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Currency</Label>
+                  <Label>Валюта</Label>
                   <Input value={bulkForm.currency || "uzs"} onChange={(e) => setBulkForm({ ...bulkForm, currency: e.target.value })} />
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Expires (Optional)</Label>
+                  <Label>Действует до (необязательно)</Label>
                   <DatePicker value={bulkForm.expires_at || ""} onChange={(v) => setBulkForm({ ...bulkForm, expires_at: v })} onClear={() => setBulkForm({ ...bulkForm, expires_at: "" })} />
                 </div>
                 <div className="flex items-end gap-3 pb-1">
                   <Switch checked={bulkForm.is_active ?? true} onCheckedChange={(v) => setBulkForm({ ...bulkForm, is_active: v })} />
-                  <Label>Active</Label>
+                  <Label>Активна</Label>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">Codes are generated on the server; the CSV downloads automatically when generation completes.</p>
+              <p className="text-xs text-muted-foreground">Коды генерируются на сервере; CSV скачается автоматически после завершения генерации.</p>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsBulkOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBulkOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={bulkMutation.isPending || !Number.isFinite(bulkForm.count) || bulkForm.count < 1}>
-                {bulkMutation.isPending ? "Generating…" : `Generate ${bulkForm.count} & download CSV`}
+                {bulkMutation.isPending ? "Генерация…" : `Сгенерировать ${bulkForm.count} и скачать CSV`}
               </Button>
             </DialogFooter>
           </form>
@@ -457,18 +463,18 @@ function GiftCardsContent() {
       <Dialog open={!!topUpCard} onOpenChange={(o) => { if (!o) setTopUpCard(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Top up {topUpCard?.code}</DialogTitle>
-            <DialogDescription>Current balance: {topUpCard ? sum(topUpCard.balance) : 0} {topUpCard?.currency}</DialogDescription>
+            <DialogTitle>Пополнение {topUpCard?.code}</DialogTitle>
+            <DialogDescription>Текущий баланс: {topUpCard ? sum(topUpCard.balance) : 0} {topUpCard?.currency}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            <Label>Amount to add (sum)</Label>
+            <Label>Сумма пополнения (сум)</Label>
             <Input type="number" value={topUpAmount || ""} onChange={(e) => setTopUpAmount(Number(e.target.value))} />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setTopUpCard(null)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => setTopUpCard(null)}>Отмена</Button>
             <Button disabled={topUpMutation.isPending || topUpAmount <= 0}
               onClick={() => topUpCard && topUpMutation.mutate({ id: topUpCard.id, amount: topUpAmount })}>
-              {topUpMutation.isPending ? "Adding..." : "Add balance"}
+              {topUpMutation.isPending ? "Пополнение…" : "Пополнить баланс"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -478,20 +484,20 @@ function GiftCardsContent() {
       <Dialog open={historyCardId != null} onOpenChange={(o) => { if (!o) setHistoryCardId(null); }}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Transactions — {historyDetail?.code}</DialogTitle>
-            <DialogDescription>Balance: {historyDetail ? sum(historyDetail.balance) : "…"} {historyDetail?.currency}</DialogDescription>
+            <DialogTitle>Транзакции — {historyDetail?.code}</DialogTitle>
+            <DialogDescription>Баланс: {historyDetail ? sum(historyDetail.balance) : "…"} {historyDetail?.currency}</DialogDescription>
           </DialogHeader>
           <div className="py-2">
             {!historyDetail?.transactions?.length ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">No transactions yet.</p>
+              <p className="py-6 text-center text-sm text-muted-foreground">Транзакций пока нет.</p>
             ) : (
               <Table>
-                <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Amount</TableHead><TableHead>Balance after</TableHead><TableHead>Order</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead>Тип</TableHead><TableHead>Сумма</TableHead><TableHead>Баланс после</TableHead><TableHead>Заказ</TableHead><TableHead>Дата</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {historyDetail.transactions.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell><span className={cn("rounded px-2 py-0.5 text-[11px] font-medium",
-                        t.type === "redeem" ? "bg-amber-100 text-amber-800" : t.type === "refund" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800")}>{t.type}</span></TableCell>
+                        t.type === "redeem" ? "bg-amber-100 text-amber-800" : t.type === "refund" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800")}>{TRANSACTION_TYPE_LABELS[t.type]}</span></TableCell>
                       <TableCell className="num-tabular text-sm">{t.type === "redeem" ? "−" : "+"}{sum(t.amount)}</TableCell>
                       <TableCell className="num-tabular text-sm text-muted-foreground">{sum(t.balance_after)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{t.order_id ? `#${t.order_id}` : "—"}</TableCell>
@@ -510,7 +516,7 @@ function GiftCardsContent() {
 
 export default function GiftCardsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading gift cards...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка подарочных карт…</div>}>
       <GiftCardsContent />
     </Suspense>
   );

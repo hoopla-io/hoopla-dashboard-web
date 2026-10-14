@@ -106,12 +106,12 @@ function ShopCategoriesContent() {
       shopCategoriesApi.create(data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Category created successfully!");
+      toast.success("Категория создана");
       setIsCreateOpen(false);
       setFormData(defaultForm);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to create category"),
+    onError: () => toast.error("Не удалось создать категорию"),
   });
 
   const updateMutation = useMutation({
@@ -119,11 +119,11 @@ function ShopCategoriesContent() {
       shopCategoriesApi.update(id, data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Category updated successfully!");
+      toast.success("Категория обновлена");
       setEditCategory(null);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to update category"),
+    onError: () => toast.error("Не удалось обновить категорию"),
   });
 
   const toggleActiveMutation = useMutation({
@@ -131,9 +131,9 @@ function ShopCategoriesContent() {
       shopCategoriesApi.update(id, { is_active }),
     onSuccess: () => {
       invalidate();
-      toast.success("Category status updated!");
+      toast.success("Статус категории обновлён");
     },
-    onError: () => toast.error("Failed to update status"),
+    onError: () => toast.error("Не удалось обновить статус"),
   });
 
   const confirmDelete = useConfirm();
@@ -142,9 +142,9 @@ function ShopCategoriesContent() {
     mutationFn: shopCategoriesApi.delete,
     onSuccess: () => {
       invalidate();
-      toast.success("Category deleted successfully!");
+      toast.success("Категория удалена");
     },
-    onError: () => toast.error("Failed to delete category"),
+    onError: () => toast.error("Не удалось удалить категорию"),
   });
 
   const linkPartnerMutation = useMutation({
@@ -153,9 +153,9 @@ function ShopCategoriesContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop-categories", viewCategory?.id] });
       setSelectedPartnerId("");
-      toast.success("Partner linked!");
+      toast.success("Партнёр привязан");
     },
-    onError: () => toast.error("Failed to link partner"),
+    onError: () => toast.error("Не удалось привязать партнёра"),
   });
 
   const unlinkPartnerMutation = useMutation({
@@ -163,9 +163,9 @@ function ShopCategoriesContent() {
       shopCategoriesApi.unlinkPartner(partnerId, categoryId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop-categories", viewCategory?.id] });
-      toast.success("Partner unlinked!");
+      toast.success("Партнёр отвязан");
     },
-    onError: () => toast.error("Failed to unlink partner"),
+    onError: () => toast.error("Не удалось отвязать партнёра"),
   });
 
   function handleSubmitCreate(e: React.FormEvent) {
@@ -193,18 +193,18 @@ function ShopCategoriesContent() {
   const formFields = (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
-        <Label>Name</Label>
+        <Label>Название</Label>
         <Input
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="e.g. Coffee, Juice"
+          placeholder="напр. Кофе, Соки"
           required
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Sort Order</Label>
+          <Label>Порядок</Label>
           <Input
             type="number"
             value={formData.sort_order ?? 0}
@@ -216,12 +216,12 @@ function ShopCategoriesContent() {
             checked={formData.is_active ?? true}
             onCheckedChange={(v) => setFormData({ ...formData, is_active: v })}
           />
-          <Label>Active</Label>
+          <Label>Активна</Label>
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Image</Label>
+        <Label>Изображение</Label>
         {(selectedFile || editCategory?.image_url) && (() => {
           const src = selectedFile ? URL.createObjectURL(selectedFile) : editCategory?.image_url || "";
           return (
@@ -231,7 +231,7 @@ function ShopCategoriesContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
+                <img src={src} alt="Предпросмотр" className="max-h-24 w-auto object-contain" />
               </button>
               <button
                 type="button"
@@ -250,7 +250,7 @@ function ShopCategoriesContent() {
             if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
           }}
         />
-        {editCategory && <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>}
+        {editCategory && <p className="text-xs text-muted-foreground mt-1">Оставьте пустым, чтобы сохранить текущее изображение</p>}
       </div>
     </div>
   );
@@ -258,8 +258,8 @@ function ShopCategoriesContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Shop Categories"
-        description="Group shops into categories shown in the mobile app."
+        title="Категории заведений"
+        description="Группировка заведений по категориям, которые показываются в мобильном приложении."
         action={
           <Button
             onClick={() => {
@@ -269,7 +269,7 @@ function ShopCategoriesContent() {
             }}
           >
             <Plus className="size-4" />
-            Add category
+            Добавить категорию
           </Button>
         }
       />
@@ -278,7 +278,7 @@ function ShopCategoriesContent() {
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search categories"
+            placeholder="Поиск категорий"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -296,35 +296,35 @@ function ShopCategoriesContent() {
               <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
                 ID
               </SortableTableHead>
-              <TableHead className="w-[64px]">Image</TableHead>
+              <TableHead className="w-[64px]">Изображение</TableHead>
               <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
-                Name
+                Название
               </SortableTableHead>
               <SortableTableHead column="sort_order" sort={sort} order={order} onSort={onSort}>
-                Order
+                Порядок
               </SortableTableHead>
               <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
-                Active
+                Активна
               </SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="p-0">
                   <EmptyState
-                    title="No categories found"
+                    title="Категории не найдены"
                     description={
                       search
-                        ? "Try a different search term."
-                        : "Create your first category to group shops in the app."
+                        ? "Попробуйте другой запрос."
+                        : "Создайте первую категорию, чтобы группировать заведения в приложении."
                     }
                     action={
                       !search ? (
@@ -338,7 +338,7 @@ function ShopCategoriesContent() {
                           }}
                         >
                           <Plus className="size-4" />
-                          Add category
+                          Добавить категорию
                         </Button>
                       ) : null
                     }
@@ -362,7 +362,7 @@ function ShopCategoriesContent() {
                       </button>
                     ) : (
                       <div className="flex size-9 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        N/A
+                        Нет
                       </div>
                     )}
                   </TableCell>
@@ -387,7 +387,7 @@ function ShopCategoriesContent() {
                           setSelectedPartnerId("");
                         }}
                       >
-                        Partners
+                        Партнёры
                       </Button>
                       <Button variant="ghost" size="icon-sm" onClick={() => openEdit(category)}>
                         <Pencil className="size-4" />
@@ -396,7 +396,7 @@ function ShopCategoriesContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete shop category?" })) deleteMutation.mutate(category.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить категорию заведений?" })) deleteMutation.mutate(category.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -424,15 +424,15 @@ function ShopCategoriesContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Category</DialogTitle>
-            <DialogDescription>Add a new shop category</DialogDescription>
+            <DialogTitle>Создать категорию</DialogTitle>
+            <DialogDescription>Добавьте новую категорию заведений</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitCreate}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Создание…" : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -445,15 +445,15 @@ function ShopCategoriesContent() {
       }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>Update category settings</DialogDescription>
+            <DialogTitle>Редактировать категорию</DialogTitle>
+            <DialogDescription>Измените настройки категории</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitEdit}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setEditCategory(null); setSelectedFile(null); }}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => { setEditCategory(null); setSelectedFile(null); }}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -464,15 +464,15 @@ function ShopCategoriesContent() {
       <Dialog open={!!viewCategory} onOpenChange={(open) => { if (!open) setViewCategory(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{viewCategory?.name} — Partners</DialogTitle>
-            <DialogDescription>Manage partners linked to this category</DialogDescription>
+            <DialogTitle>{viewCategory?.name} — Партнёры</DialogTitle>
+            <DialogDescription>Управление партнёрами, привязанными к этой категории</DialogDescription>
           </DialogHeader>
           <div className="py-2 space-y-4">
             <div className="max-h-60 overflow-y-auto">
               {isDetailLoading ? (
-                <p className="text-center text-muted-foreground py-4">Loading...</p>
+                <p className="text-center text-muted-foreground py-4">Загрузка…</p>
               ) : !categoryDetail?.partners || categoryDetail.partners.length === 0 ? (
-                <p className="text-center text-muted-foreground py-4">No partners linked to this category</p>
+                <p className="text-center text-muted-foreground py-4">К этой категории не привязано ни одного партнёра</p>
               ) : (
                 <div className="space-y-1.5">
                   {categoryDetail.partners.map((partner) => (
@@ -488,14 +488,14 @@ function ShopCategoriesContent() {
                         type="button"
                         className="text-muted-foreground transition-colors hover:text-destructive"
                         onClick={async () => {
-                          if (await confirmDelete({ title: `Unlink “${partner.name}”?`, description: "The partner will no longer appear in this category.", confirmText: "Unlink" })) {
+                          if (await confirmDelete({ title: `Отвязать «${partner.name}»?`, description: "Партнёр больше не будет отображаться в этой категории.", confirmText: "Отвязать" })) {
                             unlinkPartnerMutation.mutate({
                               partnerId: partner.id,
                               categoryId: viewCategory!.id,
                             });
                           }
                         }}
-                        aria-label="Unlink partner"
+                        aria-label="Отвязать партнёра"
                       >
                         <X className="size-4" />
                       </button>
@@ -506,14 +506,14 @@ function ShopCategoriesContent() {
             </div>
 
             <div>
-              <p className="text-sm font-medium mb-2">Link a partner</p>
+              <p className="text-sm font-medium mb-2">Привязать партнёра</p>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <SearchableSelect
                     value={selectedPartnerId}
                     onValueChange={setSelectedPartnerId}
-                    placeholder="Select partner..."
-                    searchPlaceholder="Search partners…"
+                    placeholder="Выберите партнёра…"
+                    searchPlaceholder="Поиск партнёров…"
                     items={availablePartners.map((p) => ({ value: String(p.id), label: p.name }))}
                   />
                 </div>
@@ -525,13 +525,13 @@ function ShopCategoriesContent() {
                     linkPartnerMutation.mutate({ partnerId: Number(selectedPartnerId), categoryId: viewCategory.id });
                   }}
                 >
-                  Link
+                  Привязать
                 </Button>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewCategory(null)}>Close</Button>
+            <Button variant="outline" onClick={() => setViewCategory(null)}>Закрыть</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -540,11 +540,11 @@ function ShopCategoriesContent() {
       <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>Category image preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Изображение категории</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            <img src={previewImage} alt="Category preview" className="w-full h-auto rounded" />
+            <img src={previewImage} alt="Изображение категории" className="w-full h-auto rounded" />
           )}
         </DialogContent>
       </Dialog>
@@ -554,7 +554,7 @@ function ShopCategoriesContent() {
 
 export default function ShopCategoriesPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading shop categories...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка категорий заведений…</div>}>
       <ShopCategoriesContent />
     </Suspense>
   );

@@ -59,15 +59,15 @@ export function FeedbacksTab({ partnerId }: FeedbacksTabProps) {
     <div className="space-y-4">
       {averageRating !== null && (
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-sm">Average rating:</span>
+          <span className="text-muted-foreground text-sm">Средняя оценка:</span>
           <StarRating rating={Math.round(averageRating)} />
-          <span className="text-sm text-muted-foreground">({averageRating.toFixed(1)} from {feedbacks.length} reviews)</span>
+          <span className="text-sm text-muted-foreground">({averageRating.toFixed(1)}, отзывов: {feedbacks.length})</span>
         </div>
       )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Customer Feedbacks</CardTitle>
+          <CardTitle>Отзывы клиентов</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
@@ -75,23 +75,23 @@ export function FeedbacksTab({ partnerId }: FeedbacksTabProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead>Comment</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Заказ</TableHead>
+                  <TableHead>Оценка</TableHead>
+                  <TableHead>Комментарий</TableHead>
+                  <TableHead>Дата</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-4">Loading feedbacks...</TableCell>
+                    <TableCell colSpan={5} className="text-center py-4">Загрузка отзывов…</TableCell>
                   </TableRow>
                 ) : paginatedFeedbacks.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="p-0">
                       <EmptyState
-                        title="No feedbacks yet"
-                        description="Customer feedback for this partner's orders will appear here."
+                        title="Отзывов пока нет"
+                        description="Здесь появятся отзывы клиентов о заказах этого партнёра."
                       />
                     </TableCell>
                   </TableRow>
@@ -111,7 +111,7 @@ export function FeedbacksTab({ partnerId }: FeedbacksTabProps) {
                         )}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {feedback.created_at ? new Date(feedback.created_at).toLocaleString() : "-"}
+                        {feedback.created_at ? new Date(feedback.created_at).toLocaleString("ru-RU") : "-"}
                       </TableCell>
                     </TableRow>
                   ))

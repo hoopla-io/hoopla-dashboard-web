@@ -42,7 +42,7 @@ const formatPrice = (price?: number) => formatSomUZS(price);
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleString();
+  return new Date(dateStr).toLocaleString("ru-RU");
 };
 
 export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
@@ -74,9 +74,9 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
     mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
-      toast.success("Fiscalization requested");
+      toast.success("Фискализация запрошена");
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to fiscalize order")),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Не удалось фискализировать заказ")),
   });
 
   return (
@@ -88,37 +88,37 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
           <TableHeader>
             <TableRow>
               <SortableTableHead column="id" sort={sort} order={order} onSort={onSort}>
-                Order
+                Заказ
               </SortableTableHead>
-              <TableHead>User</TableHead>
-              <TableHead>Product</TableHead>
+              <TableHead>Пользователь</TableHead>
+              <TableHead>Товар</TableHead>
               <SortableTableHead column="price" sort={sort} order={order} onSort={onSort}>
-                Price
+                Цена
               </SortableTableHead>
-              <TableHead>Promo code</TableHead>
-              <TableHead>Shop</TableHead>
+              <TableHead>Промокод</TableHead>
+              <TableHead>Заведение</TableHead>
               <SortableTableHead column="source" sort={sort} order={order} onSort={onSort}>
-                Source
+                Источник
               </SortableTableHead>
               <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                Time
+                Время
               </SortableTableHead>
               <SortableTableHead column="updated_at" sort={sort} order={order} onSort={onSort}>
-                Updated
+                Обновлён
               </SortableTableHead>
-              <TableHead>Feedback</TableHead>
+              <TableHead>Отзыв</TableHead>
               <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
-                Status
+                Статус
               </SortableTableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead className="text-center">Fiscal</TableHead>
+              <TableHead>Расчёт</TableHead>
+              <TableHead className="text-center">Чек</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={13} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : isError ? (
@@ -126,10 +126,10 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                 <TableCell colSpan={13} className="py-10 text-center">
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
-                      Couldn't load orders. Check your connection and try again.
+                      Не удалось загрузить заказы. Проверьте подключение и попробуйте ещё раз.
                     </p>
                     <Button variant="outline" size="sm" onClick={() => refetch()}>
-                      Retry
+                      Повторить
                     </Button>
                   </div>
                 </TableCell>
@@ -138,11 +138,11 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
               <TableRow>
                 <TableCell colSpan={13} className="p-0">
                   <EmptyState
-                    title="No orders found"
+                    title="Заказы не найдены"
                     description={
                       filters.hasFilters
-                        ? "Try adjusting or clearing your filters."
-                        : "Orders will appear here as soon as they come in."
+                        ? "Попробуйте изменить или сбросить фильтры."
+                        : "Заказы появятся здесь, как только поступят."
                     }
                   />
                 </TableCell>
@@ -174,7 +174,7 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                         className="underline-offset-2 hover:underline"
                         onClick={() => setItemsDialogOrder(order)}
                       >
-                        {order.drink?.name || `${order.items.length} items`}
+                        {order.drink?.name || `Позиций: ${order.items.length}`}
                       </button>
                     ) : (
                       order.drink?.name || "—"
@@ -182,7 +182,7 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                   </TableCell>
                   <TableCell className="font-mono text-sm tabular-nums">
                     {formatPrice(order.price)}{" "}
-                    <span className="text-xs text-muted-foreground">UZS</span>
+                    <span className="text-xs text-muted-foreground">сум</span>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {order.promo_code || <span className="text-muted-foreground">—</span>}
@@ -238,18 +238,18 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                   </TableCell>
                   <TableCell>
                     <StatusBadge
-                      label={order.settlement_paid ? "Paid" : "Not paid"}
+                      label={order.settlement_paid ? "Рассчитан" : "Не рассчитан"}
                       tone={order.settlement_paid ? "success" : "neutral"}
                     />
                   </TableCell>
                   <TableCell className="text-center">
                     {order.status === "completed" && (order.fiscal_link?.trim() ? (
-                      <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
+                      <Button asChild variant="outline" size="icon-sm" title="Открыть фискальный чек">
                         <a
                           href={order.fiscal_link.trim()}
                           target="_blank"
                           rel="noopener noreferrer"
-                          aria-label="Open fiscal receipt"
+                          aria-label="Открыть фискальный чек"
                         >
                           <ExternalLink className="size-4" />
                         </a>
@@ -260,8 +260,8 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                         size="icon-sm"
                         onClick={() => fiscalizeMutation.mutate(order.id)}
                         disabled={fiscalizeMutation.isPending}
-                        title="Fiscalize order"
-                        aria-label="Fiscalize order"
+                        title="Фискализировать заказ"
+                        aria-label="Фискализировать заказ"
                       >
                         <ReceiptText className="size-4" />
                       </Button>
@@ -293,8 +293,8 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
-            <DialogDescription>Line items for this order.</DialogDescription>
+            <DialogTitle>Позиции заказа #{itemsDialogOrder?.id}</DialogTitle>
+            <DialogDescription>Состав этого заказа.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             {itemsDialogOrder?.items?.map((item) => (
@@ -303,7 +303,7 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                   {item.name} × {item.quantity}
                 </span>
                 <span className="font-mono tabular-nums text-muted-foreground">
-                  {formatPrice(item.price * item.quantity)} UZS
+                  {formatPrice(item.price * item.quantity)} сум
                 </span>
               </div>
             ))}

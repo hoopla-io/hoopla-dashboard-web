@@ -4,7 +4,7 @@
  * editor inputs need to multiply on save.
  */
 
-const locale = "uz-UZ";
+const locale = "ru-RU";
 
 export function tiyinToSum(tiyin: number | null | undefined): number {
   if (tiyin == null) return 0;

@@ -42,7 +42,7 @@ export function ShopForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      toast.error("Shop name is required");
+      toast.error("Укажите название заведения");
       return;
     }
     onSubmit({ ...formData, partner_id: partnerId ?? formData.partner_id }, file);
@@ -53,53 +53,53 @@ export function ShopForm({
       <div className="space-y-4 py-4">
         {partnerId === undefined && (
           <div className="space-y-1.5">
-            <Label>Partner</Label>
+            <Label>Партнёр</Label>
             <SearchableSelect
               value={formData.partner_id ? String(formData.partner_id) : ""}
               onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
-              placeholder="Select partner"
-              searchPlaceholder="Search partners…"
+              placeholder="Выберите партнёра"
+              searchPlaceholder="Поиск партнёров…"
               items={partnerOptions.map((p) => ({ value: String(p.id), label: p.name }))}
             />
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="shop-form-name">Name</Label>
+          <Label htmlFor="shop-form-name">Название</Label>
           <Input
             id="shop-form-name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Shop name"
+            placeholder="Название заведения"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="shop-form-terminal">Vendor terminal ID</Label>
+          <Label htmlFor="shop-form-terminal">ID терминала вендора</Label>
           <Input
             id="shop-form-terminal"
             value={formData.vendor_terminal_id}
             onChange={(e) => setFormData({ ...formData, vendor_terminal_id: e.target.value })}
-            placeholder="Terminal ID"
+            placeholder="ID терминала"
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="shop-form-login">Vendor login</Label>
+          <Label htmlFor="shop-form-login">Логин вендора</Label>
           <Input
             id="shop-form-login"
             value={formData.vendor_login}
             onChange={(e) => setFormData({ ...formData, vendor_login: e.target.value })}
-            placeholder="Cassa login"
+            placeholder="Логин кассы"
             maxLength={255}
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="shop-form-password">Vendor password</Label>
+          <Label htmlFor="shop-form-password">Пароль вендора</Label>
           <div className="relative">
             <Input
               id="shop-form-password"
               type={showVendorPassword ? "text" : "password"}
               value={formData.vendor_password}
               onChange={(e) => setFormData({ ...formData, vendor_password: e.target.value })}
-              placeholder="Cassa password"
+              placeholder="Пароль кассы"
               minLength={4}
               maxLength={255}
             />
@@ -115,41 +115,41 @@ export function ShopForm({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="shop-form-org">Vendor organization ID</Label>
+          <Label htmlFor="shop-form-org">ID организации вендора</Label>
           <Input
             id="shop-form-org"
             value={formData.vendor_organization_id}
             onChange={(e) => setFormData({ ...formData, vendor_organization_id: e.target.value })}
-            placeholder="Organization ID"
+            placeholder="ID организации"
             maxLength={255}
           />
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="shop-form-lat">Latitude</Label>
+            <Label htmlFor="shop-form-lat">Широта</Label>
             <Input
               id="shop-form-lat"
               type="number"
               step="any"
               value={formData.location_lat === 0 ? "" : formData.location_lat}
               onChange={(e) => setFormData({ ...formData, location_lat: Number(e.target.value) })}
-              placeholder="Latitude"
+              placeholder="Широта"
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="shop-form-long">Longitude</Label>
+            <Label htmlFor="shop-form-long">Долгота</Label>
             <Input
               id="shop-form-long"
               type="number"
               step="any"
               value={formData.location_long === 0 ? "" : formData.location_long}
               onChange={(e) => setFormData({ ...formData, location_long: Number(e.target.value) })}
-              placeholder="Longitude"
+              placeholder="Долгота"
             />
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="shop-form-file">Image</Label>
+          <Label htmlFor="shop-form-file">Изображение</Label>
           <Input
             id="shop-form-file"
             type="file"
@@ -159,9 +159,9 @@ export function ShopForm({
         </div>
       </div>
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button type="button" variant="outline" onClick={onCancel}>Отмена</Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving…" : "Create shop"}
+          {isSubmitting ? "Сохранение…" : "Создать заведение"}
         </Button>
       </DialogFooter>
     </form>

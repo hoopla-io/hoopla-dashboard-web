@@ -12,7 +12,20 @@ export const orderStatusTone: Record<string, StatusTone> = {
   error: "danger",
 };
 
+const orderStatusLabels: Record<string, string> = {
+  pending_payment: "Ожидает оплаты",
+  paid: "Оплачен",
+  scheduled: "Запланирован",
+  pending: "Ожидает",
+  processing: "В обработке",
+  preparing: "Готовится",
+  completed: "Завершён",
+  cancelled: "Отменён",
+  error: "Ошибка",
+};
+
 export const formatOrderStatus = (status: string) =>
+  orderStatusLabels[status] ??
   status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ");
 
 export const ORDER_STATUSES = [

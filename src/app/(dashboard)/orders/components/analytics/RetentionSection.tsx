@@ -23,7 +23,7 @@ function CohortTable({ cells, periodEnd }: { cells: CohortCell[]; periodEnd: str
   const byKey = new Map(cells.map((c) => [`${c.cohort}-${c.offset}`, c.users]));
 
   if (cohorts.length === 0) {
-    return <p className="text-sm text-muted-foreground">No completed orders to build cohorts from.</p>;
+    return <p className="text-sm text-muted-foreground">Нет выполненных заказов для построения когорт.</p>;
   }
 
   return (
@@ -31,11 +31,11 @@ function CohortTable({ cells, periodEnd }: { cells: CohortCell[]; periodEnd: str
       <table className="w-full min-w-[560px] border-separate border-spacing-[2px] text-xs">
         <thead>
           <tr className="text-muted-foreground">
-            <th className="px-2 py-1 text-left font-medium">First order</th>
-            <th className="px-2 py-1 text-right font-medium">Customers</th>
+            <th className="px-2 py-1 text-left font-medium">Первый заказ</th>
+            <th className="px-2 py-1 text-right font-medium">Клиенты</th>
             {MONTH_OFFSETS.map((m) => (
               <th key={m} className="px-2 py-1 text-center font-medium">
-                {m === 0 ? "Month 0" : `+${m}`}
+                {m === 0 ? "Месяц 0" : `+${m}`}
               </th>
             ))}
           </tr>
@@ -46,7 +46,7 @@ function CohortTable({ cells, periodEnd }: { cells: CohortCell[]; periodEnd: str
             return (
               <tr key={cohort}>
                 <td className="px-2 py-1.5 font-medium">{cohort}</td>
-                <td className="px-2 py-1.5 text-right tabular-nums">{size.toLocaleString()}</td>
+                <td className="px-2 py-1.5 text-right tabular-nums">{size.toLocaleString("ru-RU")}</td>
                 {MONTH_OFFSETS.map((m) => {
                   if (m > monthsBetween(cohort, periodEnd)) {
                     return <td key={m} className="rounded-[3px] bg-muted/30" />;
@@ -56,7 +56,7 @@ function CohortTable({ cells, periodEnd }: { cells: CohortCell[]; periodEnd: str
                   return (
                     <td
                       key={m}
-                      title={`${users} of ${size} customers ordered`}
+                      title={`Заказали ${users} из ${size} клиентов`}
                       className="rounded-[3px] px-2 py-1.5 text-center tabular-nums"
                       style={{
                         backgroundColor: `color-mix(in oklch, var(--chart-1) ${Math.max(pct, 6)}%, transparent)`,
@@ -73,7 +73,7 @@ function CohortTable({ cells, periodEnd }: { cells: CohortCell[]; periodEnd: str
         </tbody>
       </table>
       <p className="mt-2 text-xs text-muted-foreground">
-        Each row is the month of a customer's first completed order. Cells show the share of that group who ordered again that many months later.
+        Каждая строка — месяц первого выполненного заказа клиента. Ячейки показывают долю этой группы, сделавшую заказ снова через указанное число месяцев.
       </p>
     </div>
   );
@@ -94,24 +94,24 @@ export function RetentionSection({ retention, cohorts, uniqueCustomers, periodEn
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat
-          label="Repeat customers"
-          value={retention.repeat_customers.toLocaleString()}
-          hint={`${repeatShare.toFixed(1)}% ordered 2+ times this period`}
+          label="Повторные клиенты"
+          value={retention.repeat_customers.toLocaleString("ru-RU")}
+          hint={`${repeatShare.toFixed(1)}% заказали 2+ раза за период`}
         />
         <Stat
-          label="First-time customers"
-          value={retention.first_time_customers.toLocaleString()}
-          hint="First completed order in this period"
+          label="Новые клиенты"
+          value={retention.first_time_customers.toLocaleString("ru-RU")}
+          hint="Первый выполненный заказ в этом периоде"
         />
         <Stat
-          label="Came back within 30 days"
+          label="Вернулись в течение 30 дней"
           value={`${within30.toFixed(1)}%`}
-          hint={`${retention.second_order_within_30.toLocaleString()} of first-time customers`}
+          hint={`${retention.second_order_within_30.toLocaleString("ru-RU")} из новых клиентов`}
         />
         <Stat
-          label="Time to second order"
-          value={retention.median_days_to_second != null ? `${retention.median_days_to_second.toFixed(1)} days` : "—"}
-          hint="Median, first-time customers who returned"
+          label="Время до второго заказа"
+          value={retention.median_days_to_second != null ? `${retention.median_days_to_second.toFixed(1)} дн.` : "—"}
+          hint="Медиана по вернувшимся новым клиентам"
         />
       </div>
       <CohortTable cells={cohorts} periodEnd={periodEnd} />

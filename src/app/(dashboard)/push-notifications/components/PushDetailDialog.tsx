@@ -46,8 +46,8 @@ export function PushDetailDialog({ notification, onClose }: PushDetailDialogProp
         {notification ? (
           <>
             <DialogHeader>
-              <DialogTitle>Push #{notification.id}</DialogTitle>
-              <DialogDescription>What the customer's devices were sent.</DialogDescription>
+              <DialogTitle>Push-уведомление #{notification.id}</DialogTitle>
+              <DialogDescription>Что было отправлено на устройства клиента.</DialogDescription>
             </DialogHeader>
 
             <div className="flex gap-3 rounded-xl border border-border bg-muted/40 p-3">
@@ -61,24 +61,24 @@ export function PushDetailDialog({ notification, onClose }: PushDetailDialogProp
             </div>
 
             <div className="divide-y divide-border">
-              <DetailRow label="Status">
+              <DetailRow label="Статус">
                 <StatusBadge
                   label={formatPushStatus(notification.status)}
                   tone={pushStatusTone(notification.status)}
                 />
               </DetailRow>
-              <DetailRow label="Kind">
+              <DetailRow label="Вид">
                 <Badge variant="outline">{formatPushKind(notification.kind)}</Badge>
               </DetailRow>
-              <DetailRow label="Reference">
+              <DetailRow label="Объект">
                 <span className="font-mono tabular-nums">
                   {formatPushReference(notification.kind, notification.reference_id)}
                 </span>
               </DetailRow>
-              <DetailRow label="Attempt">
+              <DetailRow label="Попытка">
                 <span className="font-mono tabular-nums">{notification.attempt}</span>
               </DetailRow>
-              <DetailRow label="User">
+              <DetailRow label="Пользователь">
                 {notification.user ? (
                   <div className="flex flex-col items-end">
                     <span>{notification.user.name || "—"}</span>
@@ -90,16 +90,16 @@ export function PushDetailDialog({ notification, onClose }: PushDetailDialogProp
                     </Link>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground">Deleted user #{notification.user_id}</span>
+                  <span className="text-muted-foreground">Удалённый пользователь #{notification.user_id}</span>
                 )}
               </DetailRow>
-              <DetailRow label="Created">{new Date(notification.created_at).toLocaleString()}</DetailRow>
-              <DetailRow label="Updated">{new Date(notification.updated_at).toLocaleString()}</DetailRow>
+              <DetailRow label="Создан">{new Date(notification.created_at).toLocaleString("ru-RU")}</DetailRow>
+              <DetailRow label="Обновлён">{new Date(notification.updated_at).toLocaleString("ru-RU")}</DetailRow>
             </div>
 
             {data.length > 0 ? (
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground">Payload data</p>
+                <p className="text-xs font-medium text-muted-foreground">Данные payload</p>
                 <div className="rounded-lg border border-border bg-muted/40 p-3 font-mono text-xs">
                   {data.map(([key, value]) => (
                     <div key={key} className="flex justify-between gap-4">
@@ -113,7 +113,7 @@ export function PushDetailDialog({ notification, onClose }: PushDetailDialogProp
 
             {notification.error ? (
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground">Error</p>
+                <p className="text-xs font-medium text-muted-foreground">Ошибка</p>
                 <p className="break-words rounded-lg border border-destructive/30 bg-destructive/5 p-3 font-mono text-xs text-destructive">
                   {notification.error}
                 </p>

@@ -60,17 +60,17 @@ function GroupFormDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
       queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
-      toast.success(group ? "Modifier group updated" : "Modifier group created");
+      toast.success(group ? "Группа модификаторов обновлена" : "Группа модификаторов создана");
       onClose();
     },
-    onError: (e: unknown) => toast.error(apiErrorMessage(e, "Failed to save group")),
+    onError: (e: unknown) => toast.error(apiErrorMessage(e, "Не удалось сохранить группу")),
   });
 
   const typeChanged = !!group && form.key.trim().toLowerCase() !== group.key;
 
   const handleSubmit = () => {
     if (!form.key.trim()) {
-      toast.error("Group type is required");
+      toast.error("Укажите тип группы");
       return;
     }
     saveMutation.mutate({
@@ -85,17 +85,17 @@ function GroupFormDialog({
     <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{group ? "Edit Group" : "Add Group"}</DialogTitle>
+          <DialogTitle>{group ? "Редактирование группы" : "Новая группа"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="group_key">Type</Label>
+            <Label htmlFor="group_key">Тип</Label>
             <Input
               id="group_key"
               list="group-type-suggestions"
               value={form.key}
               onChange={(e) => setForm({ ...form, key: e.target.value })}
-              placeholder="e.g. size, sugar, topic…"
+              placeholder="напр. size, sugar, topic…"
               autoComplete="off"
             />
             <datalist id="group-type-suggestions">
@@ -105,36 +105,36 @@ function GroupFormDialog({
             </datalist>
             {typeChanged && group.option_count > 0 ? (
               <p className="text-[11px] text-muted-foreground">
-                The new type will also be applied to this group&apos;s {group.option_count} modifier(s).
+                Новый тип также будет применён к модификаторам этой группы ({group.option_count}).
               </p>
             ) : null}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="group_name">Display name</Label>
+            <Label htmlFor="group_name">Отображаемое название</Label>
             <Input
               id="group_name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Shown to customers — defaults to the type"
+              placeholder="Видно клиентам — по умолчанию совпадает с типом"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="group_min">Min</Label>
+              <Label htmlFor="group_min">Мин.</Label>
               <Input id="group_min" type="number" min={0} value={form.min} onChange={(e) => setForm({ ...form, min: Number(e.target.value) })} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="group_max">Max</Label>
+              <Label htmlFor="group_max">Макс.</Label>
               <Input id="group_max" type="number" min={0} placeholder="∞" value={form.max} onChange={(e) => setForm({ ...form, max: e.target.value })} />
             </div>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            How many options a customer must (Min) and may (Max, blank = unlimited) choose.
+            Сколько вариантов клиент обязан (Мин.) и может (Макс., пусто = без ограничений) выбрать.
           </p>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose}>Отмена</Button>
             <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? "Saving..." : "Save Group"}
+              {saveMutation.isPending ? "Сохранение…" : "Сохранить группу"}
             </Button>
           </div>
         </form>
@@ -209,29 +209,29 @@ function GroupModifiersDialog({
     mutationFn: (data: CreatePartnerDrinkModifierRequest) => drinksApi.createModifier(data),
     onSuccess: () => {
       invalidate();
-      toast.success("Modifier created successfully");
+      toast.success("Модификатор создан");
       setForm({ ...EMPTY_MODIFIER_FORM, vendor_group_id: form.vendor_group_id });
     },
-    onError: () => toast.error("Failed to create modifier"),
+    onError: () => toast.error("Не удалось создать модификатор"),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdatePartnerDrinkModifierRequest }) => drinksApi.updateModifier(id, data),
     onSuccess: () => {
       invalidate();
-      toast.success("Modifier updated successfully");
+      toast.success("Модификатор обновлён");
       setFormOpen(false);
     },
-    onError: () => toast.error("Failed to update modifier"),
+    onError: () => toast.error("Не удалось обновить модификатор"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: drinksApi.deleteModifier,
     onSuccess: () => {
       invalidate();
-      toast.success("Modifier deleted successfully");
+      toast.success("Модификатор удалён");
     },
-    onError: () => toast.error("Failed to delete modifier"),
+    onError: () => toast.error("Не удалось удалить модификатор"),
   });
 
   const reorderMutation = useMutation({
@@ -267,7 +267,7 @@ function GroupModifiersDialog({
       onError: () => {
         queryClient.setQueryData(groupModifiersQueryKey, modifiersData);
         queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
-        toast.error("Failed to save modifier order");
+        toast.error("Не удалось сохранить порядок модификаторов");
       },
     });
   };
@@ -294,11 +294,11 @@ function GroupModifiersDialog({
 
   const handleSubmit = () => {
     if (!form.vendor_addon_name || !form.vendor_addon_id) {
-      toast.error("Modifier and Vendor Modifier ID are required");
+      toast.error("Укажите модификатор и ID модификатора у вендора");
       return;
     }
     if (productModifiers.some((m) => m.id !== editingModifier?.id && (m.vendor_addon_id ?? "") === form.vendor_addon_id)) {
-      toast.error(`Vendor Modifier ID "${form.vendor_addon_id}" is already used on this product. Each option needs a unique ID.`);
+      toast.error(`ID модификатора у вендора «${form.vendor_addon_id}» уже используется в этом товаре. У каждого варианта должен быть уникальный ID.`);
       return;
     }
     if (editingModifier) {
@@ -320,16 +320,16 @@ function GroupModifiersDialog({
       <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{group.name || group.key || "Group"} modifiers</DialogTitle>
+            <DialogTitle>Модификаторы группы «{group.name || group.key || "Группа"}»</DialogTitle>
             <DialogDescription>
-              Type <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{group.key || "—"}</span> · choose min {group.min_select}, max {group.max_select ?? "∞"}
+              Тип <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{group.key || "—"}</span> · выбор: мин. {group.min_select}, макс. {group.max_select ?? "∞"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex justify-end">
             <Button size="sm" onClick={openAddForm}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Modifier
+              Добавить модификатор
             </Button>
           </div>
 
@@ -338,19 +338,19 @@ function GroupModifiersDialog({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10"><span className="sr-only">Reorder</span></TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Vendor Modifier ID</TableHead>
-                    <TableHead>Price</TableHead>
+                    <TableHead className="w-10"><span className="sr-only">Порядок</span></TableHead>
+                    <TableHead>Название</TableHead>
+                    <TableHead>ID модификатора у вендора</TableHead>
+                    <TableHead>Цена</TableHead>
                     <TableHead className="w-[100px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">Загрузка…</TableCell></TableRow>
                   ) : modifiers.length === 0 ? (
                     <TableRow><TableCell colSpan={5} className="p-0">
-                      <EmptyState title="No modifiers in this group" description="Add a modifier to get started." />
+                      <EmptyState title="В этой группе нет модификаторов" description="Добавьте модификатор, чтобы начать." />
                     </TableCell></TableRow>
                   ) : (
                     modifiers.map((mod, index) => (
@@ -368,7 +368,7 @@ function GroupModifiersDialog({
                       >
                         <TableCell className="px-2">
                           <ReorderControls
-                            label={mod.vendor_addon_name || "modifier"}
+                            label={mod.vendor_addon_name || "модификатор"}
                             disabled={reorderMutation.isPending}
                             canMoveUp={index > 0}
                             canMoveDown={index < modifiers.length - 1}
@@ -391,7 +391,7 @@ function GroupModifiersDialog({
                               size="icon"
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                               disabled={deleteMutation.isPending}
-                              onClick={async () => { if (await confirmDelete({ title: "Delete modifier?" })) deleteMutation.mutate(mod.id); }}
+                              onClick={async () => { if (await confirmDelete({ title: "Удалить модификатор?" })) deleteMutation.mutate(mod.id); }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -410,14 +410,14 @@ function GroupModifiersDialog({
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingModifier ? "Edit Modifier" : "Add Modifier"}</DialogTitle>
+            <DialogTitle>{editingModifier ? "Редактирование модификатора" : "Новый модификатор"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="modifier_name">Modifier</Label>
+              <Label htmlFor="modifier_name">Модификатор</Label>
               <Select value={form.vendor_addon_name} onValueChange={(value) => setForm({ ...form, vendor_addon_name: value })}>
                 <SelectTrigger id="modifier_name" className="w-full">
-                  <SelectValue placeholder={isLoadingPartnerModifiers ? "Loading…" : "Choose a modifier"} />
+                  <SelectValue placeholder={isLoadingPartnerModifiers ? "Загрузка…" : "Выберите модификатор"} />
                 </SelectTrigger>
                 <SelectContent>
                   {nameOptions.map((name) => (
@@ -428,25 +428,25 @@ function GroupModifiersDialog({
                 </SelectContent>
               </Select>
               <p className="text-[11px] text-muted-foreground">
-                Missing one? Add it in the partner&apos;s{" "}
+                Нет нужного? Сначала добавьте его на вкладке{" "}
                 <Link to={`/partners/${partnerId}?tab=modifiers`} className="underline underline-offset-2">
-                  Modifiers
+                  «Модификаторы»
                 </Link>{" "}
-                tab first.
+                партнёра.
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="modifier_vendor_id">Vendor Modifier ID</Label>
+              <Label htmlFor="modifier_vendor_id">ID модификатора у вендора</Label>
               <Input
                 id="modifier_vendor_id"
                 value={form.vendor_addon_id}
                 onChange={(e) => setForm({ ...form, vendor_addon_id: e.target.value })}
-                placeholder={`Unique per product — e.g. ${nextVendorAddonId}`}
+                placeholder={`Уникален в пределах товара — напр. ${nextVendorAddonId}`}
               />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="modifier_price">Price</Label>
+                <Label htmlFor="modifier_price">Цена</Label>
                 <Input
                   id="modifier_price"
                   type="number"
@@ -458,7 +458,7 @@ function GroupModifiersDialog({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="modifier_vendor_group_id">Vendor Group ID (Optional)</Label>
+                <Label htmlFor="modifier_vendor_group_id">ID группы у вендора (необязательно)</Label>
                 <Input
                   id="modifier_vendor_group_id"
                   value={form.vendor_group_id}
@@ -468,10 +468,10 @@ function GroupModifiersDialog({
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>
-                {editingModifier ? "Cancel" : "Close"}
+                {editingModifier ? "Отмена" : "Закрыть"}
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? "Saving..." : editingModifier ? "Save Changes" : "Save Modifier"}
+                {saving ? "Сохранение…" : editingModifier ? "Сохранить изменения" : "Сохранить модификатор"}
               </Button>
             </div>
           </form>
@@ -490,7 +490,7 @@ function ModifiersContent() {
 
   const partnerId = Number(params.id);
   const partnerDrinkId = Number(params.productId);
-  const drinkName = searchParams.get("productName") || searchParams.get("drinkName") || "Product";
+  const drinkName = searchParams.get("productName") || searchParams.get("drinkName") || "Товар";
 
   const [groupFormOpen, setGroupFormOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<ModifierGroup | null>(null);
@@ -509,9 +509,9 @@ function ModifiersContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
       queryClient.invalidateQueries({ queryKey: ["partner_drink_modifiers", partnerDrinkId] });
-      toast.success("Modifier group deleted");
+      toast.success("Группа модификаторов удалена");
     },
-    onError: (e: unknown) => toast.error(apiErrorMessage(e, "Failed to delete group")),
+    onError: (e: unknown) => toast.error(apiErrorMessage(e, "Не удалось удалить группу")),
   });
 
   const reorderMutation = useMutation({
@@ -544,7 +544,7 @@ function ModifiersContent() {
       onError: () => {
         queryClient.setQueryData<ModifierGroup[]>(["modifier_groups", partnerDrinkId], groups);
         queryClient.invalidateQueries({ queryKey: ["modifier_groups", partnerDrinkId] });
-        toast.error("Failed to save group order");
+        toast.error("Не удалось сохранить порядок групп");
       },
     });
   };
@@ -556,42 +556,42 @@ function ModifiersContent() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Addons for {drinkName}</h1>
-          <p className="text-sm text-muted-foreground">Manage modifier groups for this product. Click a group to manage its modifiers.</p>
+          <h1 className="text-2xl font-bold">Добавки: {drinkName}</h1>
+          <p className="text-sm text-muted-foreground">Управление группами модификаторов товара. Нажмите на группу, чтобы управлять её модификаторами.</p>
         </div>
       </div>
 
       <div className="flex justify-end">
         <Button onClick={() => { setEditingGroup(null); setGroupFormOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Group
+          Добавить группу
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Modifier Groups</CardTitle>
+          <CardTitle>Группы модификаторов</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10"><span className="sr-only">Reorder</span></TableHead>
-                  <TableHead>Display name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead className="w-[90px]">Min</TableHead>
-                  <TableHead className="w-[90px]">Max</TableHead>
-                  <TableHead className="w-[100px]">Modifiers</TableHead>
+                  <TableHead className="w-10"><span className="sr-only">Порядок</span></TableHead>
+                  <TableHead>Отображаемое название</TableHead>
+                  <TableHead>Тип</TableHead>
+                  <TableHead className="w-[90px]">Мин.</TableHead>
+                  <TableHead className="w-[90px]">Макс.</TableHead>
+                  <TableHead className="w-[100px]">Модификаторы</TableHead>
                   <TableHead className="w-[100px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">Загрузка…</TableCell></TableRow>
                 ) : groups.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="p-0">
-                    <EmptyState title="No modifier groups found" description="Add a group to get started." />
+                    <EmptyState title="Группы модификаторов не найдены" description="Добавьте группу, чтобы начать." />
                   </TableCell></TableRow>
                 ) : (
                   groups.map((g, index) => (
@@ -643,8 +643,8 @@ function ModifiersContent() {
                             disabled={deleteMutation.isPending}
                             onClick={async () => {
                               const confirmed = await confirmDelete({
-                                title: "Delete modifier group?",
-                                description: `"${g.name || g.key}" and its ${g.option_count} modifier(s) will be removed from this product.`,
+                                title: "Удалить группу модификаторов?",
+                                description: `Группа «${g.name || g.key}» и её модификаторы (${g.option_count}) будут удалены из этого товара.`,
                               });
                               if (confirmed) deleteMutation.mutate(g.id);
                             }}
@@ -687,7 +687,7 @@ function ModifiersContent() {
 
 export default function ProductModifiersPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading modifiers...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка модификаторов…</div>}>
       <ModifiersContent />
     </Suspense>
   );

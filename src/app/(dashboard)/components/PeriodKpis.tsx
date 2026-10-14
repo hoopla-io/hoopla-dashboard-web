@@ -43,33 +43,33 @@ export function PeriodKpis({ current, previous, comparedTo, ordersHref, extra }:
   return (
     <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4">
       <Tile
-        label="Orders"
-        value={current.orders.toLocaleString()}
+        label="Заказы"
+        value={current.orders.toLocaleString("ru-RU")}
         href={ordersHref}
         footer={
           <>
             <Delta current={current.orders} previous={previous.orders} />
-            <span>vs {comparedTo}</span>
+            <span>по сравнению с {comparedTo}</span>
           </>
         }
       />
       <Tile
-        label="Revenue"
+        label="Выручка"
         value={formatSomUZS(current.revenue)}
         footer={
           <>
             <Delta current={current.revenue} previous={previous.revenue} />
-            <span>{current.completed.toLocaleString()} completed</span>
+            <span>Выполнено: {current.completed.toLocaleString("ru-RU")}</span>
           </>
         }
       />
       <Tile
-        label="Cancel rate"
+        label="Доля отмен"
         value={`${cancelRate(current).toFixed(1)}%`}
         footer={
           <>
             <Delta current={cancelRate(current)} previous={cancelRate(previous)} inverse points />
-            <span>{current.cancelled.toLocaleString()} cancelled</span>
+            <span>Отменено: {current.cancelled.toLocaleString("ru-RU")}</span>
           </>
         }
       />

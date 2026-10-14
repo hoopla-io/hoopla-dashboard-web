@@ -69,19 +69,19 @@ User Agent: ${typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-foreground">
-                Something went wrong
+                Что-то пошло не так
               </h2>
               <p className="text-muted-foreground mt-1">
                 {this.props.pageName
-                  ? `An error occurred on the ${this.props.pageName} page`
-                  : "An unexpected error occurred"}
+                  ? `Произошла ошибка на странице «${this.props.pageName}»`
+                  : "Произошла непредвиденная ошибка"}
               </p>
             </div>
           </div>
 
           <div className="w-full max-w-2xl rounded-lg border bg-card p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm text-foreground">Error Details</h3>
+              <h3 className="font-semibold text-sm text-foreground">Подробности ошибки</h3>
               <Button
                 variant="outline"
                 size="sm"
@@ -91,12 +91,12 @@ User Agent: ${typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
                 {copied ? (
                   <>
                     <Check className="h-3 w-3" />
-                    Copied!
+                    Скопировано!
                   </>
                 ) : (
                   <>
                     <Copy className="h-3 w-3" />
-                    Copy Error
+                    Скопировать ошибку
                   </>
                 )}
               </Button>
@@ -104,21 +104,21 @@ User Agent: ${typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
             
             <div className="space-y-2">
               <div className="rounded bg-muted p-3">
-                <p className="text-xs font-medium text-muted-foreground">Error Name</p>
-                <p className="text-sm font-mono text-destructive">{error?.name || "Unknown"}</p>
+                <p className="text-xs font-medium text-muted-foreground">Тип ошибки</p>
+                <p className="text-sm font-mono text-destructive">{error?.name || "Неизвестно"}</p>
               </div>
               
               <div className="rounded bg-muted p-3">
-                <p className="text-xs font-medium text-muted-foreground">Error Message</p>
+                <p className="text-xs font-medium text-muted-foreground">Сообщение об ошибке</p>
                 <p className="text-sm font-mono text-foreground break-all">
-                  {error?.message || "No error message available"}
+                  {error?.message || "Сообщение об ошибке отсутствует"}
                 </p>
               </div>
 
               {error?.stack && (
                 <details className="rounded bg-muted p-3">
                   <summary className="text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground">
-                    Stack Trace (click to expand)
+                    Трассировка стека (нажмите, чтобы развернуть)
                   </summary>
                   <pre className="mt-2 text-xs font-mono text-foreground whitespace-pre-wrap overflow-auto max-h-48">
                     {error.stack}
@@ -129,7 +129,7 @@ User Agent: ${typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
               {errorInfo?.componentStack && (
                 <details className="rounded bg-muted p-3">
                   <summary className="text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground">
-                    Component Stack (click to expand)
+                    Стек компонентов (нажмите, чтобы развернуть)
                   </summary>
                   <pre className="mt-2 text-xs font-mono text-foreground whitespace-pre-wrap overflow-auto max-h-48">
                     {errorInfo.componentStack}
@@ -142,13 +142,13 @@ User Agent: ${typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
           <div className="flex gap-3">
             <Button onClick={this.handleReset} variant="default" className="gap-2">
               <RefreshCw className="h-4 w-4" />
-              Try Again
+              Повторить
             </Button>
             <Button
               onClick={() => window.location.reload()}
               variant="outline"
             >
-              Reload Page
+              Перезагрузить страницу
             </Button>
           </div>
         </div>

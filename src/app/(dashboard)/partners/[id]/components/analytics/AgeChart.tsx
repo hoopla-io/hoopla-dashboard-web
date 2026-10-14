@@ -10,7 +10,7 @@ export function AgeChart({ data }: AgeChartProps) {
   if (total === 0) {
     return (
       <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
-        No data for this period
+        Нет данных за этот период
       </div>
     );
   }
@@ -22,7 +22,7 @@ export function AgeChart({ data }: AgeChartProps) {
         <XAxis dataKey="label" fontSize={12} />
         <YAxis allowDecimals={false} fontSize={12} width={32} />
         <Tooltip />
-        <Bar dataKey="users" fill="#6366f1" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="users" name="Пользователи" fill="#6366f1" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

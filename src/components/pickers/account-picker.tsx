@@ -29,19 +29,19 @@ export function AccountPicker({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-          {value ? `Account #${value}` : "Anyone"}
+          {value ? `Аккаунт #${value}` : "Любой"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command shouldFilter={false}>
-          <CommandInput placeholder="Search by phone…" value={search} onValueChange={setSearch} />
+          <CommandInput placeholder="Поиск по телефону…" value={search} onValueChange={setSearch} />
           <CommandList>
-            <CommandEmpty>No accounts found.</CommandEmpty>
+            <CommandEmpty>Аккаунты не найдены.</CommandEmpty>
             <CommandGroup>
               <CommandItem value="anyone" onSelect={() => { onChange(undefined); setOpen(false); }}>
                 <Check className={cn("mr-2 h-4 w-4", value === undefined ? "opacity-100" : "opacity-0")} />
-                Anyone
+                Любой
               </CommandItem>
               {users.map((u) => (
                 <CommandItem

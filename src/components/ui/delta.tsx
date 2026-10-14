@@ -9,11 +9,11 @@ export function Delta({ current, previous, inverse = false, points = false }: {
   points?: boolean;
 }) {
   if (!points && previous === 0) {
-    return <span className="text-xs text-muted-foreground">no prior data</span>;
+    return <span className="text-xs text-muted-foreground">нет данных за прошлый период</span>;
   }
   const diff = points ? current - previous : ((current - previous) / previous) * 100;
   if (Math.abs(diff) < 0.05) {
-    return <span className="text-xs text-muted-foreground">no change</span>;
+    return <span className="text-xs text-muted-foreground">без изменений</span>;
   }
   const up = diff > 0;
   const good = inverse ? !up : up;
@@ -27,7 +27,7 @@ export function Delta({ current, previous, inverse = false, points = false }: {
     >
       <Icon className="size-3.5" />
       {Math.abs(diff).toFixed(1)}
-      {points ? " pp" : "%"}
+      {points ? " п.п." : "%"}
     </span>
   );
 }

@@ -41,7 +41,7 @@ function SummaryCard({ icon: Icon, label, value, hint, tone }: SummaryCardProps)
 function Money({ amount }: { amount: number }) {
   return (
     <>
-      {formatSomUZS(amount)} <span className="text-sm font-normal text-muted-foreground">UZS</span>
+      {formatSomUZS(amount)} <span className="text-sm font-normal text-muted-foreground">сум</span>
     </>
   );
 }
@@ -64,39 +64,39 @@ export function OrdersSummaryCards({ summary }: { summary: OrdersSummary | undef
   return (
     <div
       className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
-      title="Totals for the selected period and filters. Status and payment filters are not applied."
+      title="Итоги за выбранный период и по фильтрам. Фильтры по статусу и оплате не применяются."
     >
       <SummaryCard
         icon={CircleDollarSign}
         tone="primary"
-        label="Revenue (completed)"
+        label="Выручка (выполненные)"
         value={<Money amount={summary.revenue_completed} />}
       />
       <SummaryCard
         icon={CircleCheck}
         tone="success"
-        label="Completed orders"
-        value={summary.completed_count.toLocaleString()}
+        label="Выполненные заказы"
+        value={summary.completed_count.toLocaleString("ru-RU")}
       />
       <SummaryCard
         icon={ShoppingBag}
         tone="muted"
-        label="Avg order value"
+        label="Средний чек"
         value={<Money amount={Math.round(avgOrder)} />}
       />
       <SummaryCard
         icon={Ban}
         tone="danger"
-        label="Cancelled orders"
-        value={summary.cancelled_count.toLocaleString()}
-        hint={`${cancelRate.toFixed(1)}% · ${formatSomUZS(summary.cancelled_sum)} UZS`}
+        label="Отменённые заказы"
+        value={summary.cancelled_count.toLocaleString("ru-RU")}
+        hint={`${cancelRate.toFixed(1)}% · ${formatSomUZS(summary.cancelled_sum)} сум`}
       />
       <SummaryCard
         icon={Hourglass}
         tone="muted"
-        label="In progress"
-        value={summary.active_count.toLocaleString()}
-        hint="Paid, scheduled, pending or preparing"
+        label="В работе"
+        value={summary.active_count.toLocaleString("ru-RU")}
+        hint="Оплаченные, запланированные, ожидающие или готовящиеся"
       />
     </div>
   );

@@ -92,7 +92,7 @@ function DateTimePicker({
             className={cn("w-full justify-start text-left font-normal", !hasValue && "text-muted-foreground")}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {hasValue ? format(date!, "dd/MM/yyyy") : "Pick a date"}
+            {hasValue ? format(date!, "dd/MM/yyyy") : "Выберите дату"}
             {hasValue && (
               <span
                 role="button"
@@ -194,8 +194,8 @@ function StoryPreview({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80" onClick={onClose}>
         <div className="text-white text-center">
-          <p className="text-lg font-medium">No slides in this story</p>
-          <p className="text-sm text-white/60 mt-2">Add slides to preview the story</p>
+          <p className="text-lg font-medium">В этой истории нет слайдов</p>
+          <p className="text-sm text-white/60 mt-2">Добавьте слайды, чтобы просмотреть историю</p>
         </div>
       </div>
     );
@@ -211,7 +211,7 @@ function StoryPreview({
         {currentItem?.image_url ? (
           <Image
             src={currentItem.image_url}
-            alt={currentItem.title || "Slide"}
+            alt={currentItem.title || "Слайд"}
             fill
             className="object-cover"
           />
@@ -268,12 +268,12 @@ function StoryPreview({
         <button
           className="absolute left-0 top-16 bottom-24 w-1/3 cursor-pointer"
           onClick={goPrev}
-          aria-label="Previous slide"
+          aria-label="Предыдущий слайд"
         />
         <button
           className="absolute right-0 top-16 bottom-24 w-1/3 cursor-pointer"
           onClick={goNext}
-          aria-label="Next slide"
+          aria-label="Следующий слайд"
         />
 
         {/* Bottom content */}
@@ -367,12 +367,12 @@ function StoriesContent() {
     mutationFn: ({ data, file }: { data: CreateStoryRequest; file?: File }) => storiesApi.create(data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Story created successfully!");
+      toast.success("История создана");
       setIsCreateOpen(false);
       setFormData(defaultForm);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to create story"),
+    onError: () => toast.error("Не удалось создать историю"),
   });
 
   const updateMutation = useMutation({
@@ -380,11 +380,11 @@ function StoriesContent() {
       storiesApi.update(id, data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Story updated successfully!");
+      toast.success("История обновлена");
       setEditStory(null);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to update story"),
+    onError: () => toast.error("Не удалось обновить историю"),
   });
 
   const toggleActiveMutation = useMutation({
@@ -392,9 +392,9 @@ function StoriesContent() {
       storiesApi.update(id, { is_active }),
     onSuccess: () => {
       invalidate();
-      toast.success("Story status updated!");
+      toast.success("Статус истории обновлён");
     },
-    onError: () => toast.error("Failed to update status"),
+    onError: () => toast.error("Не удалось обновить статус"),
   });
 
   const confirmDelete = useConfirm();
@@ -403,9 +403,9 @@ function StoriesContent() {
     mutationFn: storiesApi.delete,
     onSuccess: () => {
       invalidate();
-      toast.success("Story deleted successfully!");
+      toast.success("История удалена");
     },
-    onError: () => toast.error("Failed to delete story"),
+    onError: () => toast.error("Не удалось удалить историю"),
   });
 
   function handleSubmitCreate(e: React.FormEvent) {
@@ -440,18 +440,18 @@ function StoriesContent() {
   const formFields = (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
-        <Label>Title</Label>
+        <Label>Заголовок</Label>
         <Input
           value={formData.title || ""}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Story title"
+          placeholder="Заголовок истории"
           required
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Sort Order</Label>
+          <Label>Порядок сортировки</Label>
           <Input
             type="number"
             value={formData.sort_order ?? 0}
@@ -463,13 +463,13 @@ function StoriesContent() {
             checked={formData.is_active ?? true}
             onCheckedChange={(v) => setFormData({ ...formData, is_active: v })}
           />
-          <Label>Active</Label>
+          <Label>Активна</Label>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Start Date (Optional)</Label>
+          <Label>Дата начала (необязательно)</Label>
           <DateTimePicker
             value={formData.start_date || ""}
             onChange={(v) => setFormData({ ...formData, start_date: v })}
@@ -477,7 +477,7 @@ function StoriesContent() {
           />
         </div>
         <div className="space-y-2">
-          <Label>End Date (Optional)</Label>
+          <Label>Дата окончания (необязательно)</Label>
           <DateTimePicker
             value={formData.end_date || ""}
             onChange={(v) => setFormData({ ...formData, end_date: v })}
@@ -487,7 +487,7 @@ function StoriesContent() {
       </div>
 
       <div className="space-y-2">
-        <Label>Cover Image</Label>
+        <Label>Обложка</Label>
         {(selectedFile || editStory?.image_url) && (() => {
           const src = selectedFile ? URL.createObjectURL(selectedFile) : editStory?.image_url || "";
           return (
@@ -497,7 +497,7 @@ function StoriesContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
+                <img src={src} alt="Превью" className="max-h-24 w-auto object-contain" />
               </button>
               <button
                 type="button"
@@ -516,7 +516,7 @@ function StoriesContent() {
             if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
           }}
         />
-        {editStory && <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>}
+        {editStory && <p className="text-xs text-muted-foreground mt-1">Оставьте пустым, чтобы сохранить текущее изображение</p>}
       </div>
     </div>
   );
@@ -524,8 +524,8 @@ function StoriesContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Stories"
-        description="Publish stories with timed slides shown in the mobile app."
+        title="Истории"
+        description="Публикуйте истории со слайдами по таймеру, которые показываются в мобильном приложении."
         action={
           <Button
             onClick={() => {
@@ -535,7 +535,7 @@ function StoriesContent() {
             }}
           >
             <Plus className="size-4" />
-            Add story
+            Добавить историю
           </Button>
         }
       />
@@ -544,7 +544,7 @@ function StoriesContent() {
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search stories"
+            placeholder="Поиск историй"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -562,37 +562,37 @@ function StoriesContent() {
               <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
                 ID
               </SortableTableHead>
-              <TableHead className="w-[64px]">Cover</TableHead>
+              <TableHead className="w-[64px]">Обложка</TableHead>
               <SortableTableHead column="title" sort={sort} order={order} onSort={onSort}>
-                Title
+                Заголовок
               </SortableTableHead>
-              <TableHead>Slides</TableHead>
+              <TableHead>Слайды</TableHead>
               <SortableTableHead column="sort_order" sort={sort} order={order} onSort={onSort}>
-                Order
+                Порядок
               </SortableTableHead>
               <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
-                Active
+                Активна
               </SortableTableHead>
-              <TableHead>Schedule</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Расписание</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : stories.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="p-0">
                   <EmptyState
-                    title="No stories found"
+                    title="Истории не найдены"
                     description={
                       search
-                        ? "Try a different search term."
-                        : "Publish your first story to engage users in the mobile app."
+                        ? "Попробуйте другой поисковый запрос."
+                        : "Опубликуйте первую историю, чтобы вовлечь пользователей мобильного приложения."
                     }
                     action={
                       !search ? (
@@ -606,7 +606,7 @@ function StoriesContent() {
                           }}
                         >
                           <Plus className="size-4" />
-                          Add story
+                          Добавить историю
                         </Button>
                       ) : null
                     }
@@ -634,7 +634,7 @@ function StoriesContent() {
                       </button>
                     ) : (
                       <div className="flex size-9 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        N/A
+                        Нет
                       </div>
                     )}
                   </TableCell>
@@ -676,7 +676,7 @@ function StoriesContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete story?" })) deleteMutation.mutate(story.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить историю?" })) deleteMutation.mutate(story.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -704,15 +704,15 @@ function StoriesContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Story</DialogTitle>
-            <DialogDescription>Add a new story</DialogDescription>
+            <DialogTitle>Создать историю</DialogTitle>
+            <DialogDescription>Добавьте новую историю</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitCreate}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Создание..." : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -725,15 +725,15 @@ function StoriesContent() {
       }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Story</DialogTitle>
-            <DialogDescription>Update story settings</DialogDescription>
+            <DialogTitle>Редактировать историю</DialogTitle>
+            <DialogDescription>Измените настройки истории</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitEdit}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setEditStory(null); setSelectedFile(null); }}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => { setEditStory(null); setSelectedFile(null); }}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -744,11 +744,11 @@ function StoriesContent() {
       <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>Story image preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Просмотр изображения истории</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            <img src={previewImage} alt="Story preview" className="w-full h-auto rounded" />
+            <img src={previewImage} alt="Превью истории" className="w-full h-auto rounded" />
           )}
         </DialogContent>
       </Dialog>
@@ -766,7 +766,7 @@ function StoriesContent() {
 
 export default function StoriesPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading stories...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка историй...</div>}>
       <StoriesContent />
     </Suspense>
   );

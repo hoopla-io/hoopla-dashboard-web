@@ -17,7 +17,7 @@ interface SessionsTabProps {
 const PLATFORM_LABELS: Record<string, string> = {
   ios: "iOS",
   android: "Android",
-  web: "Web",
+  web: "Веб",
 };
 
 export function SessionsTab({ userId }: SessionsTabProps) {
@@ -43,41 +43,41 @@ export function SessionsTab({ userId }: SessionsTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Device sessions</CardTitle>
+        <CardTitle>Сессии устройств</CardTitle>
       </CardHeader>
       <CardContent>
         <DataTableShell>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Device</TableHead>
+                <TableHead>Устройство</TableHead>
                 <SortableTableHead column="platform" sort={sort} order={order} onSort={onSort}>
-                  Platform
+                  Платформа
                 </SortableTableHead>
                 <SortableTableHead column="app_version" sort={sort} order={order} onSort={onSort}>
-                  App version
+                  Версия приложения
                 </SortableTableHead>
                 <TableHead>IP</TableHead>
                 <TableHead>Push</TableHead>
                 <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                  Signed in
+                  Вход
                 </SortableTableHead>
                 <SortableTableHead column="last_used_at" sort={sort} order={order} onSort={onSort}>
-                  Last used
+                  Последняя активность
                 </SortableTableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-4">Loading sessions...</TableCell>
+                  <TableCell colSpan={7} className="text-center py-4">Загрузка сессий…</TableCell>
                 </TableRow>
               ) : sessions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="p-0">
                     <EmptyState
-                      title="No active sessions"
-                      description="Devices this user is signed in on will appear here."
+                      title="Нет активных сессий"
+                      description="Здесь появятся устройства, на которых пользователь выполнил вход."
                     />
                   </TableCell>
                 </TableRow>
@@ -86,7 +86,7 @@ export function SessionsTab({ userId }: SessionsTabProps) {
                   <TableRow key={session.id}>
                     <TableCell>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-medium">{session.device_name || "Unknown device"}</span>
+                        <span className="text-sm font-medium">{session.device_name || "Неизвестное устройство"}</span>
                         <span
                           className="max-w-64 truncate text-xs text-muted-foreground"
                           title={session.user_agent}
@@ -104,15 +104,15 @@ export function SessionsTab({ userId }: SessionsTabProps) {
                     </TableCell>
                     <TableCell>
                       <StatusBadge
-                        label={session.has_push ? "Enabled" : "No token"}
+                        label={session.has_push ? "Включено" : "Нет токена"}
                         tone={session.has_push ? "success" : "neutral"}
                       />
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(session.created_at).toLocaleString()}
+                      {new Date(session.created_at).toLocaleString("ru-RU")}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(session.last_used_at).toLocaleString()}
+                      {new Date(session.last_used_at).toLocaleString("ru-RU")}
                     </TableCell>
                   </TableRow>
                 ))

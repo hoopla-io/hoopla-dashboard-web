@@ -16,7 +16,7 @@ export function DailyStatusChart({ data }: { data: OrdersDailyPoint[] }) {
   if (total === 0) {
     return (
       <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
-        No orders in this period
+        За этот период заказов нет
       </div>
     );
   }
@@ -30,15 +30,15 @@ export function DailyStatusChart({ data }: { data: OrdersDailyPoint[] }) {
         <Tooltip
           cursor={{ fill: "var(--muted)", opacity: 0.5 }}
           contentStyle={tooltipStyle}
-          formatter={(value, name) => [Number(value).toLocaleString(), name]}
+          formatter={(value, name) => [Number(value).toLocaleString("ru-RU"), name]}
           labelFormatter={(day, payload) => {
             const revenue = payload?.[0]?.payload?.revenue ?? 0;
-            return `${day} · ${formatSomUZS(revenue)} UZS`;
+            return `${day} · ${formatSomUZS(revenue)} сум`;
           }}
         />
         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-        <Bar dataKey="completed" name="Completed" stackId="s" fill="var(--chart-1)" stroke="var(--card)" strokeWidth={1} />
-        <Bar dataKey="cancelled" name="Cancelled" stackId="s" fill="var(--chart-3)" stroke="var(--card)" strokeWidth={1} radius={[4, 4, 0, 0]} />
+        <Bar dataKey="completed" name="Выполнено" stackId="s" fill="var(--chart-1)" stroke="var(--card)" strokeWidth={1} />
+        <Bar dataKey="cancelled" name="Отменено" stackId="s" fill="var(--chart-3)" stroke="var(--card)" strokeWidth={1} radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

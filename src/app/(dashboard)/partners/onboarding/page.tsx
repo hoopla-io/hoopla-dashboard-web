@@ -13,11 +13,11 @@ import { ReviewStep } from "./components/ReviewStep";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
 const STEPS: WizardStep[] = [
-  { key: "partner", label: "Partner" },
-  { key: "shop", label: "Shop" },
-  { key: "categories", label: "Categories" },
-  { key: "drinks", label: "Products" },
-  { key: "review", label: "Review" },
+  { key: "partner", label: "Партнёр" },
+  { key: "shop", label: "Заведение" },
+  { key: "categories", label: "Категории" },
+  { key: "drinks", label: "Товары" },
+  { key: "review", label: "Итог" },
 ];
 
 interface EntityRef {
@@ -47,9 +47,9 @@ function OnboardingContent() {
           <ArrowLeft className="size-4" />
         </Button>
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Onboard a new partner</h1>
+          <h1 className="text-xl font-semibold text-foreground">Подключение нового партнёра</h1>
           <p className="text-sm text-muted-foreground">
-            Create a partner, its first shop, categories, and products in one guided flow.
+            Создайте партнёра, его первое заведение, категории и товары в одном пошаговом мастере.
           </p>
         </div>
       </div>
@@ -117,8 +117,8 @@ function OnboardingContent() {
 
 export default function OnboardingPage() {
   return (
-    <ErrorBoundary pageName="Partner Onboarding">
-      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading…</div>}>
+    <ErrorBoundary pageName="Подключение партнёра">
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка…</div>}>
         <OnboardingContent />
       </Suspense>
     </ErrorBoundary>

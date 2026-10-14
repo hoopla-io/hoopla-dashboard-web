@@ -15,7 +15,7 @@ export function SlaStats({ sla, cancelledBeforeAccept }: { sla: OrderSla; cancel
   if (sla.received === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        No cassa events in this period. Speed is tracked only for orders routed through the Hoopla cassa.
+        За этот период нет событий кассы. Скорость отслеживается только для заказов, прошедших через кассу Hoopla.
       </p>
     );
   }
@@ -24,17 +24,17 @@ export function SlaStats({ sla, cancelledBeforeAccept }: { sla: OrderSla; cancel
 
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-      <Stat label="Time to accept (median)" value={formatSeconds(sla.accept_median_sec)} hint={`90% within ${formatSeconds(sla.accept_p90_sec)}`} />
-      <Stat label="Prep time (median)" value={formatMinutes(sla.prep_median_min)} hint={`90% within ${formatMinutes(sla.prep_p90_min)}`} />
+      <Stat label="Время принятия (медиана)" value={formatSeconds(sla.accept_median_sec)} hint={`90% за ${formatSeconds(sla.accept_p90_sec)}`} />
+      <Stat label="Время приготовления (медиана)" value={formatMinutes(sla.prep_median_min)} hint={`90% за ${formatMinutes(sla.prep_p90_min)}`} />
       <Stat
-        label="Accepted by shop"
+        label="Принято заведением"
         value={`${acceptedRate.toFixed(1)}%`}
-        hint={`${sla.accepted.toLocaleString()} of ${sla.received.toLocaleString()} received`}
+        hint={`${sla.accepted.toLocaleString("ru-RU")} из ${sla.received.toLocaleString("ru-RU")} полученных`}
       />
       <Stat
-        label="Cancelled before accept"
-        value={cancelledBeforeAccept.toLocaleString()}
-        hint="Received by cassa, never accepted"
+        label="Отменено до принятия"
+        value={cancelledBeforeAccept.toLocaleString("ru-RU")}
+        hint="Получены кассой, но не приняты"
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
+import { ru } from "date-fns/locale";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ordersApi } from "@/lib/api/domains/orders";
@@ -18,7 +19,7 @@ export function RecentOrders() {
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       {orders.length === 0 ? (
         <div className="flex min-h-[200px] items-center justify-center px-6 py-10 text-center">
-          <p className="text-xs text-muted-foreground">No orders yet. New orders will appear here.</p>
+          <p className="text-xs text-muted-foreground">Заказов пока нет. Новые заказы появятся здесь.</p>
         </div>
       ) : (
         <ul className="divide-y divide-border">
@@ -33,7 +34,7 @@ export function RecentOrders() {
                   <span className="font-mono text-xs tabular-nums text-muted-foreground">#{order.id}</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm text-foreground">
-                      {order.drink?.name ?? (order.items?.length ? `${order.items.length} items` : "Product")}
+                      {order.drink?.name ?? (order.items?.length ? `Позиций: ${order.items.length}` : "Товар")}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
                       {order.shop?.name ?? "—"}
@@ -43,7 +44,7 @@ export function RecentOrders() {
                   </div>
                   <StatusBadge label={formatOrderStatus(order.status)} tone={orderStatusTone[order.status] ?? "neutral"} />
                   <span className="hidden w-24 text-right text-xs text-muted-foreground sm:inline">
-                    {ts ? formatDistanceToNow(ts, { addSuffix: true }) : "—"}
+                    {ts ? formatDistanceToNow(ts, { addSuffix: true, locale: ru }) : "—"}
                   </span>
                 </Link>
               </li>

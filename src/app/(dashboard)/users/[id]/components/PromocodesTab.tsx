@@ -28,7 +28,7 @@ export function PromocodesTab({ userId }: PromocodesTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Promo code usage</CardTitle>
+        <CardTitle>Использование промокодов</CardTitle>
       </CardHeader>
       <CardContent>
         <DataTableShell>
@@ -36,23 +36,23 @@ export function PromocodesTab({ userId }: PromocodesTabProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Discount</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead>Код</TableHead>
+                <TableHead>Заказ</TableHead>
+                <TableHead>Скидка</TableHead>
+                <TableHead>Дата</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-4">Loading promo codes...</TableCell>
+                  <TableCell colSpan={5} className="text-center py-4">Загрузка промокодов…</TableCell>
                 </TableRow>
               ) : redemptions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="p-0">
                     <EmptyState
-                      title="No promo codes used"
-                      description="Promo codes this user redeems on orders will appear here."
+                      title="Промокоды не использовались"
+                      description="Здесь появятся промокоды, применённые пользователем к заказам."
                     />
                   </TableCell>
                 </TableRow>
@@ -68,7 +68,7 @@ export function PromocodesTab({ userId }: PromocodesTabProps) {
                       {formatSomUZS(redemption.discount_amount)} сум
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {redemption.created_at ? new Date(redemption.created_at).toLocaleString() : "-"}
+                      {redemption.created_at ? new Date(redemption.created_at).toLocaleString("ru-RU") : "-"}
                     </TableCell>
                   </TableRow>
                 ))

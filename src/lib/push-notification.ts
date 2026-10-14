@@ -12,19 +12,19 @@ export const PUSH_KINDS = [
 export const PUSH_STATUSES = ["sent", "skipped_no_token", "failed", "pending"] as const;
 
 const kindLabels: Record<string, string> = {
-  order_preparing: "Order preparing",
-  order_completed: "Order completed",
-  order_cancelled: "Order cancelled",
-  order_rating: "Rating reminder",
-  daily_habit: "Daily habit",
-  lapse: "Lapse reminder",
+  order_preparing: "Заказ готовится",
+  order_completed: "Заказ готов",
+  order_cancelled: "Заказ отменён",
+  order_rating: "Напоминание об оценке",
+  daily_habit: "Ежедневная привычка",
+  lapse: "Напоминание о возвращении",
 };
 
 const statusLabels: Record<string, string> = {
-  sent: "Sent",
-  skipped_no_token: "No device token",
-  failed: "Failed",
-  pending: "Pending",
+  sent: "Отправлено",
+  skipped_no_token: "Нет токена устройства",
+  failed: "Ошибка",
+  pending: "В ожидании",
 };
 
 const statusTones: Record<string, StatusTone> = {
@@ -54,5 +54,5 @@ export function formatPushReference(kind: string, referenceId: number): string {
     const value = String(referenceId);
     return `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`;
   }
-  return `Order #${referenceId}`;
+  return `Заказ #${referenceId}`;
 }

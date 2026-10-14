@@ -39,24 +39,24 @@ function UserDetailContent() {
   });
 
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading user details...</div>;
+    return <div className="p-8 text-center text-muted-foreground">Загрузка пользователя…</div>;
   }
 
   if (!user) {
-    return <div className="p-8 text-center text-destructive">User not found</div>;
+    return <div className="p-8 text-center text-destructive">Пользователь не найден</div>;
   }
 
   return (
     <div className="space-y-6">
       <PageHeader
         title={user.name || user.phone_number}
-        description="Profile, orders, wallet activity and devices of this user."
+        description="Профиль, заказы, операции по кошельку и устройства пользователя."
       />
 
       <div className="flex items-center gap-3">
         <Button variant="outline" size="sm" onClick={() => navigate("/users")}>
           <ArrowLeft className="size-4" />
-          Back
+          Назад
         </Button>
         <span className="font-mono text-sm tabular-nums text-muted-foreground">
           #{user.user_id} · {user.phone_number}
@@ -65,13 +65,13 @@ function UserDetailContent() {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="feedbacks">Feedbacks</TabsTrigger>
-          <TabsTrigger value="promocodes">Promo codes</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="general">Основное</TabsTrigger>
+          <TabsTrigger value="orders">Заказы</TabsTrigger>
+          <TabsTrigger value="transactions">Транзакции</TabsTrigger>
+          <TabsTrigger value="sessions">Сессии</TabsTrigger>
+          <TabsTrigger value="feedbacks">Отзывы</TabsTrigger>
+          <TabsTrigger value="promocodes">Промокоды</TabsTrigger>
+          <TabsTrigger value="notifications">Уведомления</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -108,8 +108,8 @@ function UserDetailContent() {
 
 export default function UserDetailPage() {
   return (
-    <ErrorBoundary pageName="User">
-      <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+    <ErrorBoundary pageName="Пользователь">
+      <Suspense fallback={<div className="p-8 text-center">Загрузка…</div>}>
         <UserDetailContent />
       </Suspense>
     </ErrorBoundary>

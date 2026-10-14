@@ -27,17 +27,17 @@ interface LogTabProps {
 }
 
 const EVENT_TYPES: { value: string; label: string }[] = [
-  { value: "shop.login", label: "Shop login" },
-  { value: "shop.login_failed", label: "Shop login failed" },
-  { value: "staff.login", label: "Staff login" },
-  { value: "staff.login_failed", label: "Staff login failed" },
-  { value: "staff.logout", label: "Staff logout" },
-  { value: "cassa.online", label: "Cassa online" },
-  { value: "cassa.offline", label: "Cassa offline" },
-  { value: "order.received", label: "Order received" },
-  { value: "order.accepted", label: "Order accepted" },
-  { value: "order.completed", label: "Order completed" },
-  { value: "order.cancelled", label: "Order cancelled" },
+  { value: "shop.login", label: "Вход заведения" },
+  { value: "shop.login_failed", label: "Неудачный вход заведения" },
+  { value: "staff.login", label: "Вход сотрудника" },
+  { value: "staff.login_failed", label: "Неудачный вход сотрудника" },
+  { value: "staff.logout", label: "Выход сотрудника" },
+  { value: "cassa.online", label: "Касса в сети" },
+  { value: "cassa.offline", label: "Касса не в сети" },
+  { value: "order.received", label: "Заказ получен" },
+  { value: "order.accepted", label: "Заказ принят" },
+  { value: "order.completed", label: "Заказ выполнен" },
+  { value: "order.cancelled", label: "Заказ отменён" },
 ];
 
 const EVENT_LABELS: Record<string, string> = Object.fromEntries(
@@ -84,7 +84,7 @@ export function LogTab({ partnerId }: LogTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Activity log</CardTitle>
+        <CardTitle>Журнал активности</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col gap-4 md:flex-row">
@@ -96,10 +96,10 @@ export function LogTab({ partnerId }: LogTabProps) {
             }}
           >
             <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="All events" />
+              <SelectValue placeholder="Все события" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All events</SelectItem>
+              <SelectItem value="all">Все события</SelectItem>
               {EVENT_TYPES.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
@@ -131,32 +131,32 @@ export function LogTab({ partnerId }: LogTabProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Branch</TableHead>
-                <TableHead>Staff</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Details</TableHead>
+                <TableHead>Время</TableHead>
+                <TableHead>Тип</TableHead>
+                <TableHead>Филиал</TableHead>
+                <TableHead>Сотрудник</TableHead>
+                <TableHead>Заказ</TableHead>
+                <TableHead>Подробности</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={6} className="py-8 text-center">
-                    Loading...
+                    Загрузка…
                   </TableCell>
                 </TableRow>
               ) : events.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                    No events found
+                    События не найдены
                   </TableCell>
                 </TableRow>
               ) : (
                 events.map((event: ShopEvent) => (
                   <TableRow key={event.id}>
                     <TableCell className="text-xs text-muted-foreground">
-                      {new Date(event.created_at).toLocaleString()}
+                      {new Date(event.created_at).toLocaleString("ru-RU")}
                     </TableCell>
                     <TableCell>
                       <Badge variant={eventBadgeVariant(event.event_type)}>

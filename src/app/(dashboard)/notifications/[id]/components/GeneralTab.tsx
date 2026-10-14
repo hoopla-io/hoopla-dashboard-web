@@ -33,23 +33,23 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notification", notificationId] });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Notification updated successfully!");
+      toast.success("Уведомление обновлено");
       setIsEditOpen(false);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to update notification"),
+    onError: () => toast.error("Не удалось обновить уведомление"),
   });
 
-  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
-  if (!notification) return <div className="p-8 text-center text-destructive">Notification not found</div>;
+  if (isLoading) return <div className="p-8 text-center text-muted-foreground">Загрузка...</div>;
+  if (!notification) return <div className="p-8 text-center text-destructive">Уведомление не найдено</div>;
 
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Notification Details</CardTitle>
-            <CardDescription>View notification information</CardDescription>
+            <CardTitle>Данные уведомления</CardTitle>
+            <CardDescription>Информация об уведомлении</CardDescription>
           </div>
           <Button
             variant="outline"
@@ -61,7 +61,7 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
             }}
           >
             <Pencil className="mr-2 h-4 w-4" />
-            Edit
+            Редактировать
           </Button>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -82,11 +82,11 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
 
           <div className="grid gap-4">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Title</p>
+              <p className="text-sm font-medium text-muted-foreground">Заголовок</p>
               <p className="text-lg font-semibold">{notification.title}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Text</p>
+              <p className="text-sm font-medium text-muted-foreground">Текст</p>
               <p className="whitespace-pre-wrap">{notification.text}</p>
             </div>
             {notification.url && (
@@ -104,8 +104,8 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
               </div>
             )}
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Created</p>
-              <p>{new Date(notification.created_at).toLocaleString()}</p>
+              <p className="text-sm font-medium text-muted-foreground">Создано</p>
+              <p>{new Date(notification.created_at).toLocaleString("ru-RU")}</p>
             </div>
           </div>
         </CardContent>
@@ -114,8 +114,8 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Notification</DialogTitle>
-            <DialogDescription>Update notification content</DialogDescription>
+            <DialogTitle>Редактировать уведомление</DialogTitle>
+            <DialogDescription>Измените содержимое уведомления</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -123,26 +123,26 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
           }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Title</Label>
+                <Label>Заголовок</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Notification title"
+                  placeholder="Заголовок уведомления"
                   maxLength={100}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Text</Label>
+                <Label>Текст</Label>
                 <textarea
                   value={formData.text}
                   onChange={(e) => setFormData({ ...formData, text: e.target.value })}
-                  placeholder="Notification text"
+                  placeholder="Текст уведомления"
                   rows={4}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               </div>
               <div className="space-y-2">
-                <Label>URL (Optional)</Label>
+                <Label>URL (необязательно)</Label>
                 <Input
                   value={formData.url || ""}
                   onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -150,11 +150,11 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Image</Label>
+                <Label>Изображение</Label>
                 <div className="flex items-center gap-4">
                   <div className="relative h-16 w-16 overflow-hidden rounded-lg border">
                     {selectedFile ? (
-                      <Image src={URL.createObjectURL(selectedFile)} alt="Preview" fill className="object-cover" />
+                      <Image src={URL.createObjectURL(selectedFile)} alt="Превью" fill className="object-cover" />
                     ) : notification.image_url ? (
                       <Image src={notification.image_url} alt={notification.title} fill className="object-cover" />
                     ) : (
@@ -171,15 +171,15 @@ export function GeneralTab({ notificationId }: { notificationId: number }) {
                         if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
                       }}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>
+                    <p className="text-xs text-muted-foreground mt-1">Оставьте пустым, чтобы сохранить текущее изображение</p>
                   </div>
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>

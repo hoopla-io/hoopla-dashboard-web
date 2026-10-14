@@ -18,17 +18,17 @@ function SplitColumn({ title, row, totalCompleted }: { title: string; row: Promo
   const avgOrder = row.completed > 0 ? row.revenue / row.completed : 0;
 
   const stats = [
-    { label: "Revenue", value: `${formatSomUZS(row.revenue)} UZS` },
-    { label: "Avg order value", value: `${formatSomUZS(Math.round(avgOrder))} UZS` },
-    { label: "Cancel rate", value: `${cancelRate.toFixed(1)}%` },
-    { label: "Customers", value: row.customers.toLocaleString() },
+    { label: "Выручка", value: `${formatSomUZS(row.revenue)} сум` },
+    { label: "Средний чек", value: `${formatSomUZS(Math.round(avgOrder))} сум` },
+    { label: "Доля отмен", value: `${cancelRate.toFixed(1)}%` },
+    { label: "Клиенты", value: row.customers.toLocaleString("ru-RU") },
   ];
 
   return (
     <div className="rounded-lg border p-4">
       <p className="text-xs text-muted-foreground">{title}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{row.completed.toLocaleString()}</p>
-      <p className="text-xs text-muted-foreground">completed orders · {share.toFixed(1)}% of all</p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums">{row.completed.toLocaleString("ru-RU")}</p>
+      <p className="text-xs text-muted-foreground">выполненных заказов · {share.toFixed(1)}% от всех</p>
       <dl className="mt-4 grid grid-cols-2 gap-3">
         {stats.map((s) => (
           <div key={s.label}>
@@ -54,34 +54,34 @@ export function PromoSection({ split, discount, codes }: {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
-        <SplitColumn title="With promo code" row={withPromo} totalCompleted={totalCompleted} />
-        <SplitColumn title="Without promo code" row={withoutPromo} totalCompleted={totalCompleted} />
+        <SplitColumn title="С промокодом" row={withPromo} totalCompleted={totalCompleted} />
+        <SplitColumn title="Без промокода" row={withoutPromo} totalCompleted={totalCompleted} />
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Discount given: <span className="font-medium text-foreground tabular-nums">{formatSomUZS(Math.round(discount))} UZS</span>
-        {withPromo.revenue > 0 && ` · ${discountShare.toFixed(1)}% of promo order value`}
+        Выдано скидок: <span className="font-medium text-foreground tabular-nums">{formatSomUZS(Math.round(discount))} сум</span>
+        {withPromo.revenue > 0 && ` · ${discountShare.toFixed(1)}% от суммы заказов с промокодом`}
       </p>
 
       {codes.length > 0 && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead className="text-right">Orders</TableHead>
-              <TableHead className="text-right">Order value</TableHead>
-              <TableHead className="text-right">Discount</TableHead>
-              <TableHead className="text-right">First-time customers</TableHead>
+              <TableHead>Код</TableHead>
+              <TableHead className="text-right">Заказы</TableHead>
+              <TableHead className="text-right">Сумма заказов</TableHead>
+              <TableHead className="text-right">Скидка</TableHead>
+              <TableHead className="text-right">Новые клиенты</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {codes.map((c) => (
               <TableRow key={c.code}>
                 <TableCell className="font-mono text-xs">{c.code}</TableCell>
-                <TableCell className="text-right tabular-nums">{c.orders.toLocaleString()}</TableCell>
+                <TableCell className="text-right tabular-nums">{c.orders.toLocaleString("ru-RU")}</TableCell>
                 <TableCell className="text-right font-mono text-sm tabular-nums">{formatSomUZS(c.revenue)}</TableCell>
                 <TableCell className="text-right font-mono text-sm tabular-nums">{formatSomUZS(Math.round(c.discount))}</TableCell>
-                <TableCell className="text-right tabular-nums">{c.new_customers.toLocaleString()}</TableCell>
+                <TableCell className="text-right tabular-nums">{c.new_customers.toLocaleString("ru-RU")}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -90,12 +90,12 @@ function PartnersContent() {
       partnersApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
-      toast.success("Partner created");
+      toast.success("Партнёр создан");
       setIsCreateOpen(false);
       setFormData({ name: "", description: "" });
       setSelectedFile(undefined);
     },
-    onError: () => toast.error("Failed to create partner"),
+    onError: () => toast.error("Не удалось создать партнёра"),
   });
 
   const updateMutation = useMutation({
@@ -110,9 +110,9 @@ function PartnersContent() {
     }) => partnersApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
-      toast.success("Partner updated");
+      toast.success("Партнёр обновлён");
     },
-    onError: () => toast.error("Failed to update partner"),
+    onError: () => toast.error("Не удалось обновить партнёра"),
   });
 
   const confirmDelete = useConfirm();
@@ -121,14 +121,14 @@ function PartnersContent() {
     mutationFn: partnersApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partners"] });
-      toast.success("Partner deleted");
+      toast.success("Партнёр удалён");
     },
-    onError: () => toast.error("Failed to delete partner"),
+    onError: () => toast.error("Не удалось удалить партнёра"),
   });
 
   const handleCreate = () => {
     if (!formData.name) {
-      toast.error("Name is required");
+      toast.error("Укажите название");
       return;
     }
     createMutation.mutate({ data: formData, file: selectedFile });
@@ -138,11 +138,11 @@ function PartnersContent() {
     const file = e.target.files?.[0];
     if (file) {
       if (!["image/jpeg", "image/png"].includes(file.type)) {
-        toast.error("Only JPG and PNG files are allowed");
+        toast.error("Допускаются только файлы JPG и PNG");
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("File size must be less than 5MB");
+        toast.error("Размер файла должен быть меньше 5 МБ");
         return;
       }
       setSelectedFile(file);
@@ -152,13 +152,13 @@ function PartnersContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Partners"
-        description="Manage partner organizations and their cashback settings."
+        title="Партнёры"
+        description="Управление партнёрами и настройками кэшбэка."
         action={
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => navigate("/partners/onboarding")}>
               <Sparkles className="size-4" />
-              Onboard new partner
+              Подключить нового партнёра
             </Button>
             <Button
               onClick={() => {
@@ -168,7 +168,7 @@ function PartnersContent() {
               }}
             >
               <Plus className="size-4" />
-              Add partner
+              Добавить партнёра
             </Button>
           </div>
         }
@@ -178,7 +178,7 @@ function PartnersContent() {
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search partners"
+            placeholder="Поиск партнёров"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -196,47 +196,47 @@ function PartnersContent() {
               <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
                 ID
               </SortableTableHead>
-              <TableHead className="w-[64px]">Logo</TableHead>
+              <TableHead className="w-[64px]">Логотип</TableHead>
               <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
-                Name
+                Название
               </SortableTableHead>
               <SortableTableHead column="vendor" sort={sort} order={order} onSort={onSort}>
-                Vendor
+                Вендор
               </SortableTableHead>
               <SortableTableHead column="tin_num" sort={sort} order={order} onSort={onSort}>
-                TIN
+                ИНН
               </SortableTableHead>
               <SortableTableHead column="cashback_percent" sort={sort} order={order} onSort={onSort}>
-                Cashback
+                Кэшбэк
               </SortableTableHead>
               <SortableTableHead column="rating" sort={sort} order={order} onSort={onSort}>
-                Rating
+                Оценка
               </SortableTableHead>
               <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                Created
+                Создан
               </SortableTableHead>
               <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
-                Status
+                Статус
               </SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={10} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : partners.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={10} className="p-0">
                   <EmptyState
-                    title="No partners found"
+                    title="Партнёры не найдены"
                     description={
                       search
-                        ? "Try a different search term."
-                        : "Add your first partner to get started."
+                        ? "Попробуйте изменить поисковый запрос."
+                        : "Добавьте первого партнёра, чтобы начать."
                     }
                     action={
                       !search ? (
@@ -250,7 +250,7 @@ function PartnersContent() {
                           }}
                         >
                           <Plus className="size-4" />
-                          Add partner
+                          Добавить партнёра
                         </Button>
                       ) : null
                     }
@@ -290,7 +290,7 @@ function PartnersContent() {
                     <div className="flex items-center gap-2">
                       {partner.name}
                       {partner.type === "test" && (
-                        <Badge variant="outline" className="text-[10px]">Test</Badge>
+                        <Badge variant="outline" className="text-[10px]">Тест</Badge>
                       )}
                     </div>
                   </TableCell>
@@ -299,7 +299,7 @@ function PartnersContent() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col text-xs">
-                      <span className="text-muted-foreground">{partner.tin_type || "—"}</span>
+                      <span className="text-muted-foreground">{partner.tin_type === "pinfl" ? "ПИНФЛ" : partner.tin_type ? "ИНН" : "—"}</span>
                       <span className="font-mono tabular-nums text-foreground">
                         {partner.tin_num || "—"}
                       </span>
@@ -313,7 +313,7 @@ function PartnersContent() {
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {partner.created_at
-                      ? new Date(partner.created_at).toLocaleDateString()
+                      ? new Date(partner.created_at).toLocaleDateString("ru-RU")
                       : "—"}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
@@ -330,7 +330,7 @@ function PartnersContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: `Delete “${partner.name}”?` })) deleteMutation.mutate(partner.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: `Удалить «${partner.name}»?` })) deleteMutation.mutate(partner.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -362,13 +362,13 @@ function PartnersContent() {
       >
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image preview</DialogTitle>
-            <DialogDescription>Partner logo preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Просмотр логотипа партнёра</DialogDescription>
           </DialogHeader>
           {previewImage && (
             <img
               src={previewImage}
-              alt="Partner preview"
+              alt="Логотип партнёра"
               className="h-auto w-full rounded"
             />
           )}
@@ -378,8 +378,8 @@ function PartnersContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create partner</DialogTitle>
-            <DialogDescription>Add a new partner organization.</DialogDescription>
+            <DialogTitle>Создание партнёра</DialogTitle>
+            <DialogDescription>Добавьте новую организацию-партнёра.</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -389,27 +389,27 @@ function PartnersContent() {
           >
             <div className="space-y-4 py-4">
               <div className="space-y-1.5">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Название</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Partner name"
+                  placeholder="Название партнёра"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Описание</Label>
                 <Input
                   id="description"
                   value={formData.description || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  placeholder="Short description"
+                  placeholder="Краткое описание"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="file">Logo (JPG/PNG)</Label>
+                <Label htmlFor="file">Логотип (JPG/PNG)</Label>
                 <Input
                   id="file"
                   type="file"
@@ -420,9 +420,9 @@ function PartnersContent() {
               </div>
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div className="space-y-0.5">
-                  <Label htmlFor="type">Test partner</Label>
+                  <Label htmlFor="type">Тестовый партнёр</Label>
                   <p className="text-xs text-muted-foreground">
-                    Hidden from real customers — only visible with the X-Hoopla-Test header.
+                    Скрыт от реальных клиентов — виден только с заголовком X-Hoopla-Test.
                   </p>
                 </div>
                 <Switch
@@ -436,10 +436,10 @@ function PartnersContent() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating…" : "Create"}
+                {createMutation.isPending ? "Создание…" : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -451,11 +451,11 @@ function PartnersContent() {
 
 export default function PartnersPage() {
   return (
-    <ErrorBoundary pageName="Partners">
+    <ErrorBoundary pageName="Партнёры">
       <Suspense
         fallback={
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Loading partners…
+            Загрузка партнёров…
           </div>
         }
       >

@@ -35,10 +35,10 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       shopsApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops", partnerId] });
-      toast.success("Shop created successfully");
+      toast.success("Заведение создано");
       setIsCreateShopOpen(false);
     },
-    onError: () => toast.error("Failed to create shop"),
+    onError: () => toast.error("Не удалось создать заведение"),
   });
 
   const confirmDelete = useConfirm();
@@ -47,9 +47,9 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
     mutationFn: shopsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shops", partnerId] });
-      toast.success("Shop deleted successfully");
+      toast.success("Заведение удалено");
     },
-    onError: () => toast.error("Failed to delete shop"),
+    onError: () => toast.error("Не удалось удалить заведение"),
   });
 
   const handleAddClick = () => {
@@ -61,13 +61,13 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       <div className="flex justify-end">
         <Button onClick={handleAddClick}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Shop
+          Добавить заведение
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Shops</CardTitle>
+          <CardTitle>Заведения</CardTitle>
         </CardHeader>
         <CardContent>
           <DataTableShell>
@@ -75,22 +75,22 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Terminal ID</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>Изображение</TableHead>
+                <TableHead>Название</TableHead>
+                <TableHead>ID терминала</TableHead>
+                <TableHead>Координаты</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoadingShops ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Loading…</TableCell>
+                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">Загрузка…</TableCell>
                 </TableRow>
               ) : shops.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
-                    <EmptyState title="No shops found" description="Add the first shop for this partner." />
+                    <EmptyState title="Заведения не найдены" description="Добавьте первое заведение для этого партнёра." />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -109,7 +109,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                           className="h-10 w-10 rounded-lg object-cover"
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">No Img</div>
+                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center text-xs">Нет фото</div>
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{shop.name}</TableCell>
@@ -124,7 +124,7 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          if (await confirmDelete({ title: `Delete “${shop.name}”?` })) deleteShopMutation.mutate(shop.id);
+                          if (await confirmDelete({ title: `Удалить «${shop.name}»?` })) deleteShopMutation.mutate(shop.id);
                         }}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -142,8 +142,8 @@ export function ShopsTab({ partnerId }: ShopsTabProps) {
       <Dialog open={isCreateShopOpen} onOpenChange={setIsCreateShopOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Shop</DialogTitle>
-            <DialogDescription>Create a new shop for this partner</DialogDescription>
+            <DialogTitle>Новое заведение</DialogTitle>
+            <DialogDescription>Создайте новое заведение для этого партнёра</DialogDescription>
           </DialogHeader>
           <ShopForm
             partnerId={partnerId}

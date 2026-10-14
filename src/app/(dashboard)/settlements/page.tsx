@@ -34,18 +34,18 @@ function SettlementsContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Settlements"
-        description="Track which orders Hoopla has paid out to partners."
+        title="Взаиморасчёты"
+        description="Отслеживание заказов, за которые Hoopla выплатил партнёрам."
       />
 
       <div className="max-w-sm space-y-1">
-        <Label>Partner</Label>
+        <Label>Партнёр</Label>
         <Select
           value={partnerId ? String(partnerId) : undefined}
           onValueChange={(v) => setPartnerId(Number(v))}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select a partner" />
+            <SelectValue placeholder="Выберите партнёра" />
           </SelectTrigger>
           <SelectContent>
             {partners.map((p) => (
@@ -61,7 +61,7 @@ function SettlementsContent() {
         <SettlementsPanel partnerId={partnerId} />
       ) : (
         <p className="text-sm text-muted-foreground">
-          Select a partner to review their orders and manage settlements.
+          Выберите партнёра, чтобы просмотреть его заказы и управлять взаиморасчётами.
         </p>
       )}
     </div>
@@ -70,9 +70,9 @@ function SettlementsContent() {
 
 export default function SettlementsPage() {
   return (
-    <ErrorBoundary pageName="Settlements">
+    <ErrorBoundary pageName="Взаиморасчёты">
       <Suspense
-        fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>}
+        fallback={<div className="p-8 text-center text-sm text-muted-foreground">Загрузка…</div>}
       >
         <SettlementsContent />
       </Suspense>

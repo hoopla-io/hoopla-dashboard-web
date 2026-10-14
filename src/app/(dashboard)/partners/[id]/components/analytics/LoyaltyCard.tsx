@@ -6,9 +6,9 @@ interface LoyaltyCardProps {
 
 export function LoyaltyCard({ data }: LoyaltyCardProps) {
   const rows = [
-    { label: "New customers", value: data.new_users },
-    { label: "Returning customers", value: data.returning_users },
-    { label: "Repeat customers (2+ orders)", value: data.repeat_users },
+    { label: "Новые клиенты", value: data.new_users },
+    { label: "Вернувшиеся клиенты", value: data.returning_users },
+    { label: "Постоянные клиенты (2+ заказа)", value: data.repeat_users },
   ];
   const max = Math.max(...rows.map((row) => row.value), 1);
   const total = rows.reduce((sum, row) => sum + row.value, 0);
@@ -16,7 +16,7 @@ export function LoyaltyCard({ data }: LoyaltyCardProps) {
   if (total === 0) {
     return (
       <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
-        No data for this period
+        Нет данных за этот период
       </div>
     );
   }
@@ -27,7 +27,7 @@ export function LoyaltyCard({ data }: LoyaltyCardProps) {
         <div key={row.label} className="space-y-1">
           <div className="flex items-center justify-between gap-3 text-sm">
             <span className="truncate font-medium">{row.label}</span>
-            <span className="shrink-0 text-muted-foreground">{row.value.toLocaleString()}</span>
+            <span className="shrink-0 text-muted-foreground">{row.value.toLocaleString("ru-RU")}</span>
           </div>
           <div className="h-2 w-full rounded-full bg-muted">
             <div
@@ -38,7 +38,7 @@ export function LoyaltyCard({ data }: LoyaltyCardProps) {
         </div>
       ))}
       <p className="pt-2 text-sm text-muted-foreground">
-        Orders per customer: <span className="font-medium text-foreground">{data.orders_per_user.toFixed(2)}</span>
+        Заказов на клиента: <span className="font-medium text-foreground">{data.orders_per_user.toFixed(2)}</span>
       </p>
     </div>
   );

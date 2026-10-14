@@ -84,28 +84,28 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop", shopId] });
       queryClient.invalidateQueries({ queryKey: ["shops"] });
-      toast.success("Shop updated successfully!");
+      toast.success("Заведение обновлено");
       setSelectedFile(undefined);
       setFormData((prev) => ({ ...prev, vendor_password: "" }));
       setShowVendorPassword(false);
     },
     onError: () => {
-      toast.error("Failed to update shop");
+      toast.error("Не удалось обновить заведение");
     },
   });
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) {
-      toast.error("Name is required");
+      toast.error("Укажите название");
       return;
     }
     if (!formData.partner_id) {
-      toast.error("Partner is required");
+      toast.error("Укажите партнёра");
       return;
     }
     if (formData.tin_num?.trim() && !formData.tin_type) {
-      toast.error("TIN type is required when a TIN number is set");
+      toast.error("Укажите тип ИНН, если задан номер ИНН");
       return;
     }
     updateMutation.mutate({ data: formData, file: selectedFile });
@@ -115,7 +115,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
     const file = e.target.files?.[0];
     if (file) {
       if (!["image/jpeg", "image/png"].includes(file.type)) {
-        toast.error("Only JPG and PNG files are allowed");
+        toast.error("Допускаются только файлы JPG и PNG");
         return;
       }
       setSelectedFile(file);
@@ -125,32 +125,32 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Shop Details</CardTitle>
-        <CardDescription>Update shop information and settings</CardDescription>
+        <CardTitle>Данные заведения</CardTitle>
+        <CardDescription>Обновите информацию и настройки заведения</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleUpdate} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="name">Название</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Shop name"
+                  placeholder="Название заведения"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="partner">Partner</Label>
+                <Label htmlFor="partner">Партнёр</Label>
                 <Select
                   key={`partner-select-${formData.partner_id}`}
                   value={formData.partner_id > 0 ? String(formData.partner_id) : ""}
                   onValueChange={(val) => setFormData({ ...formData, partner_id: Number(val) })}
                 >
                   <SelectTrigger id="partner">
-                    <SelectValue placeholder="Select Partner" />
+                    <SelectValue placeholder="Выберите партнёра" />
                   </SelectTrigger>
                   <SelectContent>
                     {allPartners.map((p) => (
@@ -163,29 +163,29 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="vendor_terminal_id">Vendor Terminal ID</Label>
+                <Label htmlFor="vendor_terminal_id">ID терминала вендора</Label>
                 <Input
                   id="vendor_terminal_id"
                   value={formData.vendor_terminal_id}
                   onChange={(e) => setFormData({ ...formData, vendor_terminal_id: e.target.value })}
-                  placeholder="Terminal ID"
+                  placeholder="ID терминала"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="vendor_login">Vendor Login</Label>
+                <Label htmlFor="vendor_login">Логин вендора</Label>
                 <Input
                   id="vendor_login"
                   value={formData.vendor_login || ""}
                   onChange={(e) => setFormData({ ...formData, vendor_login: e.target.value })}
-                  placeholder="Cassa login"
+                  placeholder="Логин кассы"
                   maxLength={255}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="vendor_password">
-                  Vendor Password (leave blank to keep)
+                  Пароль вендора (оставьте пустым, чтобы не менять)
                 </Label>
                 <div className="relative">
                   <Input
@@ -210,40 +210,40 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="vendor_organization_id">Vendor Organization ID</Label>
+                <Label htmlFor="vendor_organization_id">ID организации вендора</Label>
                 <Input
                   id="vendor_organization_id"
                   value={formData.vendor_organization_id || ""}
                   onChange={(e) => setFormData({ ...formData, vendor_organization_id: e.target.value })}
-                  placeholder="Organization ID"
+                  placeholder="ID организации"
                   maxLength={255}
                 />
               </div>
 
               <div className="space-y-4 pt-4 border-t">
                 <div className="space-y-0.5">
-                  <Label>Tax</Label>
+                  <Label>Налоги</Label>
                   <p className="text-xs text-muted-foreground">
-                    Leave TIN number empty to use the partner&apos;s TIN on receipts
+                    Оставьте номер ИНН пустым, чтобы в чеках использовался ИНН партнёра
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tin_type">TIN Type</Label>
+                  <Label htmlFor="tin_type">Тип ИНН</Label>
                   <Select
                     value={formData.tin_type ?? ""}
                     onValueChange={(val) => setFormData({ ...formData, tin_type: val as "tin" | "pinfl" })}
                   >
                     <SelectTrigger id="tin_type">
-                      <SelectValue placeholder="Select Type" />
+                      <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="tin">TIN</SelectItem>
-                      <SelectItem value="pinfl">PINFL</SelectItem>
+                      <SelectItem value="tin">ИНН</SelectItem>
+                      <SelectItem value="pinfl">ПИНФЛ</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tin_num">TIN Number</Label>
+                  <Label htmlFor="tin_num">Номер ИНН</Label>
                   <Input
                     id="tin_num"
                     value={formData.tin_num || ""}
@@ -252,7 +252,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tin_percent">TIN Percent</Label>
+                  <Label htmlFor="tin_percent">Процент ИНН</Label>
                   <Input
                     id="tin_percent"
                     type="number"
@@ -267,9 +267,9 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
 
                <div className="flex items-center justify-between space-x-2 py-4 border-t">
                 <div className="space-y-0.5">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="status">Статус</Label>
                   <p className="text-xs text-muted-foreground">
-                     {formData.status ? "Active - Shop is visible to users" : "Inactive - Shop is hidden from users"}
+                     {formData.status ? "Активно — заведение видно пользователям" : "Неактивно — заведение скрыто от пользователей"}
                   </p>
                 </div>
                 <Switch
@@ -283,7 +283,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="lat">Latitude</Label>
+                  <Label htmlFor="lat">Широта</Label>
                   <Input
                     id="lat"
                     type="number"
@@ -293,7 +293,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="long">Longitude</Label>
+                  <Label htmlFor="long">Долгота</Label>
                   <Input
                     id="long"
                     type="number"
@@ -308,12 +308,12 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
                 <div className="mb-2">
                   <img
                     src={selectedFile ? URL.createObjectURL(selectedFile) : (shop?.image_url || "")}
-                    alt="Shop Preview"
+                    alt="Изображение заведения"
                     className="h-32 w-32 object-cover rounded-md border"
                   />
                 </div>
               )}
-              <Label htmlFor="file">{shop?.image_url ? "Change Image" : "Upload Image"}</Label>
+              <Label htmlFor="file">{shop?.image_url ? "Изменить изображение" : "Загрузить изображение"}</Label>
               <Input
                 id="file"
                 type="file"
@@ -322,7 +322,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
               />
               {selectedFile && !shop?.image_url && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Selected: {selectedFile.name}
+                  Выбрано: {selectedFile.name}
                 </p>
               )}
             </div>
@@ -330,7 +330,7 @@ export function GeneralTab({ shopId }: GeneralTabProps) {
 
           <div className="flex justify-end pt-4 border-t">
             <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+              {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
             </Button>
           </div>
         </form>

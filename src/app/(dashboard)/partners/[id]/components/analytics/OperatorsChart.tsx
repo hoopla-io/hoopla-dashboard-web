@@ -12,7 +12,7 @@ export function OperatorsChart({ data }: OperatorsChartProps) {
   if (total === 0) {
     return (
       <div className="flex h-[260px] items-center justify-center text-sm text-muted-foreground">
-        No data for this period
+        Нет данных за этот период
       </div>
     );
   }

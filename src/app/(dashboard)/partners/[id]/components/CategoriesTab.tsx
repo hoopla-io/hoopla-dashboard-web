@@ -79,9 +79,9 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
       categoryApi.reorder({ partner_id: partnerId, category_ids: categoryIds }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_categories", partnerId] });
-      toast.success("Category order saved!");
+      toast.success("Порядок категорий сохранён!");
     },
-    onError: () => toast.error("Failed to save order"),
+    onError: () => toast.error("Не удалось сохранить порядок"),
   });
 
   const { data: partnerDrinks = [] } = useQuery({
@@ -100,22 +100,22 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
     mutationFn: (name: string) => categoryApi.create({ partner_id: partnerId, name }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_categories", partnerId] });
-      toast.success("Category created successfully!");
+      toast.success("Категория создана!");
       setIsCreateOpen(false);
       setFormName("");
     },
-    onError: () => toast.error("Failed to create category"),
+    onError: () => toast.error("Не удалось создать категорию"),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, name }: { id: number; name: string }) => categoryApi.update(id, { name }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_categories", partnerId] });
-      toast.success("Category updated successfully!");
+      toast.success("Категория обновлена!");
       setEditingCategory(null);
       setFormName("");
     },
-    onError: () => toast.error("Failed to update category"),
+    onError: () => toast.error("Не удалось обновить категорию"),
   });
 
   const confirmDelete = useConfirm();
@@ -124,18 +124,18 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
     mutationFn: categoryApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_categories", partnerId] });
-      toast.success("Category deleted successfully!");
+      toast.success("Категория удалена!");
     },
-    onError: () => toast.error("Failed to delete category"),
+    onError: () => toast.error("Не удалось удалить категорию"),
   });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Product Categories</h2>
+          <h2 className="text-xl font-semibold">Категории товаров</h2>
           <p className="text-sm text-muted-foreground">
-            Manage categories for this partner. Drag rows to set the order shown in the app.
+            Управление категориями партнёра. Перетаскивайте строки, чтобы задать порядок в приложении.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -147,20 +147,20 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                 disabled={reorderMutation.isPending}
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
-                Reset
+                Сбросить
               </Button>
               <Button
                 onClick={() => reorderMutation.mutate(order.map((c) => c.id))}
                 disabled={reorderMutation.isPending}
               >
                 <Save className="mr-2 h-4 w-4" />
-                {reorderMutation.isPending ? "Saving..." : "Save order"}
+                {reorderMutation.isPending ? "Сохранение…" : "Сохранить порядок"}
               </Button>
             </>
           )}
           <Button onClick={() => { setFormName(""); setIsCreateOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Category
+            Добавить категорию
           </Button>
         </div>
       </div>
@@ -171,19 +171,19 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
             <TableRow>
               <TableHead className="w-[40px]"></TableHead>
               <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>Название</TableHead>
               <TableHead className="w-[120px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8">Loading...</TableCell>
+                <TableCell colSpan={4} className="text-center py-8">Загрузка…</TableCell>
               </TableRow>
             ) : order.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  No categories found
+                  Категории не найдены
                 </TableCell>
               </TableRow>
             ) : (
@@ -218,7 +218,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                         className="cursor-pointer text-xs"
                         onClick={() => setSheetCategory(category)}
                       >
-                        Products
+                        Товары
                         {(attachedCountByCategory.get(category.id) ?? 0) > 0
                           ? ` (${attachedCountByCategory.get(category.id)})`
                           : ""}
@@ -238,7 +238,7 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive cursor-pointer"
-                        onClick={async () => { if (await confirmDelete({ title: `Delete “${category.name}”?` })) deleteMutation.mutate(category.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: `Удалить «${category.name}»?` })) deleteMutation.mutate(category.id); }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -255,8 +255,8 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create Category</DialogTitle>
-            <DialogDescription>Add a new product category</DialogDescription>
+            <DialogTitle>Новая категория</DialogTitle>
+            <DialogDescription>Добавьте новую категорию товаров</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -264,19 +264,19 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
           }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Name</Label>
+                <Label>Название</Label>
                 <Input
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="e.g. Coffee, Sugar Free"
+                  placeholder="напр. Кофе, Без сахара"
                   required
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Создание…" : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -287,8 +287,8 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
       <Dialog open={!!editingCategory} onOpenChange={(open) => { if (!open) setEditingCategory(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>Update category name</DialogDescription>
+            <DialogTitle>Редактирование категории</DialogTitle>
+            <DialogDescription>Измените название категории</DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -298,19 +298,19 @@ export function CategoriesTab({ partnerId }: CategoriesTabProps) {
           }}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Name</Label>
+                <Label>Название</Label>
                 <Input
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Category name"
+                  placeholder="Название категории"
                   required
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditingCategory(null)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setEditingCategory(null)}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>

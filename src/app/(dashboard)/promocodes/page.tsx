@@ -114,7 +114,7 @@ function DateTimePicker({
             className={cn("w-full justify-start text-left font-normal", !hasValue && "text-muted-foreground")}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {hasValue ? format(date!, "dd/MM/yyyy") : "Pick a date"}
+            {hasValue ? format(date!, "dd/MM/yyyy") : "Выберите дату"}
             {hasValue && (
               <span
                 role="button"
@@ -201,11 +201,11 @@ function PromocodesContent() {
     mutationFn: (data: CreatePromocodeRequest) => promocodesApi.create(data),
     onSuccess: () => {
       invalidate();
-      toast.success("Promocode created successfully!");
+      toast.success("Промокод создан");
       setIsCreateOpen(false);
       setFormData(defaultForm);
     },
-    onError: (err: unknown) => toast.error(extractError(err, "Failed to create promocode")),
+    onError: (err: unknown) => toast.error(extractError(err, "Не удалось создать промокод")),
   });
 
   const bulkMutation = useMutation({
@@ -221,13 +221,13 @@ function PromocodesContent() {
     },
     onSuccess: (res) => {
       invalidate();
-      toast.success(`${res.count} promocodes created`);
+      toast.success(`Создано промокодов: ${res.count}`);
       // Download the generated codes so they can be distributed.
       const csv = "code\n" + res.codes.join("\n") + "\n";
       downloadFile(`promocodes-${res.count}.csv`, csv);
       setIsBulkOpen(false);
     },
-    onError: (err: unknown) => toast.error(extractError(err, "Failed to create promocodes")),
+    onError: (err: unknown) => toast.error(extractError(err, "Не удалось создать промокоды")),
   });
 
   async function handleExportCsv() {
@@ -239,7 +239,7 @@ function PromocodesContent() {
       });
       downloadFile("promocodes.csv", blob);
     } catch {
-      toast.error("Failed to export promocodes");
+      toast.error("Не удалось экспортировать промокоды");
     } finally {
       setExporting(false);
     }
@@ -250,10 +250,10 @@ function PromocodesContent() {
       promocodesApi.update(id, data),
     onSuccess: () => {
       invalidate();
-      toast.success("Promocode updated successfully!");
+      toast.success("Промокод обновлён");
       setEditPromocode(null);
     },
-    onError: (err: unknown) => toast.error(extractError(err, "Failed to update promocode")),
+    onError: (err: unknown) => toast.error(extractError(err, "Не удалось обновить промокод")),
   });
 
   const toggleActiveMutation = useMutation({
@@ -261,9 +261,9 @@ function PromocodesContent() {
       promocodesApi.update(id, { is_active }),
     onSuccess: () => {
       invalidate();
-      toast.success("Promocode status updated!");
+      toast.success("Статус промокода обновлён");
     },
-    onError: () => toast.error("Failed to update status"),
+    onError: () => toast.error("Не удалось обновить статус"),
   });
 
   const confirmDelete = useConfirm();
@@ -272,9 +272,9 @@ function PromocodesContent() {
     mutationFn: promocodesApi.delete,
     onSuccess: () => {
       invalidate();
-      toast.success("Promocode deleted successfully!");
+      toast.success("Промокод удалён");
     },
-    onError: () => toast.error("Failed to delete promocode"),
+    onError: () => toast.error("Не удалось удалить промокод"),
   });
 
   function buildPayload(): CreatePromocodeRequest {
@@ -323,7 +323,7 @@ function PromocodesContent() {
     <div className="space-y-4 py-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Code</Label>
+          <Label>Код</Label>
           <Input
             value={formData.code}
             onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
@@ -335,35 +335,35 @@ function PromocodesContent() {
             checked={formData.is_active ?? true}
             onCheckedChange={(v) => setFormData({ ...formData, is_active: v })}
           />
-          <Label>Active</Label>
+          <Label>Активен</Label>
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>Description (Optional)</Label>
+        <Label>Описание (необязательно)</Label>
         <Input
           value={formData.description || ""}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Summer campaign 25% off"
+          placeholder="Летняя акция, скидка 25%"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Discount Type</Label>
+          <Label>Тип скидки</Label>
           <Select
             value={formData.discount_type}
             onValueChange={(v) => setFormData({ ...formData, discount_type: v as "amount" | "percent" })}
           >
             <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="percent">Percent (%)</SelectItem>
-              <SelectItem value="amount">Fixed amount (sum)</SelectItem>
+              <SelectItem value="percent">Процент (%)</SelectItem>
+              <SelectItem value="amount">Фиксированная сумма (сум)</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>{isPercent ? "Percent (0-100)" : "Amount (sum)"}</Label>
+          <Label>{isPercent ? "Процент (0-100)" : "Сумма (сум)"}</Label>
           <Input
             type="number"
             value={formData.discount_value ?? ""}
@@ -374,21 +374,21 @@ function PromocodesContent() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Max % of order (Optional)</Label>
+          <Label>Макс. % от заказа (необязательно)</Label>
           <Input
             type="number"
             min={1}
             max={100}
-            placeholder="e.g. 25, 50, 100"
+            placeholder="напр. 25, 50, 100"
             value={formData.max_discount_percent ?? ""}
             onChange={(e) => setFormData({ ...formData, max_discount_percent: numOrUndef(e.target.value) })}
           />
         </div>
         <div className="space-y-2">
-          <Label>Max discount amount (Optional)</Label>
+          <Label>Макс. сумма скидки (необязательно)</Label>
           <Input
             type="number"
-            placeholder="absolute cap in sum"
+            placeholder="лимит в сумах"
             value={formData.max_discount_amount ?? ""}
             onChange={(e) => setFormData({ ...formData, max_discount_amount: numOrUndef(e.target.value) })}
           />
@@ -397,7 +397,7 @@ function PromocodesContent() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label>Min order (sum)</Label>
+          <Label>Мин. заказ (сум)</Label>
           <Input
             type="number"
             value={formData.min_order_amount ?? 0}
@@ -405,16 +405,16 @@ function PromocodesContent() {
           />
         </div>
         <div className="space-y-2">
-          <Label>Total uses (Optional)</Label>
+          <Label>Всего использований (необязательно)</Label>
           <Input
             type="number"
-            placeholder="unlimited"
+            placeholder="без ограничений"
             value={formData.usage_limit ?? ""}
             onChange={(e) => setFormData({ ...formData, usage_limit: numOrUndef(e.target.value) })}
           />
         </div>
         <div className="space-y-2">
-          <Label>Per-user uses</Label>
+          <Label>Использований на пользователя</Label>
           <Input
             type="number"
             value={formData.per_user_limit ?? 1}
@@ -424,21 +424,21 @@ function PromocodesContent() {
       </div>
 
       <div className="space-y-2">
-        <Label>Partner (Optional — scope to one partner)</Label>
+        <Label>Партнёр (необязательно — только для одного партнёра)</Label>
         <SearchableSelect
           value={formData.partner_id ? String(formData.partner_id) : "all"}
           onValueChange={(v) => setFormData({ ...formData, partner_id: v === "all" ? undefined : Number(v) })}
-          placeholder="All partners"
-          searchPlaceholder="Search partners…"
+          placeholder="Все партнёры"
+          searchPlaceholder="Поиск партнёров…"
           items={[
-            { value: "all", label: "All partners" },
+            { value: "all", label: "Все партнёры" },
             ...partners.map((p) => ({ value: String(p.id), label: p.name })),
           ]}
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Specific account (Optional — reserve for one user)</Label>
+        <Label>Конкретный аккаунт (необязательно — только для одного пользователя)</Label>
         <AccountPicker
           value={formData.user_id}
           onChange={(id) => setFormData({ ...formData, user_id: id })}
@@ -447,7 +447,7 @@ function PromocodesContent() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Starts At (Optional)</Label>
+          <Label>Дата начала (необязательно)</Label>
           <DateTimePicker
             value={formData.starts_at || ""}
             onChange={(v) => setFormData({ ...formData, starts_at: v })}
@@ -455,7 +455,7 @@ function PromocodesContent() {
           />
         </div>
         <div className="space-y-2">
-          <Label>Expires At (Optional)</Label>
+          <Label>Дата окончания (необязательно)</Label>
           <DateTimePicker
             value={formData.expires_at || ""}
             onChange={(v) => setFormData({ ...formData, expires_at: v })}
@@ -469,13 +469,13 @@ function PromocodesContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Promocodes"
-        description="Create and manage discount codes customers can apply at checkout."
+        title="Промокоды"
+        description="Создание и управление кодами скидок, которые клиенты применяют при оформлении заказа."
         action={
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handleExportCsv} disabled={exporting}>
               <Download className="size-4" />
-              {exporting ? "Exporting…" : "Export CSV"}
+              {exporting ? "Экспорт…" : "Экспорт CSV"}
             </Button>
             <Button
               variant="outline"
@@ -485,7 +485,7 @@ function PromocodesContent() {
               }}
             >
               <Layers className="size-4" />
-              Bulk create
+              Массовое создание
             </Button>
             <Button
               onClick={() => {
@@ -494,7 +494,7 @@ function PromocodesContent() {
               }}
             >
               <Plus className="size-4" />
-              Add promocode
+              Добавить промокод
             </Button>
           </div>
         }
@@ -502,7 +502,7 @@ function PromocodesContent() {
 
       <PageToolbar>
         <Input
-          placeholder="Search by code…"
+          placeholder="Поиск по коду…"
           className="w-[220px]"
           value={codeFilter}
           onChange={(e) => {
@@ -518,12 +518,12 @@ function PromocodesContent() {
           }}
         >
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder="Статус" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="true">Active</SelectItem>
-            <SelectItem value="false">Inactive</SelectItem>
+            <SelectItem value="all">Все статусы</SelectItem>
+            <SelectItem value="true">Активные</SelectItem>
+            <SelectItem value="false">Неактивные</SelectItem>
           </SelectContent>
         </Select>
       </PageToolbar>
@@ -536,36 +536,36 @@ function PromocodesContent() {
                 ID
               </SortableTableHead>
               <SortableTableHead column="code" sort={sort} order={order} onSort={onSort}>
-                Code
+                Код
               </SortableTableHead>
-              <TableHead>Discount</TableHead>
-              <TableHead>Caps</TableHead>
+              <TableHead>Скидка</TableHead>
+              <TableHead>Лимиты</TableHead>
               <SortableTableHead column="min_order_amount" sort={sort} order={order} onSort={onSort}>
-                Min order
+                Мин. заказ
               </SortableTableHead>
               <SortableTableHead column="used_count" sort={sort} order={order} onSort={onSort}>
-                Usage
+                Использования
               </SortableTableHead>
               <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
-                Active
+                Активен
               </SortableTableHead>
-              <TableHead>Schedule</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Период</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : promocodes.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="p-0">
                   <EmptyState
-                    title="No promocodes yet"
-                    description="Discount codes customers can apply at checkout will appear here."
+                    title="Промокодов пока нет"
+                    description="Здесь появятся коды скидок, которые клиенты применяют при оформлении заказа."
                     action={
                       <Button
                         variant="outline"
@@ -576,7 +576,7 @@ function PromocodesContent() {
                         }}
                       >
                         <Plus className="size-4" />
-                        Add promocode
+                        Добавить промокод
                       </Button>
                     }
                   />
@@ -601,7 +601,7 @@ function PromocodesContent() {
                   <TableCell className="text-sm text-foreground">
                     {promocode.discount_type === "percent"
                       ? `${promocode.discount_value}%`
-                      : `${promocode.discount_value.toLocaleString("ru-RU")} sum`}
+                      : `${promocode.discount_value.toLocaleString("ru-RU")} сум`}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {promocode.max_discount_percent != null && <span>≤{promocode.max_discount_percent}% </span>}
@@ -617,7 +617,7 @@ function PromocodesContent() {
                     {promocode.used_count}
                     {promocode.usage_limit != null ? `/${promocode.usage_limit}` : ""}
                     <span className="px-1 text-muted-foreground/60">·</span>
-                    {promocode.per_user_limit}/user
+                    {promocode.per_user_limit}/польз.
                   </TableCell>
                   <TableCell>
                     <Switch
@@ -643,7 +643,7 @@ function PromocodesContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete promocode?" })) deleteMutation.mutate(promocode.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить промокод?" })) deleteMutation.mutate(promocode.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -671,40 +671,40 @@ function PromocodesContent() {
       <Dialog open={isBulkOpen} onOpenChange={setIsBulkOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Bulk create promocodes</DialogTitle>
+            <DialogTitle>Массовое создание промокодов</DialogTitle>
             <DialogDescription>
-              Generate many single codes that share the settings below. The codes download as a CSV.
+              Сгенерируйте много одноразовых кодов с общими настройками ниже. Коды скачаются в CSV.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); bulkMutation.mutate(); }}>
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
-                  <Label>How many</Label>
+                  <Label>Количество</Label>
                   <Input type="number" min={1} max={1000} value={bulkCount}
                     onChange={(e) => setBulkCount(Number(e.target.value))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Code prefix</Label>
+                  <Label>Префикс кода</Label>
                   <Input value={bulkPrefix} placeholder="SUMMER-"
                     onChange={(e) => setBulkPrefix(e.target.value.toUpperCase())} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Random length</Label>
+                  <Label>Длина случайной части</Label>
                   <Input type="number" min={4} max={24} value={bulkLength}
                     onChange={(e) => setBulkLength(Number(e.target.value))} />
                 </div>
               </div>
               <p className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                Codes are generated automatically, e.g. <span className="font-mono text-foreground">{(bulkPrefix || "") + "AB7KMN2P"}</span>.
-                The <b>Code</b> field below is ignored — only the discount settings are used.
+                Коды генерируются автоматически, напр. <span className="font-mono text-foreground">{(bulkPrefix || "") + "AB7KMN2P"}</span>.
+                Поле <b>Код</b> ниже игнорируется — используются только настройки скидки.
               </p>
               {formFields}
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsBulkOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsBulkOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={bulkMutation.isPending}>
-                {bulkMutation.isPending ? "Generating…" : `Generate ${bulkCount} & download CSV`}
+                {bulkMutation.isPending ? "Генерация…" : `Сгенерировать ${bulkCount} и скачать CSV`}
               </Button>
             </DialogFooter>
           </form>
@@ -715,15 +715,15 @@ function PromocodesContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Promocode</DialogTitle>
-            <DialogDescription>Add a new discount code</DialogDescription>
+            <DialogTitle>Создать промокод</DialogTitle>
+            <DialogDescription>Добавьте новый код скидки</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitCreate}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Создание…" : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -734,15 +734,15 @@ function PromocodesContent() {
       <Dialog open={!!editPromocode} onOpenChange={(open) => { if (!open) setEditPromocode(null); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Promocode</DialogTitle>
-            <DialogDescription>Update promocode settings</DialogDescription>
+            <DialogTitle>Редактировать промокод</DialogTitle>
+            <DialogDescription>Измените настройки промокода</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitEdit}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setEditPromocode(null)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setEditPromocode(null)}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -759,7 +759,7 @@ function extractError(err: unknown, fallback: string): string {
 
 export default function PromocodesPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading promocodes...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка промокодов…</div>}>
       <PromocodesContent />
     </Suspense>
   );

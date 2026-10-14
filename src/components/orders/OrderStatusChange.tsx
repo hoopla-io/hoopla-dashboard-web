@@ -18,7 +18,7 @@ import { formatSomUZS } from "@/lib/money";
 import { EDITABLE_ORDER_STATUSES, formatOrderStatus } from "@/lib/order-status";
 import type { OrderDetail } from "@/lib/api/schemas/orders";
 
-const som = (value: number) => `${formatSomUZS(Math.round(value))} UZS`;
+const som = (value: number) => `${formatSomUZS(Math.round(value))} сум`;
 
 export function OrderStatusChange({ order }: { order: OrderDetail }) {
   const queryClient = useQueryClient();
@@ -44,11 +44,11 @@ export function OrderStatusChange({ order }: { order: OrderDetail }) {
       queryClient.invalidateQueries({ queryKey: ["shop-orders"] });
       queryClient.invalidateQueries({ queryKey: ["order", order.id] });
       queryClient.invalidateQueries({ queryKey: ["orders-analytics"] });
-      toast.success(`Order #${order.id} is now ${formatOrderStatus(target).toLowerCase()}`);
+      toast.success(`Заказ #${order.id}: новый статус «${formatOrderStatus(target)}»`);
       reset();
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, "Failed to update order status"));
+      toast.error(getApiErrorMessage(error, "Не удалось изменить статус заказа"));
       setConfirming(false);
     },
   });
@@ -64,7 +64,7 @@ export function OrderStatusChange({ order }: { order: OrderDetail }) {
           }}
         >
           <SelectTrigger size="sm" className="w-48">
-            <SelectValue placeholder="New status…" />
+            <SelectValue placeholder="Новый статус…" />
           </SelectTrigger>
           <SelectContent>
             {options.map((status) => (
@@ -76,7 +76,7 @@ export function OrderStatusChange({ order }: { order: OrderDetail }) {
         </Select>
         {target && (
           <Button variant="ghost" size="sm" onClick={reset}>
-            Cancel
+            Отмена
           </Button>
         )}
       </div>
@@ -90,7 +90,7 @@ export function OrderStatusChange({ order }: { order: OrderDetail }) {
               setConfirming(false);
             }}
             maxLength={500}
-            placeholder={reasonRequired ? "Why is this order cancelled? (required)" : "Reason (optional)"}
+            placeholder={reasonRequired ? "Почему заказ отменён? (обязательно)" : "Причина (необязательно)"}
             className="min-h-20 text-sm"
           />
 
@@ -98,9 +98,9 @@ export function OrderStatusChange({ order }: { order: OrderDetail }) {
             <div className="flex gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs">
               <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
               <p>
-                Cancelling here does not refund the customer. They paid {som(order.money.customer_paid)}
-                {" "}(wallet {som(order.money.wallet)}, card {som(order.money.card)}
-                {order.money.gift_card > 0 ? `, gift card ${som(order.money.gift_card)}` : ""}). Refund it separately.
+                Отмена здесь не возвращает деньги клиенту. Клиент оплатил {som(order.money.customer_paid)}
+                {" "}(кошелёк {som(order.money.wallet)}, карта {som(order.money.card)}
+                {order.money.gift_card > 0 ? `, подарочная карта ${som(order.money.gift_card)}` : ""}). Сделайте возврат отдельно.
               </p>
             </div>
           )}
@@ -108,7 +108,7 @@ export function OrderStatusChange({ order }: { order: OrderDetail }) {
           {confirming ? (
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm">
-                Change #{order.id} from {formatOrderStatus(order.status)} to {formatOrderStatus(target)}?
+                Изменить статус #{order.id} с «{formatOrderStatus(order.status)}» на «{formatOrderStatus(target)}»?
               </span>
               <Button
                 size="sm"
@@ -116,15 +116,15 @@ export function OrderStatusChange({ order }: { order: OrderDetail }) {
                 onClick={() => mutation.mutate()}
                 disabled={mutation.isPending}
               >
-                {mutation.isPending ? "Saving…" : "Confirm"}
+                {mutation.isPending ? "Сохранение…" : "Подтвердить"}
               </Button>
               <Button size="sm" variant="outline" onClick={() => setConfirming(false)} disabled={mutation.isPending}>
-                Back
+                Назад
               </Button>
             </div>
           ) : (
             <Button size="sm" onClick={() => setConfirming(true)} disabled={!canSubmit}>
-              Change to {formatOrderStatus(target)}
+              Изменить на «{formatOrderStatus(target)}»
             </Button>
           )}
         </>

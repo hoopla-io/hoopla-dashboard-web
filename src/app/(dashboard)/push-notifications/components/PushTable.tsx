@@ -50,21 +50,21 @@ export function PushTable({
       <TableHeader>
         <TableRow>
           <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-            Time
+            Время
           </SortableTableHead>
-          <TableHead>User</TableHead>
+          <TableHead>Пользователь</TableHead>
           <SortableTableHead column="kind" sort={sort} order={order} onSort={onSort}>
-            Kind
+            Вид
           </SortableTableHead>
-          <TableHead>Message</TableHead>
+          <TableHead>Сообщение</TableHead>
           <SortableTableHead column="reference_id" sort={sort} order={order} onSort={onSort}>
-            Reference
+            Объект
           </SortableTableHead>
           <SortableTableHead column="attempt" sort={sort} order={order} onSort={onSort}>
-            Attempt
+            Попытка
           </SortableTableHead>
           <SortableTableHead column="status" sort={sort} order={order} onSort={onSort}>
-            Status
+            Статус
           </SortableTableHead>
         </TableRow>
       </TableHeader>
@@ -72,16 +72,16 @@ export function PushTable({
         {isLoading ? (
           <TableRow>
             <TableCell colSpan={COLUMNS} className="py-10 text-center text-sm text-muted-foreground">
-              Loading…
+              Загрузка…
             </TableCell>
           </TableRow>
         ) : isError ? (
           <TableRow>
             <TableCell colSpan={COLUMNS} className="py-10 text-center">
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Couldn't load push notifications.</p>
+                <p className="text-sm text-muted-foreground">Не удалось загрузить push-уведомления.</p>
                 <Button variant="outline" size="sm" onClick={onRetry}>
-                  Retry
+                  Повторить
                 </Button>
               </div>
             </TableCell>
@@ -90,11 +90,11 @@ export function PushTable({
           <TableRow>
             <TableCell colSpan={COLUMNS} className="p-0">
               <EmptyState
-                title="No push notifications found"
+                title="Push-уведомления не найдены"
                 description={
                   hasFilters
-                    ? "Try adjusting or clearing your filters."
-                    : "Pushes sent by the customer API will appear here."
+                    ? "Попробуйте изменить или сбросить фильтры."
+                    : "Здесь появятся push-уведомления, отправленные клиентским API."
                 }
               />
             </TableCell>
@@ -103,12 +103,12 @@ export function PushTable({
           items.map((item) => (
             <TableRow key={item.id} className="cursor-pointer" onClick={() => onSelect(item)}>
               <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                {new Date(item.created_at).toLocaleString()}
+                {new Date(item.created_at).toLocaleString("ru-RU")}
               </TableCell>
               <TableCell>
                 <div className="flex flex-col">
                   <span className="text-sm text-foreground">
-                    {item.user ? item.user.name || "—" : `Deleted user #${item.user_id}`}
+                    {item.user ? item.user.name || "—" : `Удалённый пользователь #${item.user_id}`}
                   </span>
                   <span className="font-mono text-xs tabular-nums text-muted-foreground">
                     {item.user?.phone_number}

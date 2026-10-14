@@ -25,16 +25,16 @@ export function PushStats({
   const total = stats?.total ?? 0;
 
   const cells = [
-    { status: "all", label: "Total", value: total, hint: "Matching filters" },
-    { status: "sent", label: "Sent", value: stats?.sent ?? 0, hint: `${percent(stats?.sent ?? 0, total)} delivered` },
+    { status: "all", label: "Всего", value: total, hint: "По фильтрам" },
+    { status: "sent", label: "Отправлено", value: stats?.sent ?? 0, hint: `${percent(stats?.sent ?? 0, total)} доставлено` },
     {
       status: "skipped_no_token",
-      label: "No device token",
+      label: "Нет токена устройства",
       value: stats?.skipped_no_token ?? 0,
-      hint: `${percent(stats?.skipped_no_token ?? 0, total)} of pushes`,
+      hint: `${percent(stats?.skipped_no_token ?? 0, total)} от всех`,
     },
-    { status: "failed", label: "Failed", value: stats?.failed ?? 0, hint: `${percent(stats?.failed ?? 0, total)} of pushes` },
-    { status: "pending", label: "Pending", value: stats?.pending ?? 0, hint: "Claimed, not finished" },
+    { status: "failed", label: "Ошибка", value: stats?.failed ?? 0, hint: `${percent(stats?.failed ?? 0, total)} от всех` },
+    { status: "pending", label: "В ожидании", value: stats?.pending ?? 0, hint: "Взято в работу, не завершено" },
   ];
 
   return (
@@ -54,7 +54,7 @@ export function PushStats({
             >
               <span className="text-xs text-muted-foreground">{cell.label}</span>
               <span className="font-mono text-2xl tabular-nums text-foreground">
-                {isLoading ? "—" : cell.value.toLocaleString()}
+                {isLoading ? "—" : cell.value.toLocaleString("ru-RU")}
               </span>
               <span className="text-xs text-muted-foreground">{cell.hint}</span>
             </button>
@@ -79,8 +79,8 @@ export function PushStats({
                 )}
               >
                 <span>{formatPushKind(item.kind)}</span>
-                <span className="font-mono tabular-nums text-foreground">{item.total.toLocaleString()}</span>
-                <span>· {percent(item.sent, item.total)} sent</span>
+                <span className="font-mono tabular-nums text-foreground">{item.total.toLocaleString("ru-RU")}</span>
+                <span>· {percent(item.sent, item.total)} отправлено</span>
               </button>
             );
           })}

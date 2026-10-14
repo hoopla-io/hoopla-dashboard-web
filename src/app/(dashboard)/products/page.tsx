@@ -91,12 +91,12 @@ function DrinksContent() {
       drinksApi.create(data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Product created");
+      toast.success("Товар создан");
       setIsCreateOpen(false);
       setFormData({ name: "", description: "", ofd_spic: "" });
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to create product"),
+    onError: () => toast.error("Не удалось создать товар"),
   });
 
   const updateMutation = useMutation({
@@ -111,10 +111,10 @@ function DrinksContent() {
     }) => drinksApi.update(id, data, file),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Product updated");
+      toast.success("Товар обновлён");
       setEditDrink(null);
     },
-    onError: () => toast.error("Failed to update product"),
+    onError: () => toast.error("Не удалось обновить товар"),
   });
 
   const confirmDelete = useConfirm();
@@ -123,20 +123,20 @@ function DrinksContent() {
     mutationFn: drinksApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["drinks"] });
-      toast.success("Product deleted");
+      toast.success("Товар удалён");
     },
-    onError: () => toast.error("Failed to delete product"),
+    onError: () => toast.error("Не удалось удалить товар"),
   });
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Products"
-        description="Manage the beverage catalog used by every partner shop."
+        title="Товары"
+        description="Управление каталогом напитков, который используют все заведения партнёров."
         action={
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="size-4" />
-            Add product
+            Добавить товар
           </Button>
         }
       />
@@ -145,7 +145,7 @@ function DrinksContent() {
         <div className="relative w-full max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search products"
+            placeholder="Поиск товаров"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -163,29 +163,29 @@ function DrinksContent() {
               <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
                 ID
               </SortableTableHead>
-              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead className="w-[80px]">Изображение</TableHead>
               <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
-                Name
+                Название
               </SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : drinks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="p-0">
                   <EmptyState
-                    title="No products found"
+                    title="Товары не найдены"
                     description={
                       search
-                        ? "Try a different search term."
-                        : "Add your first product to populate the catalog."
+                        ? "Попробуйте другой запрос."
+                        : "Добавьте первый товар, чтобы заполнить каталог."
                     }
                     action={
                       !search ? (
@@ -195,7 +195,7 @@ function DrinksContent() {
                           onClick={() => setIsCreateOpen(true)}
                         >
                           <Plus className="size-4" />
-                          Add product
+                          Добавить товар
                         </Button>
                       ) : null
                     }
@@ -224,7 +224,7 @@ function DrinksContent() {
                       </button>
                     ) : (
                       <div className="flex size-10 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        N/A
+                        Нет
                       </div>
                     )}
                   </TableCell>
@@ -248,7 +248,7 @@ function DrinksContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: `Delete “${drink.name}”?` })) deleteMutation.mutate(drink.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: `Удалить «${drink.name}»?` })) deleteMutation.mutate(drink.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -275,14 +275,14 @@ function DrinksContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create product</DialogTitle>
-            <DialogDescription>Add a new beverage to the catalog.</DialogDescription>
+            <DialogTitle>Создать товар</DialogTitle>
+            <DialogDescription>Добавьте новый напиток в каталог.</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               if (!selectedFile) {
-                toast.error("Image is required");
+                toast.error("Изображение обязательно");
                 return;
               }
               createMutation.mutate({ data: formData, file: selectedFile });
@@ -290,21 +290,21 @@ function DrinksContent() {
           >
             <div className="space-y-4 py-4">
               <div className="space-y-1.5">
-                <Label>Name</Label>
+                <Label>Название</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Product name"
+                  placeholder="Название товара"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="create-description">Description</Label>
+                <Label htmlFor="create-description">Описание</Label>
                 <Textarea
                   id="create-description"
                   value={formData.description ?? ""}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Default description shown to customers"
+                  placeholder="Описание по умолчанию, которое видят клиенты"
                 />
               </div>
               <div className="space-y-1.5">
@@ -315,7 +315,7 @@ function DrinksContent() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Image</Label>
+                <Label>Изображение</Label>
                 <Input
                   type="file"
                   accept="image/*"
@@ -328,10 +328,10 @@ function DrinksContent() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating…" : "Create"}
+                {createMutation.isPending ? "Создание…" : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -346,13 +346,13 @@ function DrinksContent() {
       >
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image preview</DialogTitle>
-            <DialogDescription>Product image preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Изображение товара</DialogDescription>
           </DialogHeader>
           {previewImage && (
             <img
               src={previewImage}
-              alt="Product preview"
+              alt="Изображение товара"
               className="h-auto w-full rounded"
             />
           )}
@@ -370,8 +370,8 @@ function DrinksContent() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit product</DialogTitle>
-            <DialogDescription>Update product information.</DialogDescription>
+            <DialogTitle>Редактировать товар</DialogTitle>
+            <DialogDescription>Измените информацию о товаре.</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -387,23 +387,23 @@ function DrinksContent() {
           >
             <div className="space-y-4 py-4">
               <div className="space-y-1.5">
-                <Label>Name</Label>
+                <Label>Название</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Product name"
+                  placeholder="Название товара"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="edit-description">Description</Label>
+                <Label htmlFor="edit-description">Описание</Label>
                 <Textarea
                   id="edit-description"
                   value={formData.description ?? ""}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Default description shown to customers"
+                  placeholder="Описание по умолчанию, которое видят клиенты"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Leave blank to remove the default description.
+                  Оставьте пустым, чтобы удалить описание по умолчанию.
                 </p>
               </div>
               <div className="space-y-1.5">
@@ -415,14 +415,14 @@ function DrinksContent() {
               </div>
 
               <div className="space-y-1.5">
-                <Label>Image</Label>
+                <Label>Изображение</Label>
                 <div className="flex items-center gap-4">
                   {editDrink && (
                     <div className="relative size-14 overflow-hidden rounded-md border border-border">
                       {selectedFile ? (
                         <Image
                           src={URL.createObjectURL(selectedFile)}
-                          alt="New preview"
+                          alt="Новое изображение"
                           fill
                           className="object-cover"
                         />
@@ -435,7 +435,7 @@ function DrinksContent() {
                         />
                       ) : (
                         <div className="flex size-full items-center justify-center bg-muted text-[10px] text-muted-foreground">
-                          N/A
+                          Нет
                         </div>
                       )}
                     </div>
@@ -449,7 +449,7 @@ function DrinksContent() {
                       }}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Leave empty to keep current image.
+                      Оставьте пустым, чтобы сохранить текущее изображение.
                     </p>
                   </div>
                 </div>
@@ -464,10 +464,10 @@ function DrinksContent() {
                   setSelectedFile(null);
                 }}
               >
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving…" : "Save changes"}
+                {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -482,7 +482,7 @@ export default function ProductsPage() {
     <Suspense
       fallback={
         <div className="p-8 text-center text-sm text-muted-foreground">
-          Loading products…
+          Загрузка товаров…
         </div>
       }
     >

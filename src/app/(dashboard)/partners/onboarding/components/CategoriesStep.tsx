@@ -13,7 +13,7 @@ import { categoryApi } from "@/lib/api/domains/drinks";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
 const CategoryFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "Укажите название"),
 });
 type CategoryFormValues = z.infer<typeof CategoryFormSchema>;
 
@@ -45,7 +45,7 @@ export function CategoriesStep({
       onAdd({ id: result.categoryId, name: variables.name });
       form.reset({ name: "" });
     },
-    onError: () => toast.error("Failed to create category"),
+    onError: () => toast.error("Не удалось создать категорию"),
   });
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -55,16 +55,16 @@ export function CategoriesStep({
     mutationFn: (id: number) => categoryApi.delete(id),
     onMutate: (id) => setDeletingId(id),
     onSuccess: (_data, id) => onRemove(id),
-    onError: () => toast.error("Failed to remove category"),
+    onError: () => toast.error("Не удалось удалить категорию"),
     onSettled: () => setDeletingId(null),
   });
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Product categories</h2>
+        <h2 className="text-lg font-semibold text-foreground">Категории товаров</h2>
         <p className="text-sm text-muted-foreground">
-          e.g. Coffee, Cold Beverages, Desserts — add as many as you'd like, or skip for now.
+          Например: Кофе, Холодные напитки, Десерты — добавьте сколько нужно или пропустите этот шаг.
         </p>
       </div>
 
@@ -80,9 +80,9 @@ export function CategoriesStep({
               <button
                 type="button"
                 className="text-muted-foreground hover:text-destructive disabled:opacity-50"
-                onClick={async () => { if (await confirmDelete({ title: `Delete “${c.name}”?` })) deleteMutation.mutate(c.id); }}
+                onClick={async () => { if (await confirmDelete({ title: `Удалить «${c.name}»?` })) deleteMutation.mutate(c.id); }}
                 disabled={deletingId === c.id}
-                aria-label={`Remove ${c.name}`}
+                aria-label={`Убрать «${c.name}»`}
               >
                 <X className="size-4" />
               </button>
@@ -96,21 +96,21 @@ export function CategoriesStep({
         className="flex items-start gap-2"
       >
         <div className="flex-1">
-          <Input placeholder="Category name" {...form.register("name")} />
+          <Input placeholder="Название категории" {...form.register("name")} />
           {form.formState.errors.name && (
             <p className="mt-1 text-xs text-destructive">{form.formState.errors.name.message}</p>
           )}
         </div>
         <Button type="submit" variant="outline" disabled={createMutation.isPending}>
           <Plus className="size-4" />
-          Add
+          Добавить
         </Button>
       </form>
 
       <div className="flex justify-between pt-2">
-        <Button type="button" variant="outline" onClick={onBack}>Back</Button>
+        <Button type="button" variant="outline" onClick={onBack}>Назад</Button>
         <Button onClick={onContinue}>
-          {categories.length === 0 ? "Skip for now" : "Continue"}
+          {categories.length === 0 ? "Пропустить" : "Продолжить"}
         </Button>
       </div>
     </div>

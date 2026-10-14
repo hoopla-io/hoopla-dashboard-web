@@ -35,7 +35,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ordersApi } from "@/lib/api/domains/orders";
 import { getApiErrorMessage } from "@/lib/api/error";
 import type { Order } from "@/lib/api/schemas/orders";
-import { ORDER_STATUSES } from "@/lib/order-status";
+import { ORDER_STATUSES, formatOrderStatus } from "@/lib/order-status";
 import { OrderDetailSheet } from "@/components/orders/OrderDetailSheet";
 import { formatOrderSource } from "@/lib/order-source";
 
@@ -81,42 +81,42 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
     mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop-orders", shopId] });
-      toast.success("Fiscalization requested");
+      toast.success("Фискализация запрошена");
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to fiscalize order")),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Не удалось фискализировать заказ")),
   });
 
   const formatPrice = (price?: number) => formatSomUZS(price);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "-";
-    return new Date(dateStr).toLocaleString();
+    return new Date(dateStr).toLocaleString("ru-RU");
   };
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Shop Orders</CardTitle>
-          <CardDescription>View and manage orders for this shop</CardDescription>
+          <CardTitle>Заказы заведения</CardTitle>
+          <CardDescription>Просмотр и управление заказами этого заведения</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
             <Input
-              placeholder="Search phone/user..."
+              placeholder="Поиск по телефону/пользователю…"
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
               className="md:max-w-sm"
             />
             <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setPage(1); }}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Statuses" />
+                <SelectValue placeholder="Все статусы" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="all">Все статусы</SelectItem>
                 {ORDER_STATUSES.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
+                    {formatOrderStatus(status)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -127,30 +127,30 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Fiscal</TableHead>
+                  <TableHead>ID заказа</TableHead>
+                  <TableHead>Пользователь</TableHead>
+                  <TableHead>Товар</TableHead>
+                  <TableHead>Цена</TableHead>
+                  <TableHead>Источник</TableHead>
+                  <TableHead>Время</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead className="text-center">Чек</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">Loading...</TableCell>
+                    <TableCell colSpan={8} className="text-center py-8">Загрузка…</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="p-0">
                       <EmptyState
-                        title="No orders found"
+                        title="Заказы не найдены"
                         description={
                           searchTerm || statusFilter !== "all"
-                            ? "Try adjusting or clearing your filters."
-                            : "Orders placed at this shop will appear here."
+                            ? "Измените или сбросьте фильтры."
+                            : "Здесь появятся заказы этого заведения."
                         }
                       />
                     </TableCell>
@@ -180,13 +180,13 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                             className="underline-offset-2 hover:underline"
                             onClick={() => setItemsDialogOrder(order)}
                           >
-                            {order.drink?.name || `${order.items.length} items`}
+                            {order.drink?.name || `Позиций: ${order.items.length}`}
                           </button>
                         ) : (
                           order.drink?.name || "-"
                         )}
                       </TableCell>
-                      <TableCell>{formatPrice(order.price)} UZS</TableCell>
+                      <TableCell>{formatPrice(order.price)} сум</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatOrderSource(order.source)}
                       </TableCell>
@@ -195,17 +195,17 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                       </TableCell>
                       <TableCell>
                         <Badge className={statusColors[order.status] || "bg-muted"}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
+                          {formatOrderStatus(order.status)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
                         {order.status === "completed" && (order.fiscal_link?.trim() ? (
-                          <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
+                          <Button asChild variant="outline" size="icon-sm" title="Открыть фискальный чек">
                             <a
                               href={order.fiscal_link.trim()}
                               target="_blank"
                               rel="noopener noreferrer"
-                              aria-label="Open fiscal receipt"
+                              aria-label="Открыть фискальный чек"
                             >
                               <ExternalLink className="size-4" />
                             </a>
@@ -216,8 +216,8 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                             size="icon-sm"
                             onClick={() => fiscalizeMutation.mutate(order.id)}
                             disabled={fiscalizeMutation.isPending}
-                            title="Fiscalize order"
-                            aria-label="Fiscalize order"
+                            title="Фискализировать заказ"
+                            aria-label="Фискализировать заказ"
                           >
                             <ReceiptText className="size-4" />
                           </Button>
@@ -251,8 +251,8 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Order #{itemsDialogOrder?.id} items</DialogTitle>
-            <DialogDescription>Line items for this order.</DialogDescription>
+            <DialogTitle>Позиции заказа #{itemsDialogOrder?.id}</DialogTitle>
+            <DialogDescription>Состав этого заказа.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             {itemsDialogOrder?.items?.map((item) => (
@@ -261,7 +261,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                   {item.name} × {item.quantity}
                 </span>
                 <span className="font-mono tabular-nums text-muted-foreground">
-                  {formatPrice(item.price * item.quantity)} UZS
+                  {formatPrice(item.price * item.quantity)} сум
                 </span>
               </div>
             ))}

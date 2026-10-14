@@ -37,8 +37,8 @@ import { partnersApi } from "@/lib/api/domains/partners";
 import { drinksApi } from "@/lib/api/domains/drinks";
 import type { Banner, CreateBannerRequest } from "@/lib/api/schemas/banners";
 
-const LINK_TYPE_LABELS: Record<string, string> = { partner: "Partner", drink: "Product", url: "URL" };
-const POSITION_LABELS: Record<string, string> = { main: "Main", partner: "Partner" };
+const LINK_TYPE_LABELS: Record<string, string> = { partner: "Партнёр", drink: "Товар", url: "URL" };
+const POSITION_LABELS: Record<string, string> = { main: "Главная", partner: "Партнёр" };
 
 function dateToIso(dateStr: string | null | undefined): string {
   if (!dateStr) return "";
@@ -103,7 +103,7 @@ function DateTimePicker({
             className={cn("w-full justify-start text-left font-normal", !hasValue && "text-muted-foreground")}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {hasValue ? format(date!, "dd/MM/yyyy") : "Pick a date"}
+            {hasValue ? format(date!, "dd/MM/yyyy") : "Выберите дату"}
             {hasValue && (
               <span
                 role="button"
@@ -191,12 +191,12 @@ function BannersContent() {
     mutationFn: ({ data, file }: { data: CreateBannerRequest; file?: File }) => bannersApi.create(data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Banner created successfully!");
+      toast.success("Баннер создан");
       setIsCreateOpen(false);
       setFormData(defaultForm);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to create banner"),
+    onError: () => toast.error("Не удалось создать баннер"),
   });
 
   const updateMutation = useMutation({
@@ -204,11 +204,11 @@ function BannersContent() {
       bannersApi.update(id, data, file),
     onSuccess: () => {
       invalidate();
-      toast.success("Banner updated successfully!");
+      toast.success("Баннер обновлён");
       setEditBanner(null);
       setSelectedFile(null);
     },
-    onError: () => toast.error("Failed to update banner"),
+    onError: () => toast.error("Не удалось обновить баннер"),
   });
 
   const toggleActiveMutation = useMutation({
@@ -216,9 +216,9 @@ function BannersContent() {
       bannersApi.update(id, { is_active }),
     onSuccess: () => {
       invalidate();
-      toast.success("Banner status updated!");
+      toast.success("Статус баннера обновлён");
     },
-    onError: () => toast.error("Failed to update status"),
+    onError: () => toast.error("Не удалось обновить статус"),
   });
 
   const confirmDelete = useConfirm();
@@ -227,9 +227,9 @@ function BannersContent() {
     mutationFn: bannersApi.delete,
     onSuccess: () => {
       invalidate();
-      toast.success("Banner deleted successfully!");
+      toast.success("Баннер удалён");
     },
-    onError: () => toast.error("Failed to delete banner"),
+    onError: () => toast.error("Не удалось удалить баннер"),
   });
 
   function handleSubmitCreate(e: React.FormEvent) {
@@ -268,36 +268,36 @@ function BannersContent() {
   const formFields = (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
-        <Label>Title (Optional)</Label>
+        <Label>Заголовок (необязательно)</Label>
         <Input
           value={formData.title || ""}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Banner title"
+          placeholder="Заголовок баннера"
         />
       </div>
 
       <div className="space-y-2">
-        <Label>Position</Label>
+        <Label>Позиция</Label>
         <Select
           value={formData.position}
           onValueChange={(v) => setFormData({ ...formData, position: v as "main" | "partner", partner_id: undefined })}
         >
           <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="main">Main (Home)</SelectItem>
-            <SelectItem value="partner">Partner Page</SelectItem>
+            <SelectItem value="main">Главная страница</SelectItem>
+            <SelectItem value="partner">Страница партнёра</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {formData.position === "partner" && (
         <div className="space-y-2">
-          <Label>Partner</Label>
+          <Label>Партнёр</Label>
           <Select
             value={formData.partner_id ? String(formData.partner_id) : ""}
             onValueChange={(v) => setFormData({ ...formData, partner_id: Number(v) })}
           >
-            <SelectTrigger className="w-full"><SelectValue placeholder="Select partner..." /></SelectTrigger>
+            <SelectTrigger className="w-full"><SelectValue placeholder="Выберите партнёра..." /></SelectTrigger>
             <SelectContent>
               {partners.map((p) => (
                 <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
@@ -308,36 +308,36 @@ function BannersContent() {
       )}
 
       <div className="space-y-2">
-        <Label>Link Type</Label>
+        <Label>Тип ссылки</Label>
         <Select
           value={formData.link_type}
           onValueChange={(v) => setFormData({ ...formData, link_type: v as "partner" | "drink" | "url", link_value: "" })}
         >
           <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="partner">Partner</SelectItem>
-            <SelectItem value="drink">Product</SelectItem>
+            <SelectItem value="partner">Партнёр</SelectItem>
+            <SelectItem value="drink">Товар</SelectItem>
             <SelectItem value="url">URL</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label>Link Value</Label>
+        <Label>Значение ссылки</Label>
         {formData.link_type === "partner" ? (
           <SearchableSelect
             value={formData.link_value || ""}
             onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-            placeholder="Select partner..."
-            searchPlaceholder="Search partners..."
+            placeholder="Выберите партнёра..."
+            searchPlaceholder="Поиск партнёров..."
             items={partners.map((p) => ({ value: String(p.id), label: p.name }))}
           />
         ) : formData.link_type === "drink" ? (
           <SearchableSelect
             value={formData.link_value || ""}
             onValueChange={(v) => setFormData({ ...formData, link_value: v })}
-            placeholder="Select product..."
-            searchPlaceholder="Search products..."
+            placeholder="Выберите товар..."
+            searchPlaceholder="Поиск товаров..."
             items={drinks.map((d) => ({ value: String(d.id), label: d.name }))}
           />
         ) : (
@@ -351,7 +351,7 @@ function BannersContent() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Sort Order</Label>
+          <Label>Порядок сортировки</Label>
           <Input
             type="number"
             value={formData.sort_order ?? 0}
@@ -363,13 +363,13 @@ function BannersContent() {
             checked={formData.is_active ?? true}
             onCheckedChange={(v) => setFormData({ ...formData, is_active: v })}
           />
-          <Label>Active</Label>
+          <Label>Активен</Label>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Start Date (Optional)</Label>
+          <Label>Дата начала (необязательно)</Label>
           <DateTimePicker
             value={formData.start_date || ""}
             onChange={(v) => setFormData({ ...formData, start_date: v })}
@@ -377,7 +377,7 @@ function BannersContent() {
           />
         </div>
         <div className="space-y-2">
-          <Label>End Date (Optional)</Label>
+          <Label>Дата окончания (необязательно)</Label>
           <DateTimePicker
             value={formData.end_date || ""}
             onChange={(v) => setFormData({ ...formData, end_date: v })}
@@ -387,7 +387,7 @@ function BannersContent() {
       </div>
 
       <div className="space-y-2">
-        <Label>Image</Label>
+        <Label>Изображение</Label>
         {(selectedFile || editBanner?.image_url) && (() => {
           const src = selectedFile ? URL.createObjectURL(selectedFile) : editBanner?.image_url || "";
           return (
@@ -397,7 +397,7 @@ function BannersContent() {
                 onClick={() => setPreviewImage(src)}
                 className="block overflow-hidden rounded-lg border hover:opacity-80 transition-opacity"
               >
-                <img src={src} alt="Preview" className="max-h-24 w-auto object-contain" />
+                <img src={src} alt="Превью" className="max-h-24 w-auto object-contain" />
               </button>
               <button
                 type="button"
@@ -416,7 +416,7 @@ function BannersContent() {
             if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
           }}
         />
-        {editBanner && <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>}
+        {editBanner && <p className="text-xs text-muted-foreground mt-1">Оставьте пустым, чтобы сохранить текущее изображение</p>}
       </div>
     </div>
   );
@@ -424,8 +424,8 @@ function BannersContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Banners"
-        description="Manage promotional banners on the home and partner pages."
+        title="Баннеры"
+        description="Управление рекламными баннерами на главной странице и страницах партнёров."
         action={
           <Button
             onClick={() => {
@@ -435,7 +435,7 @@ function BannersContent() {
             }}
           >
             <Plus className="size-4" />
-            Add banner
+            Добавить баннер
           </Button>
         }
       />
@@ -449,12 +449,12 @@ function BannersContent() {
           }}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by position" />
+            <SelectValue placeholder="Фильтр по позиции" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All positions</SelectItem>
-            <SelectItem value="main">Main</SelectItem>
-            <SelectItem value="partner">Partner</SelectItem>
+            <SelectItem value="all">Все позиции</SelectItem>
+            <SelectItem value="main">Главная</SelectItem>
+            <SelectItem value="partner">Партнёр</SelectItem>
           </SelectContent>
         </Select>
       </PageToolbar>
@@ -466,37 +466,37 @@ function BannersContent() {
               <SortableTableHead className="w-[64px]" column="id" sort={sort} order={order} onSort={onSort}>
                 ID
               </SortableTableHead>
-              <TableHead className="w-[100px]">Image</TableHead>
+              <TableHead className="w-[100px]">Изображение</TableHead>
               <SortableTableHead column="title" sort={sort} order={order} onSort={onSort}>
-                Title
+                Заголовок
               </SortableTableHead>
-              <TableHead>Link</TableHead>
+              <TableHead>Ссылка</TableHead>
               <SortableTableHead column="position" sort={sort} order={order} onSort={onSort}>
-                Position
+                Позиция
               </SortableTableHead>
               <SortableTableHead column="sort_order" sort={sort} order={order} onSort={onSort}>
-                Order
+                Порядок
               </SortableTableHead>
               <SortableTableHead column="is_active" sort={sort} order={order} onSort={onSort}>
-                Active
+                Активен
               </SortableTableHead>
-              <TableHead>Schedule</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Расписание</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : banners.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="p-0">
                   <EmptyState
-                    title="No banners yet"
-                    description="Promotional banners shown in the app will appear here."
+                    title="Баннеров пока нет"
+                    description="Здесь появятся рекламные баннеры, показываемые в приложении."
                     action={
                       <Button
                         variant="outline"
@@ -508,7 +508,7 @@ function BannersContent() {
                         }}
                       >
                         <Plus className="size-4" />
-                        Add banner
+                        Добавить баннер
                       </Button>
                     }
                   />
@@ -527,11 +527,11 @@ function BannersContent() {
                         className="relative h-9 w-16 overflow-hidden rounded-md ring-1 ring-border transition-opacity hover:opacity-80"
                         onClick={() => setPreviewImage(banner.image_url!)}
                       >
-                        <Image src={banner.image_url} alt={banner.title || "Banner"} fill className="object-cover" />
+                        <Image src={banner.image_url} alt={banner.title || "Баннер"} fill className="object-cover" />
                       </button>
                     ) : (
                       <div className="flex h-9 w-16 items-center justify-center rounded-md bg-muted text-[10px] font-medium text-muted-foreground">
-                        N/A
+                        Нет
                       </div>
                     )}
                   </TableCell>
@@ -580,7 +580,7 @@ function BannersContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete banner?" })) deleteMutation.mutate(banner.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить баннер?" })) deleteMutation.mutate(banner.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -608,15 +608,15 @@ function BannersContent() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Banner</DialogTitle>
-            <DialogDescription>Add a new promotional banner</DialogDescription>
+            <DialogTitle>Создать баннер</DialogTitle>
+            <DialogDescription>Добавьте новый рекламный баннер</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitCreate}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
               <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Создание..." : "Создать"}
               </Button>
             </DialogFooter>
           </form>
@@ -629,15 +629,15 @@ function BannersContent() {
       }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Banner</DialogTitle>
-            <DialogDescription>Update banner settings</DialogDescription>
+            <DialogTitle>Редактировать баннер</DialogTitle>
+            <DialogDescription>Измените настройки баннера</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitEdit}>
             {formFields}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setEditBanner(null); setSelectedFile(null); }}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => { setEditBanner(null); setSelectedFile(null); }}>Отмена</Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateMutation.isPending ? "Сохранение..." : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -648,11 +648,11 @@ function BannersContent() {
       <Dialog open={!!previewImage} onOpenChange={(open) => { if (!open) setPreviewImage(null); }}>
         <DialogContent className="max-w-3xl p-2">
           <DialogHeader className="sr-only">
-            <DialogTitle>Image Preview</DialogTitle>
-            <DialogDescription>Banner image preview</DialogDescription>
+            <DialogTitle>Просмотр изображения</DialogTitle>
+            <DialogDescription>Просмотр изображения баннера</DialogDescription>
           </DialogHeader>
           {previewImage && (
-            <img src={previewImage} alt="Banner preview" className="w-full h-auto rounded" />
+            <img src={previewImage} alt="Превью баннера" className="w-full h-auto rounded" />
           )}
         </DialogContent>
       </Dialog>
@@ -662,7 +662,7 @@ function BannersContent() {
 
 export default function BannersPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading banners...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Загрузка баннеров...</div>}>
       <BannersContent />
     </Suspense>
   );

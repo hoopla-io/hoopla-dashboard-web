@@ -46,7 +46,7 @@ import type { User, EditUserRequest } from "@/lib/api/schemas/users";
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString();
+  return new Date(dateStr).toLocaleDateString("ru-RU");
 };
 
 function UsersContent() {
@@ -93,10 +93,10 @@ function UsersContent() {
       usersApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User updated");
+      toast.success("Пользователь обновлён");
       setEditUser(null);
     },
-    onError: () => toast.error("Failed to update user"),
+    onError: () => toast.error("Не удалось обновить пользователя"),
   });
 
   const confirmDelete = useConfirm();
@@ -105,9 +105,9 @@ function UsersContent() {
     mutationFn: usersApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      toast.success("User deleted");
+      toast.success("Пользователь удалён");
     },
-    onError: () => toast.error("Failed to delete user"),
+    onError: () => toast.error("Не удалось удалить пользователя"),
   });
 
   const clearFilters = () => {
@@ -121,12 +121,12 @@ function UsersContent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Users" description="Browse, edit, and remove registered users." />
+      <PageHeader title="Пользователи" description="Просмотр, редактирование и удаление зарегистрированных пользователей." />
 
       <PageToolbar className="flex-col items-stretch gap-3 md:flex-row md:flex-wrap md:items-end">
         <div className="grid flex-1 grid-cols-1 gap-2 md:grid-cols-3">
           <Input
-            placeholder="Name"
+            placeholder="Имя"
             value={nameFilter}
             onChange={(e) => {
               setNameFilter(e.target.value || null);
@@ -134,7 +134,7 @@ function UsersContent() {
             }}
           />
           <Input
-            placeholder="Phone"
+            placeholder="Телефон"
             value={phoneFilter}
             onChange={(e) => {
               setPhoneFilter(e.target.value || null);
@@ -149,17 +149,17 @@ function UsersContent() {
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Gender" />
+              <SelectValue placeholder="Пол" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All genders</SelectItem>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
+              <SelectItem value="all">Любой пол</SelectItem>
+              <SelectItem value="male">Мужской</SelectItem>
+              <SelectItem value="female">Женский</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <Button variant="outline" size="sm" onClick={clearFilters} disabled={!hasFilters}>
-          Clear filters
+          Сбросить фильтры
         </Button>
       </PageToolbar>
 
@@ -168,40 +168,40 @@ function UsersContent() {
           <TableHeader>
             <TableRow>
               <SortableTableHead column="name" sort={sort} order={order} onSort={onSort}>
-                Name
+                Имя
               </SortableTableHead>
               <SortableTableHead column="phone_number" sort={sort} order={order} onSort={onSort}>
-                Phone
+                Телефон
               </SortableTableHead>
               <SortableTableHead column="mobile_provider" sort={sort} order={order} onSort={onSort}>
-                Provider
+                Оператор
               </SortableTableHead>
               <SortableTableHead column="gender" sort={sort} order={order} onSort={onSort}>
-                Gender
+                Пол
               </SortableTableHead>
-              <TableHead>Birth date</TableHead>
+              <TableHead>Дата рождения</TableHead>
               <SortableTableHead column="created_at" sort={sort} order={order} onSort={onSort}>
-                Created
+                Создан
               </SortableTableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
-                  Loading…
+                  Загрузка…
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="p-0">
                   <EmptyState
-                    title="No users found"
+                    title="Пользователи не найдены"
                     description={
                       hasFilters
-                        ? "Try clearing your filters."
-                        : "Registered users will appear here."
+                        ? "Попробуйте сбросить фильтры."
+                        : "Здесь появятся зарегистрированные пользователи."
                     }
                   />
                 </TableCell>
@@ -223,7 +223,7 @@ function UsersContent() {
                     {user.mobile_provider || "—"}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {user.gender || "—"}
+                    {user.gender === "male" ? "Мужской" : user.gender === "female" ? "Женский" : user.gender || "—"}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatDate(user.date_of_birth)}
@@ -237,8 +237,8 @@ function UsersContent() {
                         <Button variant="ghost" size="icon-sm" asChild>
                           <Link
                             to={`/orders?search=${encodeURIComponent(user.phone_number)}`}
-                            aria-label="View orders"
-                            title="View orders"
+                            aria-label="Заказы пользователя"
+                            title="Заказы пользователя"
                           >
                             <ShoppingCart className="size-4" />
                           </Link>
@@ -263,7 +263,7 @@ function UsersContent() {
                         variant="ghost"
                         size="icon-sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { if (await confirmDelete({ title: "Delete user?" })) deleteMutation.mutate(user.id); }}
+                        onClick={async () => { if (await confirmDelete({ title: "Удалить пользователя?" })) deleteMutation.mutate(user.id); }}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -290,8 +290,8 @@ function UsersContent() {
       <Dialog open={!!editUser} onOpenChange={() => setEditUser(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit user</DialogTitle>
-            <DialogDescription>Update user information.</DialogDescription>
+            <DialogTitle>Редактировать пользователя</DialogTitle>
+            <DialogDescription>Обновите данные пользователя.</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -301,48 +301,48 @@ function UsersContent() {
           >
             <div className="space-y-4 py-4">
               <div className="space-y-1.5">
-                <Label>Name</Label>
+                <Label>Имя</Label>
                 <Input
                   value={formData.name || ""}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="User name"
+                  placeholder="Имя пользователя"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Phone</Label>
+                <Label>Телефон</Label>
                 <Input
                   value={formData.phone_number || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, phone_number: e.target.value })
                   }
-                  placeholder="Phone number"
+                  placeholder="Номер телефона"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Gender</Label>
+                <Label>Пол</Label>
                 <Input
                   value={formData.gender || ""}
                   onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                  placeholder="Gender"
+                  placeholder="Пол"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Mobile provider</Label>
+                <Label>Мобильный оператор</Label>
                 <Input
                   value={formData.mobile_provider || ""}
                   onChange={(e) =>
                     setFormData({ ...formData, mobile_provider: e.target.value })
                   }
-                  placeholder="Mobile provider"
+                  placeholder="Мобильный оператор"
                 />
               </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setEditUser(null)}>
-                Cancel
+                Отмена
               </Button>
               <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Saving…" : "Save changes"}
+                {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
               </Button>
             </DialogFooter>
           </form>
@@ -354,11 +354,11 @@ function UsersContent() {
 
 export default function UsersPage() {
   return (
-    <ErrorBoundary pageName="Users">
+    <ErrorBoundary pageName="Пользователи">
       <Suspense
         fallback={
           <div className="p-8 text-center text-sm text-muted-foreground">
-            Loading users…
+            Загрузка пользователей…
           </div>
         }
       >

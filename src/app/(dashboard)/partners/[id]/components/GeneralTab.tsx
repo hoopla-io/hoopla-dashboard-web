@@ -64,16 +64,16 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner", partnerId] });
       queryClient.invalidateQueries({ queryKey: ["partners"] });
-      toast.success("Partner updated successfully!");
+      toast.success("Партнёр обновлён!");
     },
     onError: () => {
-      toast.error("Failed to update partner");
+      toast.error("Не удалось обновить партнёра");
     },
   });
 
   const handleUpdate = () => {
     if (!formData.name) {
-      toast.error("Name is required");
+      toast.error("Укажите название");
       return;
     }
     updateMutation.mutate({ data: formData, file: selectedFile });
@@ -83,7 +83,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
     const file = e.target.files?.[0];
     if (file) {
       if (!["image/jpeg", "image/png"].includes(file.type)) {
-        toast.error("Only JPG and PNG files are allowed");
+        toast.error("Допускаются только файлы JPG и PNG");
         return;
       }
       setSelectedFile(file);
@@ -93,15 +93,15 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Partner Details</CardTitle>
-        <CardDescription>Update partner information and settings</CardDescription>
+        <CardTitle>Данные партнёра</CardTitle>
+        <CardDescription>Обновите информацию и настройки партнёра</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Visual & Text</h3>
+            <h3 className="text-lg font-medium">Внешний вид и текст</h3>
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Название</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -109,7 +109,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Описание</Label>
               <Input
                 id="description"
                 value={formData.description || ""}
@@ -117,7 +117,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="file">Logo</Label>
+              <Label htmlFor="file">Логотип</Label>
               <Input
                 id="file"
                 type="file"
@@ -126,16 +126,16 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               />
               {partner?.image_url && !selectedFile && (
                 <div className="mt-2">
-                  <p className="text-xs text-muted-foreground mb-1">Current Logo:</p>
-                  <img src={partner.image_url} alt="Current Logo" className="h-16 w-16 object-cover rounded-md border" />
+                  <p className="text-xs text-muted-foreground mb-1">Текущий логотип:</p>
+                  <img src={partner.image_url} alt="Текущий логотип" className="h-16 w-16 object-cover rounded-md border" />
                 </div>
               )}
-              {selectedFile && <p className="text-xs text-muted-foreground">Selected: {selectedFile.name}</p>}
+              {selectedFile && <p className="text-xs text-muted-foreground">Выбрано: {selectedFile.name}</p>}
               <div className="flex items-center justify-between space-x-2 pt-4 border-t">
                 <div className="space-y-0.5">
-                  <Label htmlFor="status">Status</Label>
+                  <Label htmlFor="status">Статус</Label>
                   <p className="text-xs text-muted-foreground">
-                    {formData.status ? "Active - Partner is active" : "Inactive - Partner is inactive"}
+                    {formData.status ? "Активен — партнёр активен" : "Неактивен — партнёр неактивен"}
                   </p>
                 </div>
                 <Switch
@@ -145,55 +145,55 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                 />
               </div>
               <div className="space-y-2 pt-4 border-t">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">Тип</Label>
                 <Select
                   value={formData.type}
                   onValueChange={(val: "normal" | "test") => setFormData({ ...formData, type: val })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select Type" />
+                    <SelectValue placeholder="Выберите тип" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="test">Test</SelectItem>
+                    <SelectItem value="normal">Обычный</SelectItem>
+                    <SelectItem value="test">Тестовый</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  Test partners (and their shops) are hidden from real customers — only visible with the X-Hoopla-Test header.
+                  Тестовые партнёры (и их заведения) скрыты от реальных клиентов — видны только с заголовком X-Hoopla-Test.
                 </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Vendor Settings</h3>
+            <h3 className="text-lg font-medium">Настройки вендора</h3>
             <div className="space-y-2">
-              <Label htmlFor="vendor">Vendor</Label>
+              <Label htmlFor="vendor">Вендор</Label>
               <Select
                 value={formData.vendor}
                 // @ts-expect-error: Select onValueChange expects strict string type
                 onValueChange={(val) => setFormData({ ...formData, vendor: val })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Vendor" />
+                  <SelectValue placeholder="Выберите вендора" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="iiko">Iiko</SelectItem>
                   <SelectItem value="poster">Poster</SelectItem>
                   <SelectItem value="deliveryhub">DeliveryHub</SelectItem>
                   <SelectItem value="loyverse">Loyverse</SelectItem>
-                  <SelectItem value="hoopla">Hoopla (in-house POS)</SelectItem>
+                  <SelectItem value="hoopla">Hoopla (собственная касса)</SelectItem>
                 </SelectContent>
               </Select>
               {formData.vendor === "hoopla" && (
                 <p className="text-xs text-muted-foreground">
-                  Cashiers for this partner are managed in the Staff tab.
+                  Кассиры этого партнёра управляются на вкладке «Сотрудники».
                 </p>
               )}
             </div>
             {formData.vendor !== "hoopla" && (
               <div className="space-y-2">
-                <Label htmlFor="vendor_key">Vendor Key</Label>
+                <Label htmlFor="vendor_key">Ключ вендора</Label>
                 <Input
                   id="vendor_key"
                   value={formData.vendor_key || ""}
@@ -204,25 +204,25 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Tax & Financial</h3>
+            <h3 className="text-lg font-medium">Налоги и финансы</h3>
             <div className="space-y-2">
-              <Label htmlFor="tin_type">TIN Type</Label>
+              <Label htmlFor="tin_type">Тип ИНН</Label>
               <Select
                 value={formData.tin_type}
                 // @ts-expect-error: Select onValueChange expects strict string type
                 onValueChange={(val) => setFormData({ ...formData, tin_type: val })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Type" />
+                  <SelectValue placeholder="Выберите тип" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tin">TIN</SelectItem>
-                  <SelectItem value="pinfl">PINFL</SelectItem>
+                  <SelectItem value="tin">ИНН</SelectItem>
+                  <SelectItem value="pinfl">ПИНФЛ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tin_num">TIN Number</Label>
+              <Label htmlFor="tin_num">Номер ИНН</Label>
               <Input
                 id="tin_num"
                 value={formData.tin_num || ""}
@@ -230,7 +230,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tin_percent">TIN Percent</Label>
+              <Label htmlFor="tin_percent">Процент ИНН</Label>
               <Input
                 id="tin_percent"
                 type="number"
@@ -240,7 +240,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="cashback_percent">Cashback Percent</Label>
+              <Label htmlFor="cashback_percent">Процент кэшбэка</Label>
               <Input
                 id="cashback_percent"
                 type="number"
@@ -250,7 +250,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="commission_percent">Commission Percent</Label>
+              <Label htmlFor="commission_percent">Процент комиссии</Label>
               <Input
                 id="commission_percent"
                 type="number"
@@ -259,7 +259,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
                 onChange={(e) => setFormData({ ...formData, commission_percent: parseFloat(e.target.value) })}
               />
               <p className="text-xs text-muted-foreground">
-                % Hoopla keeps from each order in settlements after the partner's first 3 months (default 10%).
+                % от каждого заказа, который Hoopla удерживает во взаиморасчётах после первых 3 месяцев работы партнёра (по умолчанию 10%).
               </p>
             </div>
           </div>
@@ -267,7 +267,7 @@ export function GeneralTab({ partnerId }: GeneralTabProps) {
 
         <div className="flex justify-end pt-4">
           <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
-            {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            {updateMutation.isPending ? "Сохранение…" : "Сохранить изменения"}
           </Button>
         </div>
       </CardContent>

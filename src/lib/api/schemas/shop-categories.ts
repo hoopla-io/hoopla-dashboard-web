@@ -18,7 +18,7 @@ export const ShopCategoryWithPartnersSchema = ShopCategorySchema.extend({
 });
 
 export const CreateShopCategorySchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "Укажите название"),
   sort_order: z.number().optional(),
   is_active: z.boolean().optional(),
 });

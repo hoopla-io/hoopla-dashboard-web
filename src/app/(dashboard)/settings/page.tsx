@@ -10,22 +10,22 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Settings" description="Manage your dashboard preferences." />
+      <PageHeader title="Настройки" description="Управление настройками панели." />
 
       <div className="max-w-2xl space-y-4">
         <section className="overflow-hidden rounded-xl border border-border bg-card">
           <header className="border-b border-border px-5 py-4">
-            <h2 className="text-sm font-medium text-foreground">Appearance</h2>
+            <h2 className="text-sm font-medium text-foreground">Внешний вид</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Customize how the dashboard looks.
+              Настройте внешний вид панели.
             </p>
           </header>
           <div className="divide-y divide-border">
             <div className="flex items-center justify-between px-5 py-4">
               <div className="space-y-0.5">
-                <Label className="text-sm text-foreground">Dark mode</Label>
+                <Label className="text-sm text-foreground">Тёмная тема</Label>
                 <p className="text-xs text-muted-foreground">
-                  Switch the entire dashboard to a darker palette.
+                  Переключить всю панель на тёмную палитру.
                 </p>
               </div>
               <Switch

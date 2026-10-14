@@ -50,6 +50,16 @@ const WEEKDAYS = [
   "sunday",
 ];
 
+const WEEKDAY_LABELS: Record<string, string> = {
+  monday: "Понедельник",
+  tuesday: "Вторник",
+  wednesday: "Среда",
+  thursday: "Четверг",
+  friday: "Пятница",
+  saturday: "Суббота",
+  sunday: "Воскресенье",
+};
+
 export function HoursTab({ shopId }: HoursTabProps) {
   const queryClient = useQueryClient();
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -69,11 +79,11 @@ export function HoursTab({ shopId }: HoursTabProps) {
     mutationFn: (data: CreateShopHoursRequest) => shopsApi.createHours(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop-hours", shopId] });
-      toast.success("Hours added successfully!");
+      toast.success("Часы работы добавлены");
       setIsAddOpen(false);
       setFormData({ week_day: "", open_at: "", close_at: "" });
     },
-    onError: () => toast.error("Failed to add hours"),
+    onError: () => toast.error("Не удалось добавить часы работы"),
   });
 
   const confirmDelete = useConfirm();
@@ -82,15 +92,15 @@ export function HoursTab({ shopId }: HoursTabProps) {
     mutationFn: (id: number) => shopsApi.deleteHours(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shop-hours", shopId] });
-      toast.success("Hours deleted successfully!");
+      toast.success("Часы работы удалены");
     },
-    onError: () => toast.error("Failed to delete hours"),
+    onError: () => toast.error("Не удалось удалить часы работы"),
   });
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.week_day || !formData.open_at || !formData.close_at) {
-      toast.error("Please fill in all fields");
+      toast.error("Заполните все поля");
       return;
     }
     createMutation.mutate({ ...formData, shop_id: shopId });
@@ -101,38 +111,38 @@ export function HoursTab({ shopId }: HoursTabProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Working Hours</CardTitle>
-            <CardDescription>Manage your shop&apos;s weekly schedule</CardDescription>
+            <CardTitle>Часы работы</CardTitle>
+            <CardDescription>Управление недельным расписанием заведения</CardDescription>
           </div>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="mr-2 h-4 w-4" />
-                Add Hours
+                Добавить часы
               </Button>
             </DialogTrigger>
             <DialogContent>
               <form onSubmit={handleCreate}>
                 <DialogHeader>
-                  <DialogTitle>Add Working Hours</DialogTitle>
+                  <DialogTitle>Добавить часы работы</DialogTitle>
                   <DialogDescription>
-                    Set opening and closing times for a specific day.
+                    Укажите время открытия и закрытия для выбранного дня.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label>Day of the Week</Label>
+                    <Label>День недели</Label>
                     <Select
                       value={formData.week_day}
                       onValueChange={(val) => setFormData({ ...formData, week_day: val })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select day" />
+                        <SelectValue placeholder="Выберите день" />
                       </SelectTrigger>
                       <SelectContent>
                         {WEEKDAYS.map((day) => (
                           <SelectItem key={day} value={day}>
-                            {day.charAt(0).toUpperCase() + day.slice(1)}
+                            {WEEKDAY_LABELS[day]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -140,7 +150,7 @@ export function HoursTab({ shopId }: HoursTabProps) {
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="open_at">Opens At</Label>
+                      <Label htmlFor="open_at">Открывается в</Label>
                       <Input
                         id="open_at"
                         type="time"
@@ -150,7 +160,7 @@ export function HoursTab({ shopId }: HoursTabProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="close_at">Closes At</Label>
+                      <Label htmlFor="close_at">Закрывается в</Label>
                       <Input
                         id="close_at"
                         type="time"
@@ -163,10 +173,10 @@ export function HoursTab({ shopId }: HoursTabProps) {
                 </div>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
-                    Cancel
+                    Отмена
                   </Button>
                   <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? "Adding..." : "Add Hours"}
+                    {createMutation.isPending ? "Добавление…" : "Добавить часы"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -178,32 +188,32 @@ export function HoursTab({ shopId }: HoursTabProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Day</TableHead>
-                  <TableHead>Open At</TableHead>
-                  <TableHead>Close At</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead>День</TableHead>
+                  <TableHead>Открытие</TableHead>
+                  <TableHead>Закрытие</TableHead>
+                  <TableHead className="w-[100px]">Действия</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={4} className="py-10 text-center text-sm text-muted-foreground">
-                      Loading…
+                      Загрузка…
                     </TableCell>
                   </TableRow>
                 ) : !hours || hours.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="p-0">
                       <EmptyState
-                        title="No working hours defined"
-                        description="Add opening and closing times for each day of the week."
+                        title="Часы работы не заданы"
+                        description="Добавьте время открытия и закрытия для каждого дня недели."
                       />
                     </TableCell>
                   </TableRow>
                 ) : (
                   [...hours].sort((a,b) => WEEKDAYS.indexOf(a.week_day) - WEEKDAYS.indexOf(b.week_day)).map((hour) => (
                     <TableRow key={hour.id}>
-                      <TableCell className="font-medium capitalize">{hour.week_day}</TableCell>
+                      <TableCell className="font-medium capitalize">{WEEKDAY_LABELS[hour.week_day] ?? hour.week_day}</TableCell>
                       <TableCell>{hour.open_at}</TableCell>
                       <TableCell>{hour.close_at}</TableCell>
                       <TableCell>
@@ -211,7 +221,7 @@ export function HoursTab({ shopId }: HoursTabProps) {
                           variant="ghost"
                           size="icon"
                           className="text-destructive h-8 w-8"
-                          onClick={async () => { if (await confirmDelete({ title: `Delete ${hour.week_day} hours?` })) deleteMutation.mutate(hour.id); }}
+                          onClick={async () => { if (await confirmDelete({ title: `Удалить часы работы: ${WEEKDAY_LABELS[hour.week_day] ?? hour.week_day}?` })) deleteMutation.mutate(hour.id); }}
                           disabled={deleteMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4" />

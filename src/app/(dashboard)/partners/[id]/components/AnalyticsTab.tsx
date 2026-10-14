@@ -63,7 +63,7 @@ export function AnalyticsTab({ partnerId }: AnalyticsTabProps) {
     <DateRangePicker
       from={from}
       to={to}
-      emptyLabel="This month"
+      emptyLabel="Этот месяц"
       onChange={(f, t) => {
         setFrom(f);
         setTo(t);
@@ -75,7 +75,7 @@ export function AnalyticsTab({ partnerId }: AnalyticsTabProps) {
     return (
       <div className="space-y-6">
         {picker}
-        <div className="p-8 text-center text-muted-foreground">Loading analytics...</div>
+        <div className="p-8 text-center text-muted-foreground">Загрузка аналитики…</div>
       </div>
     );
   }
@@ -84,7 +84,7 @@ export function AnalyticsTab({ partnerId }: AnalyticsTabProps) {
     return (
       <div className="space-y-6">
         {picker}
-        <div className="p-8 text-center text-destructive">Failed to load analytics</div>
+        <div className="p-8 text-center text-destructive">Не удалось загрузить аналитику</div>
       </div>
     );
   }
@@ -92,7 +92,7 @@ export function AnalyticsTab({ partnerId }: AnalyticsTabProps) {
   const totalRevenue = data.daily.reduce((sum, point) => sum + point.revenue, 0);
   const totalOrders = data.daily.reduce((sum, point) => sum + point.orders, 0);
   const medianFulfillment =
-    data.fulfillment.median_minutes === null ? "—" : `${data.fulfillment.median_minutes.toFixed(1)} min`;
+    data.fulfillment.median_minutes === null ? "—" : `${data.fulfillment.median_minutes.toFixed(1)} мин`;
   const returningShare =
     data.unique_users > 0 ? Math.round((data.loyalty.returning_users / data.unique_users) * 100) : 0;
 
@@ -100,48 +100,48 @@ export function AnalyticsTab({ partnerId }: AnalyticsTabProps) {
     <div className="space-y-6">
       {picker}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Unique customers" value={data.unique_users.toLocaleString()} />
-        <StatCard label="Completed orders" value={totalOrders.toLocaleString()} />
-        <StatCard label="Revenue" value={`${formatSomUZS(totalRevenue)} UZS`} />
-        <StatCard label="Median fulfillment" value={medianFulfillment} />
+        <StatCard label="Уникальные клиенты" value={data.unique_users.toLocaleString("ru-RU")} />
+        <StatCard label="Выполненные заказы" value={totalOrders.toLocaleString("ru-RU")} />
+        <StatCard label="Выручка" value={`${formatSomUZS(totalRevenue)} сум`} />
+        <StatCard label="Медианное время выполнения" value={medianFulfillment} />
         <StatCard
-          label="Returning customers"
-          value={`${data.loyalty.returning_users.toLocaleString()} (${returningShare}%)`}
+          label="Вернувшиеся клиенты"
+          value={`${data.loyalty.returning_users.toLocaleString("ru-RU")} (${returningShare}%)`}
         />
-        <StatCard label="Period" value={`${data.from} — ${data.to}`} />
+        <StatCard label="Период" value={`${data.from} — ${data.to}`} />
       </div>
 
-      <ChartCard title="Daily orders">
+      <ChartCard title="Заказы по дням">
         <DailyOrdersChart data={data.daily} />
       </ChartCard>
 
-      <ChartCard title="Orders by hour (Tashkent)">
+      <ChartCard title="Заказы по часам (Ташкент)">
         <HourlyChart data={data.hourly} />
       </ChartCard>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title="Customers by operator">
+        <ChartCard title="Клиенты по операторам">
           <OperatorsChart data={data.operators} />
         </ChartCard>
-        <ChartCard title="Customer loyalty">
+        <ChartCard title="Лояльность клиентов">
           <LoyaltyCard data={data.loyalty} />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title="Customers by gender">
+        <ChartCard title="Клиенты по полу">
           <GenderChart data={data.gender} />
         </ChartCard>
-        <ChartCard title="Customers by age">
+        <ChartCard title="Клиенты по возрасту">
           <AgeChart data={data.age} />
         </ChartCard>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title="Top products">
+        <ChartCard title="Топ товаров">
           <TopBarList data={data.top_drinks} />
         </ChartCard>
-        <ChartCard title="Top categories">
+        <ChartCard title="Топ категорий">
           <TopBarList data={data.top_categories} />
         </ChartCard>
       </div>

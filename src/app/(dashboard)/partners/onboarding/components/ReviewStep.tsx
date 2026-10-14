@@ -18,8 +18,8 @@ export function ReviewStep({ partnerId, partnerName, shopName, categoryCount, dr
       <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
         <Check className="size-5 shrink-0 text-primary" />
         <div>
-          <p className="text-sm font-medium text-foreground">Partner onboarded</p>
-          <p className="text-xs text-muted-foreground">Everything below is already live in the dashboard.</p>
+          <p className="text-sm font-medium text-foreground">Партнёр подключён</p>
+          <p className="text-xs text-muted-foreground">Всё перечисленное ниже уже доступно в панели.</p>
         </div>
       </div>
 
@@ -30,22 +30,22 @@ export function ReviewStep({ partnerId, partnerName, shopName, categoryCount, dr
         </li>
         <li className="flex items-center gap-3 rounded-lg border border-border p-3">
           <Store className="size-4 shrink-0 text-muted-foreground" />
-          <span className="text-sm text-foreground">{shopName ?? "No shop created yet"}</span>
+          <span className="text-sm text-foreground">{shopName ?? "Заведение ещё не создано"}</span>
         </li>
         <li className="flex items-center gap-3 rounded-lg border border-border p-3">
           <Tag className="size-4 shrink-0 text-muted-foreground" />
           <span className="text-sm text-foreground">
-            {categoryCount} categor{categoryCount === 1 ? "y" : "ies"}
+            Категорий: {categoryCount}
           </span>
         </li>
         <li className="flex items-center gap-3 rounded-lg border border-border p-3">
           <Coffee className="size-4 shrink-0 text-muted-foreground" />
-          <span className="text-sm text-foreground">{drinkCount} products added</span>
+          <span className="text-sm text-foreground">Добавлено товаров: {drinkCount}</span>
         </li>
       </ul>
 
       <div className="flex justify-end pt-2">
-        <Button onClick={() => navigate(`/partners/${partnerId}`)}>Go to partner</Button>
+        <Button onClick={() => navigate(`/partners/${partnerId}`)}>Перейти к партнёру</Button>
       </div>
     </div>
   );

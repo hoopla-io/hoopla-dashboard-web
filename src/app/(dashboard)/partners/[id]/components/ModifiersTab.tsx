@@ -56,19 +56,19 @@ export function ModifiersTab({ partnerId }: ModifiersTabProps) {
         : partnersApi.createModifier(partnerId, value, file ?? undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_modifiers", partnerId] });
-      toast.success(editing ? "Modifier updated successfully" : "Modifier added successfully");
+      toast.success(editing ? "Модификатор обновлён" : "Модификатор добавлен");
       closeDialog();
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to save modifier")),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Не удалось сохранить модификатор")),
   });
 
   const deleteMutation = useMutation({
     mutationFn: partnersApi.deleteModifier,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["partner_modifiers", partnerId] });
-      toast.success("Modifier deleted successfully");
+      toast.success("Модификатор удалён");
     },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to delete modifier")),
+    onError: (error) => toast.error(getApiErrorMessage(error, "Не удалось удалить модификатор")),
   });
 
   const openCreate = () => {
@@ -88,12 +88,12 @@ export function ModifiersTab({ partnerId }: ModifiersTabProps) {
     const isPng = selected.type === "image/png" || selected.name.toLowerCase().endsWith(".png");
     const isSvg = selected.type === "image/svg+xml" || selected.name.toLowerCase().endsWith(".svg");
     if (!isPng && !isSvg) {
-      toast.error("Image must be a PNG or SVG");
+      toast.error("Изображение должно быть в формате PNG или SVG");
       setFileInputKey(key => key + 1);
       return;
     }
     if (selected.size > MAX_IMAGE_SIZE) {
-      toast.error("Image must be up to 1 MB");
+      toast.error("Размер изображения — не более 1 МБ");
       setFileInputKey(key => key + 1);
       return;
     }
@@ -110,7 +110,7 @@ export function ModifiersTab({ partnerId }: ModifiersTabProps) {
   const handleSave = () => {
     const value = name.trim();
     if (!value) {
-      toast.error("Name is required");
+      toast.error("Укажите название");
       return;
     }
     saveMutation.mutate(value);
@@ -121,29 +121,29 @@ export function ModifiersTab({ partnerId }: ModifiersTabProps) {
       <div className="flex justify-end">
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Modifier
+          Добавить модификатор
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Modifiers</CardTitle>
+          <CardTitle>Модификаторы</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[64px]">Image</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-[140px] text-right">Products</TableHead>
+                <TableHead className="w-[64px]">Изображение</TableHead>
+                <TableHead>Название</TableHead>
+                <TableHead className="w-[140px] text-right">Товары</TableHead>
                 <TableHead className="w-[100px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-4">Loading modifiers...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-4">Загрузка модификаторов…</TableCell></TableRow>
               ) : modifiers.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">No modifiers found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center py-4 text-muted-foreground">Модификаторы не найдены</TableCell></TableRow>
               ) : (
                 modifiers.map(modifier => (
                   <TableRow key={modifier.id}>
@@ -160,16 +160,16 @@ export function ModifiersTab({ partnerId }: ModifiersTabProps) {
                     <TableCell className="text-right tabular-nums">{modifier.products_count}</TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" aria-label={`Edit ${modifier.name}`} onClick={() => openEdit(modifier)}>
+                        <Button variant="ghost" size="icon" aria-label={`Редактировать «${modifier.name}»`} onClick={() => openEdit(modifier)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label={`Delete ${modifier.name}`}
+                          aria-label={`Удалить «${modifier.name}»`}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           disabled={modifier.products_count > 0}
-                          onClick={async () => { if (await confirmDelete({ title: `Delete “${modifier.name}”?` })) deleteMutation.mutate(modifier.id); }}
+                          onClick={async () => { if (await confirmDelete({ title: `Удалить «${modifier.name}»?` })) deleteMutation.mutate(modifier.id); }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -186,31 +186,31 @@ export function ModifiersTab({ partnerId }: ModifiersTabProps) {
       <Dialog open={isDialogOpen} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit Modifier" : "Add Modifier"}</DialogTitle>
+            <DialogTitle>{editing ? "Редактирование модификатора" : "Новый модификатор"}</DialogTitle>
             <DialogDescription>
               {editing
-                ? `The name and image apply to all ${editing.products_count} products that use this modifier`
-                : "Add a modifier name this partner's products can share"}
+                ? `Название и изображение применяются ко всем товарам с этим модификатором (${editing.products_count})`
+                : "Добавьте модификатор, который смогут использовать товары этого партнёра"}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
             <div className="space-y-2 py-4">
-              <Label htmlFor="modifier-name">Name</Label>
+              <Label htmlFor="modifier-name">Название</Label>
               <Input
                 id="modifier-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Кокосовое молоко"
+                placeholder="напр. Кокосовое молоко"
               />
             </div>
             <div className="space-y-2 pb-4">
-              <Label htmlFor="modifier-image">Image</Label>
+              <Label htmlFor="modifier-image">Изображение</Label>
               {imagePreview && (
                 <div className="relative inline-block">
-                  <img src={imagePreview} alt="Preview" className="h-20 w-20 rounded-lg border object-contain" />
+                  <img src={imagePreview} alt="Предпросмотр" className="h-20 w-20 rounded-lg border object-contain" />
                   <button
                     type="button"
-                    aria-label="Remove image"
+                    aria-label="Убрать изображение"
                     onClick={clearImage}
                     className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90"
                   >
@@ -225,12 +225,12 @@ export function ModifiersTab({ partnerId }: ModifiersTabProps) {
                 accept=".png,.svg,image/png,image/svg+xml"
                 onChange={(e) => handleFileChange(e.target.files?.[0])}
               />
-              <p className="text-xs text-muted-foreground">PNG or SVG, up to 1 MB{editing?.image_url ? ". Leave empty to keep the current image" : ""}</p>
+              <p className="text-xs text-muted-foreground">PNG или SVG, до 1 МБ{editing?.image_url ? ". Оставьте пустым, чтобы сохранить текущее изображение" : ""}</p>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeDialog}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={closeDialog}>Отмена</Button>
               <Button type="submit" disabled={saveMutation.isPending}>
-                {saveMutation.isPending ? "Saving..." : "Save"}
+                {saveMutation.isPending ? "Сохранение…" : "Сохранить"}
               </Button>
             </DialogFooter>
           </form>

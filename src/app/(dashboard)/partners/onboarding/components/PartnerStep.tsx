@@ -30,10 +30,10 @@ export function PartnerStep({ createdPartner, onCreated, onContinue }: PartnerSt
     mutationFn: ({ data, file }: { data: CreatePartnerRequest; file?: File }) =>
       partnersApi.create(data, file),
     onSuccess: (result, variables) => {
-      toast.success("Partner created!");
+      toast.success("Партнёр создан!");
       onCreated({ id: result.partner_id, name: variables.data.name });
     },
-    onError: () => toast.error("Failed to create partner"),
+    onError: () => toast.error("Не удалось создать партнёра"),
   });
 
   if (createdPartner) {
@@ -43,11 +43,11 @@ export function PartnerStep({ createdPartner, onCreated, onContinue }: PartnerSt
           <Check className="size-5 shrink-0 text-primary" />
           <div>
             <p className="text-sm font-medium text-foreground">{createdPartner.name}</p>
-            <p className="text-xs text-muted-foreground">Partner created</p>
+            <p className="text-xs text-muted-foreground">Партнёр создан</p>
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={onContinue}>Continue</Button>
+          <Button onClick={onContinue}>Продолжить</Button>
         </div>
       </div>
     );
@@ -59,25 +59,25 @@ export function PartnerStep({ createdPartner, onCreated, onContinue }: PartnerSt
       className="space-y-4"
     >
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Partner details</h2>
-        <p className="text-sm text-muted-foreground">Start by creating the coffee chain.</p>
+        <h2 className="text-lg font-semibold text-foreground">Данные партнёра</h2>
+        <p className="text-sm text-muted-foreground">Начните с создания сети кофеен.</p>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="onboarding-partner-name">Name</Label>
-        <Input id="onboarding-partner-name" placeholder="e.g. Morselle" {...form.register("name")} />
+        <Label htmlFor="onboarding-partner-name">Название</Label>
+        <Input id="onboarding-partner-name" placeholder="напр. Morselle" {...form.register("name")} />
         {form.formState.errors.name && (
           <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="onboarding-partner-description">Description</Label>
-        <Textarea id="onboarding-partner-description" placeholder="Optional" {...form.register("description")} />
+        <Label htmlFor="onboarding-partner-description">Описание</Label>
+        <Textarea id="onboarding-partner-description" placeholder="Необязательно" {...form.register("description")} />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="onboarding-partner-logo">Logo</Label>
+        <Label htmlFor="onboarding-partner-logo">Логотип</Label>
         <Input
           id="onboarding-partner-logo"
           type="file"
@@ -88,9 +88,9 @@ export function PartnerStep({ createdPartner, onCreated, onContinue }: PartnerSt
 
       <div className="flex items-center justify-between rounded-lg border p-3">
         <div className="space-y-0.5">
-          <Label htmlFor="onboarding-partner-type">Test partner</Label>
+          <Label htmlFor="onboarding-partner-type">Тестовый партнёр</Label>
           <p className="text-xs text-muted-foreground">
-            Hidden from real customers — only visible with the X-Hoopla-Test header. Use this for QA/dev runs.
+            Скрыт от реальных клиентов — виден только с заголовком X-Hoopla-Test. Используйте для тестирования и разработки.
           </p>
         </div>
         <Switch
@@ -104,10 +104,10 @@ export function PartnerStep({ createdPartner, onCreated, onContinue }: PartnerSt
         <Button type="submit" disabled={createMutation.isPending}>
           {createMutation.isPending ? (
             <>
-              <Loader2 className="size-4 animate-spin" /> Creating…
+              <Loader2 className="size-4 animate-spin" /> Создание…
             </>
           ) : (
-            "Create partner & continue"
+            "Создать партнёра и продолжить"
           )}
         </Button>
       </div>
