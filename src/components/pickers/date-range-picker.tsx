@@ -78,6 +78,13 @@ export function DateRangePicker({
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => applyPreset(now, now)}
+          >
+            Today
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => applyPreset(startOfMonth(now), endOfMonth(now))}
           >
             This month
