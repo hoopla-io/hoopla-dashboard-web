@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useQueryState, parseAsString } from "nuqs";
+import { DateRangePicker } from "@/components/pickers/date-range-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { analyticsApi } from "@/lib/api/domains/analytics";
 import { formatSomUZS } from "@/lib/money";
@@ -48,34 +50,60 @@ function ChartCard({ title, children }: ChartCardProps) {
 }
 
 export function AnalyticsTab({ partnerId }: AnalyticsTabProps) {
+  const [from, setFrom] = useQueryState("analytics_from", parseAsString.withDefault(""));
+  const [to, setTo] = useQueryState("analytics_to", parseAsString.withDefault(""));
+
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["partner-analytics", partnerId],
-    queryFn: () => analyticsApi.getByPartner(partnerId),
+    queryKey: ["partner-analytics", partnerId, from, to],
+    queryFn: () => analyticsApi.getByPartner(partnerId, { from: from || undefined, to: to || undefined }),
     enabled: !!partnerId,
   });
 
+  const picker = (
+    <DateRangePicker
+      from={from}
+      to={to}
+      emptyLabel="This month"
+      onChange={(f, t) => {
+        setFrom(f);
+        setTo(t);
+      }}
+    />
+  );
+
   if (isLoading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading analytics...</div>;
+    return (
+      <div className="space-y-6">
+        {picker}
+        <div className="p-8 text-center text-muted-foreground">Loading analytics...</div>
+      </div>
+    );
   }
 
   if (isError || !data) {
-    return <div className="p-8 text-center text-destructive">Failed to load analytics</div>;
+    return (
+      <div className="space-y-6">
+        {picker}
+        <div className="p-8 text-center text-destructive">Failed to load analytics</div>
+      </div>
+    );
   }
 
   const totalRevenue = data.daily.reduce((sum, point) => sum + point.revenue, 0);
   const totalOrders = data.daily.reduce((sum, point) => sum + point.orders, 0);
-  const avgFulfillment =
-    data.fulfillment.avg_minutes === null ? "—" : `${data.fulfillment.avg_minutes.toFixed(1)} min`;
+  const medianFulfillment =
+    data.fulfillment.median_minutes === null ? "—" : `${data.fulfillment.median_minutes.toFixed(1)} min`;
   const returningShare =
     data.unique_users > 0 ? Math.round((data.loyalty.returning_users / data.unique_users) * 100) : 0;
 
   return (
     <div className="space-y-6">
+      {picker}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Unique customers" value={data.unique_users.toLocaleString()} />
         <StatCard label="Completed orders" value={totalOrders.toLocaleString()} />
         <StatCard label="Revenue" value={`${formatSomUZS(totalRevenue)} UZS`} />
-        <StatCard label="Avg fulfillment" value={avgFulfillment} />
+        <StatCard label="Median fulfillment" value={medianFulfillment} />
         <StatCard
           label="Returning customers"
           value={`${data.loyalty.returning_users.toLocaleString()} (${returningShare}%)`}
