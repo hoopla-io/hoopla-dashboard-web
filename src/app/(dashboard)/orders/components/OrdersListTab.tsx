@@ -22,13 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DataTableShell } from "@/components/data-table/data-table-shell";
 import { SortableTableHead } from "@/components/data-table/sortable-table-head";
@@ -37,10 +30,11 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useTableSort } from "@/hooks/use-table-sort";
 import { ordersApi } from "@/lib/api/domains/orders";
 import { getApiErrorMessage } from "@/lib/api/error";
-import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
-import { orderStatusTone, formatOrderStatus, EDITABLE_ORDER_STATUSES } from "@/lib/order-status";
+import type { Order } from "@/lib/api/schemas/orders";
+import { orderStatusTone, formatOrderStatus } from "@/lib/order-status";
 import { formatOrderSource, orderSourceVariant } from "@/lib/order-source";
 import { formatSomUZS } from "@/lib/money";
+import { OrderDetailSheet } from "@/components/orders/OrderDetailSheet";
 import { OrdersSummaryCards } from "@/app/(dashboard)/orders/components/OrdersSummaryCards";
 import type { OrdersFiltersState } from "@/app/(dashboard)/orders/hooks/useOrdersFilters";
 
@@ -56,6 +50,7 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
   const { page: currentPage, setPage: setCurrentPage } = filters;
   const [perPage, setPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
   const [itemsDialogOrder, setItemsDialogOrder] = useState<Order | null>(null);
+  const [openOrderId, setOpenOrderId] = useQueryState("order", parseAsInteger);
   const { sort, order, onSort, sortParam, orderParam } = useTableSort(() =>
     setCurrentPage(1)
   );
@@ -74,19 +69,6 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
 
   const orders = ordersData?.data || [];
   const totalPages = ordersData?.meta?.totalPages || 1;
-
-  const statusMutation = useMutation({
-    mutationFn: (data: ChangeOrderStatusRequest) => ordersApi.changeStatus(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      toast.success("Order status updated");
-    },
-    onError: (error) => toast.error(getApiErrorMessage(error, "Failed to update order status")),
-  });
-
-  const handleStatusChange = (orderId: number, newStatus: string) => {
-    statusMutation.mutate({ id: orderId, status: newStatus });
-  };
 
   const fiscalizeMutation = useMutation({
     mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
@@ -129,20 +111,19 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                 Status
               </SortableTableHead>
               <TableHead>Payment</TableHead>
-              <TableHead className="text-right">Action</TableHead>
               <TableHead className="text-center">Fiscal</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={14} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={13} className="py-10 text-center text-sm text-muted-foreground">
                   Loading…
                 </TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={14} className="py-10 text-center">
+                <TableCell colSpan={13} className="py-10 text-center">
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Couldn't load orders. Check your connection and try again.
@@ -155,7 +136,7 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={14} className="p-0">
+                <TableCell colSpan={13} className="p-0">
                   <EmptyState
                     title="No orders found"
                     description={
@@ -169,7 +150,15 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
             ) : (
               orders.map((order: Order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-mono text-xs tabular-nums">#{order.id}</TableCell>
+                  <TableCell className="font-mono text-xs tabular-nums">
+                    <button
+                      type="button"
+                      className="underline-offset-2 hover:underline"
+                      onClick={() => setOpenOrderId(order.id)}
+                    >
+                      #{order.id}
+                    </button>
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="text-sm text-foreground">{order.user?.name || "—"}</span>
@@ -253,25 +242,6 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
                       tone={order.settlement_paid ? "success" : "neutral"}
                     />
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end">
-                      <Select
-                        value={order.status}
-                        onValueChange={(value) => handleStatusChange(order.id, value)}
-                      >
-                        <SelectTrigger size="sm" className="h-8 w-[140px] text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from(new Set([order.status, ...EDITABLE_ORDER_STATUSES])).map((status) => (
-                            <SelectItem key={status} value={status} className="text-xs">
-                              {formatOrderStatus(status)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </TableCell>
                   <TableCell className="text-center">
                     {order.status === "completed" && (order.fiscal_link?.trim() ? (
                       <Button asChild variant="outline" size="icon-sm" title="Open fiscal receipt">
@@ -340,6 +310,8 @@ export function OrdersListTab({ filters }: { filters: OrdersFiltersState }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <OrderDetailSheet orderId={openOrderId} onClose={() => setOpenOrderId(null)} />
     </div>
   );
 }

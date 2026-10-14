@@ -34,7 +34,9 @@ import { EmptyState } from "@/components/data-table/empty-state";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { ordersApi } from "@/lib/api/domains/orders";
 import { getApiErrorMessage } from "@/lib/api/error";
-import type { Order, ChangeOrderStatusRequest } from "@/lib/api/schemas/orders";
+import type { Order } from "@/lib/api/schemas/orders";
+import { ORDER_STATUSES } from "@/lib/order-status";
+import { OrderDetailSheet } from "@/components/orders/OrderDetailSheet";
 import { formatOrderSource } from "@/lib/order-source";
 
 interface OrdersTabProps {
@@ -49,7 +51,6 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-red-500/20 text-red-500",
 };
 
-const statusOptions = ["pending_payment", "pending", "processing", "completed", "cancelled"];
 const ITEMS_PER_PAGE = 10;
 
 export function OrdersTab({ shopId }: OrdersTabProps) {
@@ -59,6 +60,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [itemsDialogOrder, setItemsDialogOrder] = useState<Order | null>(null);
+  const [openOrderId, setOpenOrderId] = useState<number | null>(null);
 
   const { data: ordersData, isLoading } = useQuery({
     queryKey: ["shop-orders", shopId, page, perPage, statusFilter, searchTerm],
@@ -74,19 +76,6 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
   const orders = ordersData?.data || [];
   const meta = ordersData?.meta;
   const totalPages = meta?.totalPages || 1;
-
-  const statusMutation = useMutation({
-    mutationFn: (data: ChangeOrderStatusRequest) => ordersApi.changeStatus(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shop-orders", shopId] });
-      toast.success("Order status updated!");
-    },
-    onError: () => toast.error("Failed to update order status"),
-  });
-
-  const handleStatusChange = (orderId: number, newStatus: string) => {
-    statusMutation.mutate({ id: orderId, status: newStatus });
-  };
 
   const fiscalizeMutation = useMutation({
     mutationFn: (orderId: number) => ordersApi.fiscalize(orderId),
@@ -125,7 +114,7 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                {statusOptions.map((status) => (
+                {ORDER_STATUSES.map((status) => (
                   <SelectItem key={status} value={status}>
                     {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
                   </SelectItem>
@@ -145,18 +134,17 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                   <TableHead>Source</TableHead>
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
                   <TableHead className="text-center">Fiscal</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8">Loading...</TableCell>
+                    <TableCell colSpan={8} className="text-center py-8">Loading...</TableCell>
                   </TableRow>
                 ) : orders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="p-0">
+                    <TableCell colSpan={8} className="p-0">
                       <EmptyState
                         title="No orders found"
                         description={
@@ -170,7 +158,15 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                 ) : (
                   orders.map((order: Order) => (
                     <TableRow key={order.id}>
-                      <TableCell className="font-medium">#{order.id}</TableCell>
+                      <TableCell className="font-medium">
+                        <button
+                          type="button"
+                          className="underline-offset-2 hover:underline"
+                          onClick={() => setOpenOrderId(order.id)}
+                        >
+                          #{order.id}
+                        </button>
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="font-medium text-sm">{order.user?.name || "-"}</span>
@@ -201,25 +197,6 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
                         <Badge className={statusColors[order.status] || "bg-muted"}>
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1).replace(/_/g, " ")}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Select
-                            value={order.status}
-                            onValueChange={(value) => handleStatusChange(order.id, value)}
-                          >
-                            <SelectTrigger className="w-[120px] h-8">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {statusOptions.map((status) => (
-                                <SelectItem key={status} value={status}>
-                                  {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, " ")}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         {order.status === "completed" && (order.fiscal_link?.trim() ? (
@@ -291,6 +268,8 @@ export function OrdersTab({ shopId }: OrdersTabProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <OrderDetailSheet orderId={openOrderId} onClose={() => setOpenOrderId(null)} />
     </>
   );
 }

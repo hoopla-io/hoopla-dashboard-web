@@ -1,5 +1,5 @@
 import { httpClient } from "@/lib/api/http-client";
-import type { Order, ChangeOrderStatusRequest, OrdersSummary } from "@/lib/api/schemas/orders";
+import type { Order, ChangeOrderStatusRequest, OrderDetail, OrdersSummary } from "@/lib/api/schemas/orders";
 
 
 
@@ -61,8 +61,13 @@ export const ordersApi = {
     return response.data;
   },
 
+  getById: async (orderId: number): Promise<OrderDetail> => {
+    const response = await httpClient.get<ApiResponse<OrderDetail>>(`/api/v1/orders/show/${orderId}`);
+    return response.data.data;
+  },
+
   changeStatus: async (data: ChangeOrderStatusRequest): Promise<void> => {
-    await httpClient.put(`/api/v1/orders/edit/${data.id}`, { status: data.status });
+    await httpClient.put(`/api/v1/orders/edit/${data.id}`, { status: data.status, reason: data.reason });
   },
 
   fiscalize: async (orderId: number): Promise<void> => {
