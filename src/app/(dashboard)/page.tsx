@@ -1,196 +1,110 @@
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
+import { TriangleAlert } from "lucide-react";
 
-import { partnersApi } from "@/lib/api/domains/partners";
-import { shopsApi } from "@/lib/api/domains/shops";
-import { ordersApi } from "@/lib/api/domains/orders";
-import { usersApi } from "@/lib/api/domains/users";
-import { storiesApi } from "@/lib/api/domains/stories";
-import { bannersApi } from "@/lib/api/domains/banners";
-import { notificationsApi } from "@/lib/api/domains/notifications";
-import { drinksApi } from "@/lib/api/domains/drinks";
-import { shopCategoriesApi } from "@/lib/api/domains/shop-categories";
+import { analyticsApi } from "@/lib/api/domains/analytics";
 import { useAuthStore } from "@/stores/auth-store";
 import { PageHeader } from "@/components/layout/page-header";
-import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
-import { formatOrderSource } from "@/lib/order-source";
-import { cn } from "@/lib/utils";
+import { PeriodKpis, Tile } from "@/app/(dashboard)/components/PeriodKpis";
+import { CatalogCounts } from "@/app/(dashboard)/components/CatalogCounts";
+import { RecentOrders } from "@/app/(dashboard)/components/RecentOrders";
 
-type ListResponse = { data?: unknown[]; meta?: { totalItems?: number } | null } | null | undefined;
-
-const getTotal = (res: ListResponse) =>
-  res?.meta?.totalItems ?? res?.data?.length ?? 0;
-
-const statusTone: Record<string, StatusTone> = {
-  pending_payment: "pending",
-  pending: "warning",
-  processing: "processing",
-  completed: "success",
-  cancelled: "danger",
-};
-
-const statusLabel: Record<string, string> = {
-  pending_payment: "Awaiting payment",
-  pending: "Pending",
-  processing: "Processing",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
-
-type StatCellProps = {
-  label: string;
-  value: number;
-  meta?: string;
-  href: string;
-};
-
-function StatCell({ label, value, meta, href }: StatCellProps) {
+function SectionTitle({ title, hint }: { title: string; hint?: string }) {
   return (
-    <Link
-      to={href}
-      className="group flex flex-col gap-1 bg-card p-5 transition-colors hover:bg-muted/40"
-    >
-      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <span className="font-mono text-3xl font-semibold tracking-tight tabular-nums text-foreground">
-        {value.toLocaleString()}
-      </span>
-      {meta ? (
-        <span className="text-xs text-muted-foreground">{meta}</span>
-      ) : null}
-    </Link>
+    <div className="flex items-baseline justify-between">
+      <h2 className="text-sm font-medium text-foreground">{title}</h2>
+      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+    </div>
   );
 }
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-
-  const { data: partners } = useQuery({
-    queryKey: ["partners"],
-    queryFn: () => partnersApi.getAll(),
-  });
-  const { data: shops } = useQuery({
-    queryKey: ["shops"],
-    queryFn: () => shopsApi.getAll(),
-  });
-  const { data: orders } = useQuery({
-    queryKey: ["orders"],
-    queryFn: () => ordersApi.getAll(),
-  });
-  const { data: users } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => usersApi.getAll(),
-  });
-  const { data: stories } = useQuery({
-    queryKey: ["stories"],
-    queryFn: () => storiesApi.getAll(),
-  });
-  const { data: banners } = useQuery({
-    queryKey: ["banners"],
-    queryFn: () => bannersApi.getAll(),
-  });
-  const { data: notifications } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => notificationsApi.getAll(),
-  });
-  const { data: drinks } = useQuery({
-    queryKey: ["drinks"],
-    queryFn: () => drinksApi.getAll(),
-  });
-  const { data: shopCategories } = useQuery({
-    queryKey: ["shop-categories"],
-    queryFn: () => shopCategoriesApi.getAll(),
-  });
-
-  const activeStories = stories?.data?.filter((s) => s.is_active).length ?? 0;
-  const activeBanners = banners?.data?.filter((b) => b.is_active).length ?? 0;
-  const activeCategories =
-    shopCategories?.data?.filter((c) => c.is_active).length ?? 0;
-
   const today = useMemo(() => format(new Date(), "EEEE, MMMM d"), []);
+  const todayParam = useMemo(() => format(new Date(), "yyyy-MM-dd"), []);
 
-  const recentOrders = (orders?.data ?? []).slice(0, 8);
+  const { data: stats, isError } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: analyticsApi.getDashboardStats,
+    refetchInterval: 60_000,
+  });
 
-  const primaryStats: StatCellProps[] = [
-    { label: "Users", value: getTotal(users), href: "/users" },
-    { label: "Partners", value: getTotal(partners), href: "/partners" },
-    { label: "Shops", value: getTotal(shops), href: "/shops" },
-    { label: "Orders", value: getTotal(orders), href: "/orders" },
-  ];
-
-  const contentStats: StatCellProps[] = [
-    {
-      label: "Stories",
-      value: getTotal(stories),
-      meta: `${activeStories} active`,
-      href: "/stories",
-    },
-    {
-      label: "Banners",
-      value: getTotal(banners),
-      meta: `${activeBanners} active`,
-      href: "/banners",
-    },
-    {
-      label: "Products",
-      value: getTotal(drinks),
-      href: "/products",
-    },
-    {
-      label: "Categories",
-      value: getTotal(shopCategories),
-      meta: `${activeCategories} active`,
-      href: "/shop-categories",
-    },
-    {
-      label: "Notifications",
-      value: getTotal(notifications),
-      href: "/notifications",
-    },
-  ];
+  const weekFrom = stats ? stats.this_week.from.slice(0, 10) : todayParam;
 
   return (
     <div className="space-y-8">
       <PageHeader
         title="Dashboard"
-        description={
-          user?.name
-            ? `${today} · Welcome back, ${user.name}.`
-            : today
-        }
+        description={user?.name ? `${today} · Welcome back, ${user.name}.` : today}
       />
 
-      <section className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-foreground">Overview</h2>
-          <span className="text-xs text-muted-foreground">Across the platform</span>
-        </div>
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4">
-          {primaryStats.map((stat) => (
-            <StatCell key={stat.label} {...stat} />
-          ))}
-        </div>
-      </section>
+      {isError && (
+        <p className="text-sm text-destructive">Couldn't load dashboard stats. They refresh every minute.</p>
+      )}
 
-      <section className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-foreground">Content & engagement</h2>
-          <span className="text-xs text-muted-foreground">Live counts</span>
-        </div>
-        <div
-          className={cn(
-            "grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border",
-            "md:grid-cols-3 lg:grid-cols-5"
-          )}
-        >
-          {contentStats.map((stat) => (
-            <StatCell key={stat.label} {...stat} />
-          ))}
-        </div>
-      </section>
+      {stats ? (
+        <>
+          <section className="space-y-3">
+            <SectionTitle title="Today" hint="Tashkent time, test partners excluded" />
+            <PeriodKpis
+              current={stats.today}
+              previous={stats.yesterday}
+              comparedTo="same time yesterday"
+              ordersHref={`/orders?from=${todayParam}&to=${todayParam}`}
+              extra={
+                <Tile
+                  label="In progress now"
+                  value={stats.active_orders.total.toLocaleString()}
+                  href="/orders?status=pending"
+                  footer={
+                    stats.active_orders.stuck > 0 ? (
+                      <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                        <TriangleAlert className="size-3.5" />
+                        {stats.active_orders.stuck} waiting over 30 min
+                      </span>
+                    ) : (
+                      "None waiting over 30 min"
+                    )
+                  }
+                />
+              }
+            />
+          </section>
+
+          <section className="space-y-3">
+            <SectionTitle title="This week" hint="Since Monday" />
+            <PeriodKpis
+              current={stats.this_week}
+              previous={stats.last_week}
+              comparedTo="same point last week"
+              ordersHref={`/orders?view=analytics&from=${weekFrom}&to=${todayParam}`}
+              extra={
+                <Tile
+                  label="New users"
+                  value={stats.this_week.new_users.toLocaleString()}
+                  href="/users"
+                  footer={`${stats.this_week.unique_customers.toLocaleString()} customers ordered`}
+                />
+              }
+            />
+          </section>
+
+          <section className="space-y-3">
+            <SectionTitle title="Platform" hint="Live counts" />
+            <CatalogCounts counts={stats.counts} />
+          </section>
+        </>
+      ) : (
+        !isError && (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-[104px] animate-pulse rounded-xl bg-muted" />
+            ))}
+          </div>
+        )
+      )}
 
       <section className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
@@ -203,49 +117,7 @@ export default function DashboardPage() {
               View all
             </Link>
           </div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card">
-            {recentOrders.length === 0 ? (
-              <div className="flex min-h-[200px] items-center justify-center px-6 py-10 text-center">
-                <p className="text-xs text-muted-foreground">
-                  No orders yet. New orders will appear here.
-                </p>
-              </div>
-            ) : (
-              <ul className="divide-y divide-border">
-                {recentOrders.map((order) => {
-                  const tone = statusTone[order.status] ?? "neutral";
-                  const label = statusLabel[order.status] ?? order.status;
-                  const ts = order.time ? new Date(order.time) : null;
-                  return (
-                    <li key={order.id}>
-                      <Link
-                        to="/orders"
-                        className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/40"
-                      >
-                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                          #{order.id}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm text-foreground">
-                            {order.drink?.name ?? "Product"}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {order.shop?.name ?? "—"}
-                            {order.user?.name ? ` · ${order.user.name}` : ""}
-                            {` · ${formatOrderSource(order.source)}`}
-                          </p>
-                        </div>
-                        <StatusBadge label={label} tone={tone} />
-                        <span className="hidden w-24 text-right text-xs text-muted-foreground sm:inline">
-                          {ts ? formatDistanceToNow(ts, { addSuffix: true }) : "—"}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
+          <RecentOrders />
         </div>
 
         <div className="space-y-3">

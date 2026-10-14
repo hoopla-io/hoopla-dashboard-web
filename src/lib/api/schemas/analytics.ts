@@ -189,3 +189,40 @@ export type PromoCodeMetric = z.infer<typeof PromoCodeMetricSchema>;
 export type CohortCell = z.infer<typeof CohortCellSchema>;
 export type Retention = z.infer<typeof RetentionSchema>;
 export type OrdersAnalytics = z.infer<typeof OrdersAnalyticsSchema>;
+
+export const PeriodStatsSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  orders: z.number(),
+  completed: z.number(),
+  cancelled: z.number(),
+  revenue: z.number(),
+  unique_customers: z.number(),
+  new_users: z.number(),
+});
+
+export const CatalogCountSchema = z.object({
+  total: z.number(),
+  active: z.number(),
+});
+
+export const DashboardStatsSchema = z.object({
+  today: PeriodStatsSchema,
+  yesterday: PeriodStatsSchema,
+  this_week: PeriodStatsSchema,
+  last_week: PeriodStatsSchema,
+  active_orders: z.object({ total: z.number(), stuck: z.number() }),
+  counts: z.object({
+    users: z.number(),
+    partners: CatalogCountSchema,
+    shops: CatalogCountSchema,
+    products: z.number(),
+    stories: CatalogCountSchema,
+    banners: CatalogCountSchema,
+    shop_categories: CatalogCountSchema,
+    notifications: z.number(),
+  }),
+});
+
+export type PeriodStats = z.infer<typeof PeriodStatsSchema>;
+export type DashboardStats = z.infer<typeof DashboardStatsSchema>;

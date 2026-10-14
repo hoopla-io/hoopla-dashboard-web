@@ -1,6 +1,6 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { ApiResponse } from "@/lib/api/types";
-import type { OrdersAnalytics, PartnerAnalytics } from "@/lib/api/schemas/analytics";
+import type { DashboardStats, OrdersAnalytics, PartnerAnalytics } from "@/lib/api/schemas/analytics";
 
 export interface PartnerAnalyticsParams {
   from?: string;
@@ -31,5 +31,10 @@ export const analyticsApi = {
       params,
     });
     return response.data.data ?? response.data;
+  },
+
+  getDashboardStats: async (): Promise<DashboardStats> => {
+    const response = await httpClient.get<ApiResponse<DashboardStats>>("/api/v1/dashboard/stats");
+    return response.data.data;
   },
 };
