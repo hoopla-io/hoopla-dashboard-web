@@ -1,11 +1,20 @@
 import { httpClient } from "@/lib/api/http-client";
 import type { ApiResponse } from "@/lib/api/types";
-import type { PartnerAnalytics } from "@/lib/api/schemas/analytics";
+import type { OrdersAnalytics, PartnerAnalytics } from "@/lib/api/schemas/analytics";
 
 export interface PartnerAnalyticsParams {
   from?: string;
   to?: string;
   limit?: number;
+}
+
+export interface OrdersAnalyticsParams {
+  from?: string;
+  to?: string;
+  partner_id?: number;
+  shop_id?: number;
+  source?: string;
+  include_test?: boolean;
 }
 
 export const analyticsApi = {
@@ -14,6 +23,13 @@ export const analyticsApi = {
       `/api/v1/partner/analytics/${partnerId}`,
       { params },
     );
+    return response.data.data ?? response.data;
+  },
+
+  getOrders: async (params?: OrdersAnalyticsParams): Promise<OrdersAnalytics> => {
+    const response = await httpClient.get<ApiResponse<OrdersAnalytics>>("/api/v1/orders/analytics", {
+      params,
+    });
     return response.data.data ?? response.data;
   },
 };

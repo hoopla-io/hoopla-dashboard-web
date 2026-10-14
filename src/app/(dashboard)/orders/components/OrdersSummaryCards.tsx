@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Ban, CircleCheck, CircleDollarSign, Wallet } from "lucide-react";
+import { Ban, CircleCheck, CircleDollarSign, Hourglass, ShoppingBag } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { formatSomUZS } from "@/lib/money";
@@ -19,10 +19,11 @@ interface SummaryCardProps {
   icon: LucideIcon;
   label: string;
   value: ReactNode;
+  hint?: string;
   tone: SummaryTone;
 }
 
-function SummaryCard({ icon: Icon, label, value, tone }: SummaryCardProps) {
+function SummaryCard({ icon: Icon, label, value, hint, tone }: SummaryCardProps) {
   return (
     <div className="flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm">
       <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", toneClass[tone])}>
@@ -31,6 +32,7 @@ function SummaryCard({ icon: Icon, label, value, tone }: SummaryCardProps) {
       <div className="min-w-0">
         <p className="truncate text-xs text-muted-foreground">{label}</p>
         <p className="mt-0.5 truncate text-lg font-semibold tracking-tight tabular-nums">{value}</p>
+        {hint && <p className="truncate text-xs text-muted-foreground">{hint}</p>}
       </div>
     </div>
   );
@@ -47,17 +49,21 @@ function Money({ amount }: { amount: number }) {
 export function OrdersSummaryCards({ summary }: { summary: OrdersSummary | undefined }) {
   if (!summary) {
     return (
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="h-[74px] animate-pulse rounded-xl bg-muted" />
         ))}
       </div>
     );
   }
 
+  const closed = summary.completed_count + summary.cancelled_count;
+  const cancelRate = closed > 0 ? (summary.cancelled_count / closed) * 100 : 0;
+  const avgOrder = summary.completed_count > 0 ? summary.revenue_completed / summary.completed_count : 0;
+
   return (
     <div
-      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+      className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
       title="Totals for the selected period and filters. Status and payment filters are not applied."
     >
       <SummaryCard
@@ -73,16 +79,24 @@ export function OrdersSummaryCards({ summary }: { summary: OrdersSummary | undef
         value={summary.completed_count.toLocaleString()}
       />
       <SummaryCard
+        icon={ShoppingBag}
+        tone="muted"
+        label="Avg order value"
+        value={<Money amount={Math.round(avgOrder)} />}
+      />
+      <SummaryCard
         icon={Ban}
         tone="danger"
         label="Cancelled orders"
         value={summary.cancelled_count.toLocaleString()}
+        hint={`${cancelRate.toFixed(1)}% · ${formatSomUZS(summary.cancelled_sum)} UZS`}
       />
       <SummaryCard
-        icon={Wallet}
+        icon={Hourglass}
         tone="muted"
-        label="Cancelled amount"
-        value={<Money amount={summary.cancelled_sum} />}
+        label="In progress"
+        value={summary.active_count.toLocaleString()}
+        hint="Paid, scheduled, pending or preparing"
       />
     </div>
   );

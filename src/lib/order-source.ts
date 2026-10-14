@@ -1,4 +1,4 @@
-export const ORDER_SOURCES = ["hoopla", "onecafe"] as const;
+export const ORDER_SOURCES = ["hoopla", "onecafe", "kiosk"] as const;
 
 export function formatOrderSource(source?: string): string {
   const value = source?.trim();
@@ -9,6 +9,8 @@ export function formatOrderSource(source?: string): string {
       return "Hoopla";
     case "onecafe":
       return "OneCafe";
+    case "kiosk":
+      return "Kiosk";
     default:
       return value
         .replace(/[_-]+/g, " ")

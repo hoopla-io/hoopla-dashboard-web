@@ -59,3 +59,94 @@ export type HourlyPoint = z.infer<typeof HourlyPointSchema>;
 export type Loyalty = z.infer<typeof LoyaltySchema>;
 export type Fulfillment = z.infer<typeof FulfillmentSchema>;
 export type PartnerAnalytics = z.infer<typeof PartnerAnalyticsSchema>;
+
+export const StatusCountSchema = z.object({
+  status: z.string(),
+  orders: z.number(),
+  revenue: z.number(),
+});
+
+export const OrdersKpiSchema = z.object({
+  statuses: z.array(StatusCountSchema),
+  unique_customers: z.number(),
+  returning_customers: z.number(),
+  promo_orders: z.number(),
+  cashback_used: z.number(),
+  cashback_earned: z.number(),
+  feedback_count: z.number(),
+  avg_rating: z.number().nullable(),
+});
+
+export const OrdersDailyPointSchema = z.object({
+  day: z.string(),
+  completed: z.number(),
+  cancelled: z.number(),
+  revenue: z.number(),
+});
+
+export const HeatmapCellSchema = z.object({
+  weekday: z.number(),
+  hour: z.number(),
+  orders: z.number(),
+});
+
+export const ReasonCountSchema = z.object({
+  reason: z.string(),
+  orders: z.number(),
+});
+
+export const OrderSlaSchema = z.object({
+  received: z.number(),
+  accepted: z.number(),
+  accept_median_sec: z.number().nullable(),
+  accept_p90_sec: z.number().nullable(),
+  prep_median_min: z.number().nullable(),
+  prep_p90_min: z.number().nullable(),
+});
+
+export const ShopPerformanceSchema = z.object({
+  shop_id: z.number(),
+  shop_name: z.string(),
+  partner_name: z.string(),
+  orders: z.number(),
+  completed: z.number(),
+  cancelled: z.number(),
+  revenue: z.number(),
+  avg_rating: z.number().nullable(),
+  accept_median_sec: z.number().nullable(),
+  prep_median_min: z.number().nullable(),
+});
+
+export const ChannelMetricSchema = z.object({
+  label: z.string(),
+  orders: z.number(),
+  revenue: z.number(),
+});
+
+export const OrdersAnalyticsSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  previous_from: z.string(),
+  previous_to: z.string(),
+  current: OrdersKpiSchema,
+  previous: OrdersKpiSchema,
+  daily: z.array(OrdersDailyPointSchema),
+  heatmap: z.array(HeatmapCellSchema),
+  cancel_reasons: z.array(ReasonCountSchema),
+  cancelled_before_accept: z.number(),
+  sla: OrderSlaSchema,
+  shops: z.array(ShopPerformanceSchema),
+  top_products: z.array(NamedMetricSchema),
+  payments: z.array(ChannelMetricSchema),
+  sources: z.array(ChannelMetricSchema),
+  vendors: z.array(ChannelMetricSchema),
+});
+
+export type OrdersKpi = z.infer<typeof OrdersKpiSchema>;
+export type OrdersDailyPoint = z.infer<typeof OrdersDailyPointSchema>;
+export type HeatmapCell = z.infer<typeof HeatmapCellSchema>;
+export type ReasonCount = z.infer<typeof ReasonCountSchema>;
+export type OrderSla = z.infer<typeof OrderSlaSchema>;
+export type ShopPerformance = z.infer<typeof ShopPerformanceSchema>;
+export type ChannelMetric = z.infer<typeof ChannelMetricSchema>;
+export type OrdersAnalytics = z.infer<typeof OrdersAnalyticsSchema>;
