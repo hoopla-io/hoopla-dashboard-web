@@ -8,7 +8,7 @@ import { StepShell, type WizardStep } from "@/components/wizard/step-shell";
 import { PartnerStep } from "./components/PartnerStep";
 import { ShopStep } from "./components/ShopStep";
 import { CategoriesStep } from "./components/CategoriesStep";
-import { DrinksStep } from "./components/DrinksStep";
+import { ProductsStep } from "./components/ProductsStep";
 import { ReviewStep } from "./components/ReviewStep";
 import type { DrinkCategory } from "@/lib/api/schemas/drinks";
 
@@ -91,7 +91,7 @@ function OnboardingContent() {
         )}
 
         {step === 3 && partner && (
-          <DrinksStep
+          <ProductsStep
             partnerId={partner.id}
             categories={categories}
             drinks={drinks}

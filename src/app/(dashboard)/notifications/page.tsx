@@ -97,8 +97,8 @@ function NotificationsContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Notifications"
-        description="Send and manage push notifications delivered to the mobile app."
+        title="In-app Notifications"
+        description="Announcements shown in the app's notification feed. They are not sent as push."
         action={
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="size-4" />

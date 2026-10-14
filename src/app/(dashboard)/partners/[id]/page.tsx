@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { partnersApi } from "@/lib/api/domains/partners";
 import { GeneralTab } from "@/app/(dashboard)/partners/[id]/components/GeneralTab";
 import { ShopsTab } from "@/app/(dashboard)/partners/[id]/components/ShopsTab";
-import { DrinksTab } from "@/app/(dashboard)/partners/[id]/components/DrinksTab";
+import { ProductsTab } from "@/app/(dashboard)/partners/[id]/components/ProductsTab";
 import { OrdersTab } from "@/app/(dashboard)/partners/[id]/components/OrdersTab";
 import { AttributesTab } from "@/app/(dashboard)/partners/[id]/components/AttributesTab";
 import { ModifiersTab } from "@/app/(dashboard)/partners/[id]/components/ModifiersTab";
@@ -93,7 +93,7 @@ function PartnerDetailContent() {
         </TabsContent>
 
         <TabsContent value="products">
-          <DrinksTab partnerId={partnerId} />
+          <ProductsTab partnerId={partnerId} />
         </TabsContent>
 
         <TabsContent value="modifiers">

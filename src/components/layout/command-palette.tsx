@@ -16,6 +16,7 @@ import {
   BellRing,
   TicketPercent,
   Gift,
+  Wallet,
   Settings,
   Sparkles,
   Rocket,
@@ -204,6 +205,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <Gift className="size-4 text-muted-foreground" />
             Gift cards
           </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate("/settlements"))}>
+            <Wallet className="size-4 text-muted-foreground" />
+            Settlements
+          </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/users"))}>
             <Users className="size-4 text-muted-foreground" />
             Users
@@ -222,11 +227,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/notifications"))}>
             <Bell className="size-4 text-muted-foreground" />
-            Notifications
+            In-app notifications
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/push-notifications"))}>
             <BellRing className="size-4 text-muted-foreground" />
-            Push notifications
+            Push log
           </CommandItem>
           <CommandItem onSelect={() => runCommand(() => navigate("/app-releases"))}>
             <Rocket className="size-4 text-muted-foreground" />

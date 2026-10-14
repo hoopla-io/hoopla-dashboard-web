@@ -29,7 +29,7 @@ interface AddedDrink {
   label: string;
 }
 
-interface DrinksStepProps {
+interface ProductsStepProps {
   partnerId: number;
   categories: DrinkCategory[];
   drinks: AddedDrink[];
@@ -38,7 +38,7 @@ interface DrinksStepProps {
   onBack: () => void;
 }
 
-export function DrinksStep({ partnerId, categories, drinks, onAdd, onContinue, onBack }: DrinksStepProps) {
+export function ProductsStep({ partnerId, categories, drinks, onAdd, onContinue, onBack }: ProductsStepProps) {
   const queryClient = useQueryClient();
   const [selectedDrinkId, setSelectedDrinkId] = useState("");
   const [pendingDrinkName, setPendingDrinkName] = useState<string | undefined>(undefined);

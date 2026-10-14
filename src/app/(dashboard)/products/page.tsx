@@ -477,7 +477,7 @@ function DrinksContent() {
   );
 }
 
-export default function DrinksPage() {
+export default function ProductsPage() {
   return (
     <Suspense
       fallback={

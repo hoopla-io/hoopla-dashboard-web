@@ -39,7 +39,7 @@ function PushNotificationsContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Push Notifications"
+        title="Push Log"
         description="Every push the customer API tried to deliver: order status updates and reminders."
       />
 

@@ -489,7 +489,7 @@ function ModifiersContent() {
   const confirmDelete = useConfirm();
 
   const partnerId = Number(params.id);
-  const partnerDrinkId = Number(params.drinkId);
+  const partnerDrinkId = Number(params.productId);
   const drinkName = searchParams.get("productName") || searchParams.get("drinkName") || "Product";
 
   const [groupFormOpen, setGroupFormOpen] = useState(false);
@@ -685,7 +685,7 @@ function ModifiersContent() {
   );
 }
 
-export default function DrinkModifiersPage() {
+export default function ProductModifiersPage() {
   return (
     <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading modifiers...</div>}>
       <ModifiersContent />

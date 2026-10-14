@@ -1,14 +1,15 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { DrinksRedirect, DrinkModifiersRedirect } from "@/components/layout/legacy-redirects";
 import DashboardPage from "@/app/(dashboard)/page";
 import PartnersPage from "@/app/(dashboard)/partners/page";
 import PartnerOnboardingPage from "@/app/(dashboard)/partners/onboarding/page";
 import PartnerDetailPage from "@/app/(dashboard)/partners/[id]/page";
-import PartnerDrinkModifiersPage from "@/app/(dashboard)/partners/[id]/drinks/[drinkId]/modifiers/page";
+import ProductModifiersPage from "@/app/(dashboard)/partners/[id]/products/[productId]/modifiers/page";
 import ShopsPage from "@/app/(dashboard)/shops/page";
 import ShopDetailPage from "@/app/(dashboard)/shops/[id]/page";
-import DrinksPage from "@/app/(dashboard)/drinks/page";
+import ProductsPage from "@/app/(dashboard)/products/page";
 import OrdersPage from "@/app/(dashboard)/orders/page";
 import UsersPage from "@/app/(dashboard)/users/page";
 import UserDetailPage from "@/app/(dashboard)/users/[id]/page";
@@ -40,17 +41,17 @@ export const router = createBrowserRouter([
       { path: "partners/onboarding", element: <PartnerOnboardingPage /> },
       { path: "partners/:id", element: <PartnerDetailPage /> },
       {
-        path: "partners/:id/products/:drinkId/modifiers",
-        element: <PartnerDrinkModifiersPage />,
+        path: "partners/:id/products/:productId/modifiers",
+        element: <ProductModifiersPage />,
       },
       {
         path: "partners/:id/drinks/:drinkId/modifiers",
-        element: <PartnerDrinkModifiersPage />,
+        element: <DrinkModifiersRedirect />,
       },
       { path: "shops", element: <ShopsPage /> },
       { path: "shops/:id", element: <ShopDetailPage /> },
-      { path: "products", element: <DrinksPage /> },
-      { path: "drinks", element: <DrinksPage /> },
+      { path: "products", element: <ProductsPage /> },
+      { path: "drinks", element: <DrinksRedirect /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "users/:id", element: <UserDetailPage /> },

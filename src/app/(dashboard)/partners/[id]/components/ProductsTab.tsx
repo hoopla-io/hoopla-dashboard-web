@@ -18,11 +18,11 @@ import { drinksApi, categoryApi } from "@/lib/api/domains/drinks";
 import { formatSomUZS } from "@/lib/money";
 import type { CreatePartnerDrinkRequest, PartnerDrink } from "@/lib/api/schemas/drinks";
 
-interface DrinksTabProps {
+interface ProductsTabProps {
   partnerId: number;
 }
 
-export function DrinksTab({ partnerId }: DrinksTabProps) {
+export function ProductsTab({ partnerId }: ProductsTabProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [isDrinkDialogOpen, setIsDrinkDialogOpen] = useState(false);

@@ -56,31 +56,39 @@ const sections: NavSection[] = [
     items: [{ name: "Dashboard", href: "/", icon: LayoutDashboard }],
   },
   {
-    label: "Management",
+    label: "Operations",
     items: [
-      { name: "Partners", href: "/partners", icon: Building2 },
-      { name: "Shops", href: "/shops", icon: Store },
-      { name: "Products", href: "/products", icon: Coffee },
       { name: "Orders", href: "/orders", icon: ShoppingCart },
-      { name: "Promocodes", href: "/promocodes", icon: TicketPercent },
-      { name: "Gift Cards", href: "/gift-cards", icon: Gift },
-      { name: "Settlements", href: "/settlements", icon: Wallet },
-      { name: "Users", href: "/users", icon: Users },
+      { name: "Shops", href: "/shops", icon: Store },
     ],
   },
   {
-    label: "Content",
+    label: "Catalog",
+    items: [
+      { name: "Partners", href: "/partners", icon: Building2 },
+      { name: "Products", href: "/products", icon: Coffee },
+      { name: "Shop Categories", href: "/shop-categories", icon: LayoutGrid },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
+      { name: "Settlements", href: "/settlements", icon: Wallet },
+      { name: "Promocodes", href: "/promocodes", icon: TicketPercent },
+      { name: "Gift Cards", href: "/gift-cards", icon: Gift },
+    ],
+  },
+  {
+    label: "Customers",
+    items: [{ name: "Users", href: "/users", icon: Users }],
+  },
+  {
+    label: "Marketing",
     items: [
       { name: "Stories", href: "/stories", icon: BookOpen },
       { name: "Banners", href: "/banners", icon: LayoutPanelTop },
-      { name: "Shop Categories", href: "/shop-categories", icon: LayoutGrid },
-      { name: "Notifications", href: "/notifications", icon: Bell },
-    ],
-  },
-  {
-    label: "Notifications",
-    items: [
-      { name: "Push Notifications", href: "/push-notifications", icon: BellRing },
+      { name: "In-app Notifications", href: "/notifications", icon: Bell },
+      { name: "Push Log", href: "/push-notifications", icon: BellRing },
     ],
   },
   {
@@ -96,9 +104,14 @@ function isGroup(item: NavLeaf | NavGroup): item is NavGroup {
   return "children" in item;
 }
 
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 function NavItem({ item, pathname }: { item: NavLeaf; pathname: string }) {
   const Icon = item.icon;
-  const active = pathname === item.href;
+  const active = isActive(pathname, item.href);
 
   return (
     <Link
@@ -126,7 +139,7 @@ function NavGroupBlock({
   group: NavGroup;
   pathname: string;
 }) {
-  const hasActive = group.children.some((c) => c.href === pathname);
+  const hasActive = group.children.some((c) => isActive(pathname, c.href));
   const [open, setOpen] = useState(hasActive);
 
   return (
