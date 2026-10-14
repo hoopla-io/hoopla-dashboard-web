@@ -12,6 +12,8 @@ import { HoursHeatmap } from "@/app/(dashboard)/orders/components/analytics/Hour
 import { BarList } from "@/app/(dashboard)/orders/components/analytics/BarList";
 import { SlaStats } from "@/app/(dashboard)/orders/components/analytics/SlaStats";
 import { ShopsTable } from "@/app/(dashboard)/orders/components/analytics/ShopsTable";
+import { PromoSection } from "@/app/(dashboard)/orders/components/analytics/PromoSection";
+import { RetentionSection } from "@/app/(dashboard)/orders/components/analytics/RetentionSection";
 
 const REASON_LABELS: Record<string, string> = {
   out_of_stock: "Out of stock",
@@ -94,6 +96,19 @@ export function OrdersAnalyticsTab({ params }: { params: OrdersAnalyticsParams }
 
       <Section title="Orders per day" description="Completed and cancelled orders. Hover a bar for that day's revenue.">
         <DailyStatusChart data={data.daily} />
+      </Section>
+
+      <Section title="Promo codes" description="Orders placed with a promo code compared with the rest.">
+        <PromoSection split={data.promo_split} discount={data.promo_discount} codes={data.promo_codes} />
+      </Section>
+
+      <Section title="Customer retention" description="Who comes back, and how fast.">
+        <RetentionSection
+          retention={data.retention}
+          cohorts={data.cohorts}
+          uniqueCustomers={data.current.unique_customers}
+          periodEnd={data.to}
+        />
       </Section>
 
       <div className="grid gap-6 lg:grid-cols-2">

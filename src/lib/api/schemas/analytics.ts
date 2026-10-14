@@ -123,6 +123,36 @@ export const ChannelMetricSchema = z.object({
   revenue: z.number(),
 });
 
+export const PromoSplitRowSchema = z.object({
+  has_promo: z.boolean(),
+  orders: z.number(),
+  completed: z.number(),
+  cancelled: z.number(),
+  revenue: z.number(),
+  customers: z.number(),
+});
+
+export const PromoCodeMetricSchema = z.object({
+  code: z.string(),
+  orders: z.number(),
+  revenue: z.number(),
+  discount: z.number(),
+  new_customers: z.number(),
+});
+
+export const CohortCellSchema = z.object({
+  cohort: z.string(),
+  offset: z.number(),
+  users: z.number(),
+});
+
+export const RetentionSchema = z.object({
+  repeat_customers: z.number(),
+  first_time_customers: z.number(),
+  second_order_within_30: z.number(),
+  median_days_to_second: z.number().nullable(),
+});
+
 export const OrdersAnalyticsSchema = z.object({
   from: z.string(),
   to: z.string(),
@@ -140,6 +170,11 @@ export const OrdersAnalyticsSchema = z.object({
   payments: z.array(ChannelMetricSchema),
   sources: z.array(ChannelMetricSchema),
   vendors: z.array(ChannelMetricSchema),
+  promo_split: z.array(PromoSplitRowSchema),
+  promo_discount: z.number(),
+  promo_codes: z.array(PromoCodeMetricSchema),
+  cohorts: z.array(CohortCellSchema),
+  retention: RetentionSchema,
 });
 
 export type OrdersKpi = z.infer<typeof OrdersKpiSchema>;
@@ -149,4 +184,8 @@ export type ReasonCount = z.infer<typeof ReasonCountSchema>;
 export type OrderSla = z.infer<typeof OrderSlaSchema>;
 export type ShopPerformance = z.infer<typeof ShopPerformanceSchema>;
 export type ChannelMetric = z.infer<typeof ChannelMetricSchema>;
+export type PromoSplitRow = z.infer<typeof PromoSplitRowSchema>;
+export type PromoCodeMetric = z.infer<typeof PromoCodeMetricSchema>;
+export type CohortCell = z.infer<typeof CohortCellSchema>;
+export type Retention = z.infer<typeof RetentionSchema>;
 export type OrdersAnalytics = z.infer<typeof OrdersAnalyticsSchema>;
